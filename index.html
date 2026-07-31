@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#176b55">
+    <meta
+      name="description"
+      content="薬局の日次業務をスマートフォンから記録するための入力画面です。"
+    >
+    <title>Pharmacy OS | 日次業務入力</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+  </head>
+
+  <body>
+    <main class="page">
+      <section class="app-card" aria-labelledby="page-title">
+        <header class="app-header">
+          <p class="app-label">Pharmacy OS</p>
+          <h1 id="page-title">日次業務入力</h1>
+          <p class="app-description">今日の業務内容を入力して保存します。</p>
+        </header>
+
+        <form id="daily-form" novalidate>
+          <div class="form-field">
+            <label for="date">日付</label>
+            <input id="date" name="date" type="date" required>
+          </div>
+
+          <div class="form-field">
+            <label for="opening-time">開局時間</label>
+            <input
+              id="opening-time"
+              name="openingTime"
+              type="time"
+              required
+            >
+          </div>
+
+          <div class="form-field">
+            <label for="prescription-count">処方箋枚数</label>
+            <div class="input-with-unit">
+              <input
+                id="prescription-count"
+                name="prescriptionCount"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                step="1"
+                placeholder="0"
+                required
+              >
+              <span aria-hidden="true">枚</span>
+            </div>
+          </div>
+
+          <div class="form-field">
+            <label for="absence-time">不在時間</label>
+            <div class="input-with-unit">
+              <input
+                id="absence-time"
+                name="absenceTime"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                step="1"
+                placeholder="0"
+                required
+              >
+              <span aria-hidden="true">分</span>
+            </div>
+          </div>
+
+          <button id="submit-button" type="submit">Notionへ保存</button>
+
+          <!-- JavaScriptが送信状態や結果をここへ表示します。 -->
+          <p id="status-message" class="status-message" aria-live="polite"></p>
+        </form>
+      </section>
+    </main>
+
+    <noscript>
+      <p class="noscript-message">
+        このアプリを使用するにはJavaScriptを有効にしてください。
+      </p>
+    </noscript>
+  </body>
+</html>
