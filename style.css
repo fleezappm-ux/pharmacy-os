@@ -1,6 +1,5 @@
 /*
  * Pharmacy OS
- * スマートフォンで片手操作しやすい、シンプルな入力画面です。
  * 色や余白は冒頭のカスタムプロパティでまとめて変更できます。
  */
 
@@ -9,6 +8,7 @@
   --color-primary-dark: #0f5946;
   --color-background: #f3f7f5;
   --color-surface: #ffffff;
+  --color-subtle: #f5f8f7;
   --color-text: #17211e;
   --color-muted: #65726e;
   --color-border: #cbd7d2;
@@ -39,20 +39,21 @@ body {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
 }
 
 .page {
-  display: grid;
   min-height: 100vh;
-  padding: 24px 16px;
-  place-items: center;
+  padding: 20px 12px;
 }
 
 .app-card {
-  width: min(100%, 480px);
-  padding: 28px 20px 24px;
+  width: min(100%, 540px);
+  margin: 0 auto;
+  padding: 28px 18px 24px;
   background: var(--color-surface);
   border: 1px solid rgba(23, 107, 85, 0.08);
   border-radius: var(--radius-large);
@@ -60,7 +61,7 @@ input {
 }
 
 .app-header {
-  margin-bottom: 28px;
+  margin-bottom: 26px;
 }
 
 .app-label {
@@ -86,20 +87,41 @@ h1 {
 
 #daily-form {
   display: grid;
-  gap: 20px;
+  gap: 22px;
+}
+
+.form-section {
+  display: grid;
+  gap: 18px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.form-section + .form-section {
+  padding-top: 22px;
+  border-top: 1px solid #e3ebe8;
+}
+
+h2 {
+  margin: 0;
+  font-size: 1.08rem;
 }
 
 .form-field {
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 label {
-  font-size: 0.95rem;
+  font-size: 0.94rem;
   font-weight: 700;
 }
 
-input {
+input,
+select,
+textarea {
   width: 100%;
   min-height: 52px;
   padding: 12px 14px;
@@ -113,13 +135,55 @@ input {
     box-shadow 160ms ease;
 }
 
-input:focus {
+textarea {
+  min-height: auto;
+  line-height: 1.55;
+  resize: vertical;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(23, 107, 85, 0.15);
 }
 
-input:user-invalid {
+input:user-invalid,
+select:user-invalid,
+textarea:user-invalid {
   border-color: var(--color-error);
+}
+
+.field-note {
+  margin: 0;
+  color: var(--color-primary);
+  font-size: 0.86rem;
+  font-weight: 600;
+}
+
+.conditional-panel {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+  background: var(--color-subtle);
+  border-radius: var(--radius-medium);
+}
+
+.conditional-panel[hidden] {
+  display: none;
+}
+
+.time-range {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  gap: 8px;
+  align-items: end;
+}
+
+.range-separator {
+  padding-bottom: 15px;
+  color: var(--color-muted);
+  font-weight: 700;
 }
 
 .input-with-unit {
@@ -141,8 +205,8 @@ input:user-invalid {
 
 button {
   width: 100%;
-  min-height: 54px;
-  margin-top: 4px;
+  min-height: 56px;
+  margin-top: 2px;
   padding: 14px 20px;
   color: #fff;
   font-weight: 700;
@@ -150,9 +214,6 @@ button {
   border: 0;
   border-radius: var(--radius-medium);
   cursor: pointer;
-  transition:
-    background-color 160ms ease,
-    transform 80ms ease;
 }
 
 button:hover {
@@ -196,7 +257,11 @@ button:disabled {
   background: var(--color-error);
 }
 
-@media (min-width: 520px) {
+@media (min-width: 560px) {
+  .page {
+    padding: 28px 16px;
+  }
+
   .app-card {
     padding: 36px 34px 30px;
   }
@@ -206,7 +271,6 @@ button:disabled {
   *,
   *::before,
   *::after {
-    scroll-behavior: auto !important;
     transition: none !important;
   }
 }
