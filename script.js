@@ -45,10 +45,11 @@ function setSubmitting(isSubmitting) {
 /** フォームの内容をGASへ渡すデータ形式に整えます。 */
 function createPayload(formData) {
   return {
-    date: formData.get("date"),
-    openingTime: formData.get("openingTime"),
+    // プロパティ名はGASのdoPost(e)側と一致させます。
+    workDate: formData.get("date"),
+    openingHours: formData.get("openingTime"),
     prescriptionCount: Number(formData.get("prescriptionCount")),
-    absenceTime: Number(formData.get("absenceTime")),
+    absenceMinutes: Number(formData.get("absenceTime")),
   };
 }
 
@@ -58,35 +59,14 @@ function createPayload(formData) {
  * GAS側では e.postData.contents をJSON.parseして受け取れます。
  */
 async function sendDailyRecord(payload) {
-  const response = await fetch(GAS_ENDPOINT, {
+  await fetch(GAS_ENDPOINT, {
     method: "POST",
+    mode: "no-cors",
     headers: {
       "Content-Type": "text/plain;charset=utf-8",
     },
     body: JSON.stringify(payload),
-    redirect: "follow",
   });
-
-  if (!response.ok) {
-    throw new Error(`送信に失敗しました（HTTP ${response.status}）`);
-  }
-
-  // GASがJSONを返す場合だけ内容を確認します。空レスポンスでも成功扱いです。
-  const responseText = await response.text();
-  if (!responseText) return;
-
-  try {
-    const result = JSON.parse(responseText);
-    if (result.success === false) {
-      throw new Error(result.message || "Notionへの保存に失敗しました。");
-    }
-  } catch (error) {
-    if (error instanceof SyntaxError) {
-      // GASがJSON以外を返しても、HTTP通信が成功していれば処理を続けます。
-      return;
-    }
-    throw error;
-  }
 }
 
 form.addEventListener("submit", async (event) => {
