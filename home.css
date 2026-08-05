@@ -74,6 +74,7 @@ button { color: inherit; }
   background: var(--warning-bg);
   border-color: #f4dca5;
 }
+.alert-card[hidden] { display: none; }
 .alert-card p { margin: 4px 0 0; font-size: .86rem; }
 
 .section-heading {
