@@ -1,0 +1,159 @@
+"use strict";
+
+const GAS_ENDPOINT =
+  "https://script.google.com/macros/s/AKfycbzS1F43nO_ZDG6X6gH4qfUeprWmFFOZuthQKjbXxuxkoTWY0QMvbAfURd2speGZEa6x/exec";
+
+const WEEKDAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
+const DEFAULT_HOURS = {
+  0: "休局",
+  1: "8:45\n18:00",
+  2: "8:45\n18:00",
+  3: "8:45\n18:00",
+  4: "8:30\n16:30",
+  5: "8:45\n18:00",
+  6: "8:30\n13:00",
+};
+
+const todayLabel = document.querySelector("#today-label");
+const weekCalendar = document.querySelector("#week-calendar");
+const handoverList = document.querySelector("#handover-list");
+const averageLabel = document.querySelector("#average-label");
+const averageValue = document.querySelector("#average-value");
+const averageNote = document.querySelector("#average-note");
+const genericRateValue = document.querySelector("#generic-rate-value");
+const homeStatus = document.querySelector("#home-status");
+const refreshButton = document.querySelector("#refresh-button");
+const toast = document.querySelector("#toast");
+
+function formatJapaneseDate(date) {
+  return new Intl.DateTimeFormat("ja-JP", {
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+    weekday: "short",
+  }).format(date);
+}
+
+function isSameDate(left, right) {
+  return left.getFullYear() === right.getFullYear()
+    && left.getMonth() === right.getMonth()
+    && left.getDate() === right.getDate();
+}
+
+function renderWeekCalendar() {
+  const today = new Date();
+  const mondayOffset = today.getDay() === 0 ? -6 : 1 - today.getDay();
+  const monday = new Date(today.getFullYear(), today.getMonth(), today.getDate() + mondayOffset);
+
+  weekCalendar.replaceChildren();
+
+  for (let index = 0; index < 7; index += 1) {
+    const date = new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + index);
+    const dayOfWeek = date.getDay();
+    const card = document.createElement("div");
+    card.className = "day-card";
+    if (isSameDate(date, today)) card.classList.add("today");
+    if (dayOfWeek === 0) card.classList.add("closed");
+
+    const weekday = document.createElement("span");
+    weekday.className = "weekday";
+    weekday.textContent = WEEKDAY_LABELS[dayOfWeek];
+
+    const day = document.createElement("span");
+    day.className = "date";
+    day.textContent = date.getDate();
+
+    const hours = document.createElement("span");
+    hours.className = "hours";
+    hours.textContent = DEFAULT_HOURS[dayOfWeek];
+
+    card.append(weekday, day, hours);
+    weekCalendar.append(card);
+  }
+}
+
+function formatShortDate(dateString) {
+  if (!dateString) return "日付なし";
+  const [year, month, day] = dateString.split("-").map(Number);
+  return `${month}月${day}日`;
+}
+
+function renderHandovers(handovers) {
+  handoverList.replaceChildren();
+
+  if (!handovers.length) {
+    const empty = document.createElement("div");
+    empty.className = "empty-state compact";
+    empty.innerHTML = "<span aria-hidden=\"true\">✅</span><p>現在、申し送りはありません。</p>";
+    handoverList.append(empty);
+    return;
+  }
+
+  handovers.forEach((handover) => {
+    const item = document.createElement("article");
+    item.className = "handover-item";
+
+    const date = document.createElement("p");
+    date.className = "handover-date";
+    date.textContent = formatShortDate(handover.date);
+
+    const text = document.createElement("p");
+    text.className = "handover-text";
+    text.textContent = handover.text;
+
+    item.append(date, text);
+    handoverList.append(item);
+  });
+}
+
+async function loadHomeData() {
+  refreshButton.disabled = true;
+  refreshButton.textContent = "…";
+  homeStatus.textContent = "";
+
+  try {
+    const url = `${GAS_ENDPOINT}?action=home&t=${Date.now()}`;
+    const response = await fetch(url, { redirect: "follow" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+    const data = await response.json();
+    if (!data.success) throw new Error(data.message || "取得に失敗しました。");
+
+    averageLabel.textContent = `${data.previousMonthLabel} 1日平均処方箋枚数`;
+    averageValue.textContent = data.previousMonthAverage ?? "―";
+    averageNote.textContent = data.previousMonthRecordedDays
+      ? `${data.previousMonthRecordedDays}日分から算出`
+      : "記録なし";
+    genericRateValue.textContent = data.genericRate ?? "―";
+    renderHandovers(data.handovers || []);
+  } catch (error) {
+    console.error("Home data error:", error);
+    homeStatus.textContent = `最新情報を取得できませんでした：${error.message}`;
+    renderHandovers([]);
+  } finally {
+    refreshButton.disabled = false;
+    refreshButton.textContent = "↻";
+  }
+}
+
+let toastTimer;
+function showToast(message) {
+  window.clearTimeout(toastTimer);
+  toast.textContent = message;
+  toast.hidden = false;
+  toastTimer = window.setTimeout(() => {
+    toast.hidden = true;
+  }, 2200);
+}
+
+document.querySelectorAll("[data-pending]").forEach((element) => {
+  element.addEventListener("click", (event) => {
+    event.preventDefault();
+    showToast("この機能は準備中です。");
+  });
+});
+
+todayLabel.textContent = formatJapaneseDate(new Date());
+renderWeekCalendar();
+refreshButton.addEventListener("click", loadHomeData);
+loadHomeData();

@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#176b55">
+    <meta name="description" content="Pharmacy OS 薬局ホーム">
+    <title>Pharmacy OS | 薬局ホーム</title>
+    <link rel="stylesheet" href="home.css">
+    <script src="home.js" defer></script>
+  </head>
+
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Pharmacy OS</p>
+          <h1>薬局ホーム</h1>
+          <p id="today-label" class="today-label"></p>
+        </div>
+        <button id="refresh-button" class="icon-button" type="button" aria-label="最新情報に更新">
+          ↻
+        </button>
+      </header>
+
+      <main class="home-main">
+        <section id="inventory-alert" class="alert-card" hidden>
+          <span aria-hidden="true">⚠️</span>
+          <div>
+            <strong>在庫未確認があります</strong>
+            <p id="inventory-alert-text"></p>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="week-heading">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Schedule</p>
+              <h2 id="week-heading">今週の予定</h2>
+            </div>
+            <button class="text-button" type="button" data-pending>全体を見る</button>
+          </div>
+          <div id="week-calendar" class="week-calendar" aria-label="1週間カレンダー"></div>
+        </section>
+
+        <section class="panel" aria-labelledby="tasks-heading">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Tasks</p>
+              <h2 id="tasks-heading">タスク掲示板</h2>
+            </div>
+            <span class="status-chip">準備中</span>
+          </div>
+          <div class="empty-state compact">
+            <span aria-hidden="true">📌</span>
+            <p>タスクDB完成後に、期限の近い業務を表示します。</p>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="handover-heading">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Handover</p>
+              <h2 id="handover-heading">申し送り</h2>
+            </div>
+            <a class="text-button" href="index.html#handover">入力する</a>
+          </div>
+          <div id="handover-list" class="handover-list" aria-live="polite">
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line short"></div>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="monthly-heading">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Monthly</p>
+              <h2 id="monthly-heading">今月の状況</h2>
+            </div>
+          </div>
+          <div class="metric-grid">
+            <article class="metric-card">
+              <p id="average-label">先月1日平均処方箋枚数</p>
+              <p class="metric-value"><span id="average-value">―</span><small>枚</small></p>
+              <p id="average-note" class="metric-note">読込中</p>
+            </article>
+            <article class="metric-card muted">
+              <p>後発品割合</p>
+              <p class="metric-value"><span id="generic-rate-value">―</span><small>%</small></p>
+              <p class="metric-note">DB接続後に表示</p>
+            </article>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="quick-heading">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Quick access</p>
+              <h2 id="quick-heading">よく使う機能</h2>
+            </div>
+          </div>
+          <div class="quick-grid">
+            <a class="quick-card primary" href="index.html">
+              <span class="quick-icon" aria-hidden="true">📝</span>
+              <strong>日次業務入力</strong>
+              <small>日報を記録</small>
+            </a>
+            <a class="quick-card" href="index.html#handover">
+              <span class="quick-icon" aria-hidden="true">📣</span>
+              <strong>申し送り入力</strong>
+              <small>引き継ぎを記録</small>
+            </a>
+            <button class="quick-card" type="button" data-pending>
+              <span class="quick-icon" aria-hidden="true">📥</span>
+              <strong>インボックス</strong>
+              <small>準備中</small>
+            </button>
+          </div>
+        </section>
+
+        <p id="home-status" class="home-status" aria-live="polite"></p>
+      </main>
+
+      <nav class="bottom-nav" aria-label="メインナビゲーション">
+        <a class="nav-item active" href="home.html" aria-current="page"><span>⌂</span><small>ホーム</small></a>
+        <a class="nav-item" href="index.html"><span>▣</span><small>日次業務</small></a>
+        <button class="nav-item" type="button" data-pending><span>▤</span><small>月次業務</small></button>
+        <button class="nav-item" type="button" data-pending><span>◉</span><small>ステータス</small></button>
+        <button class="nav-item" type="button" data-pending><span>✉</span><small>意見箱</small></button>
+      </nav>
+
+      <div id="toast" class="toast" role="status" hidden></div>
+    </div>
+  </body>
+</html>

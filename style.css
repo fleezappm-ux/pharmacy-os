@@ -64,6 +64,21 @@ textarea {
   margin-bottom: 26px;
 }
 
+.home-link {
+  display: inline-block;
+  margin-bottom: 18px;
+  color: var(--color-primary);
+  font-size: 0.86rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.home-link:focus-visible {
+  outline: 3px solid rgba(23, 107, 85, 0.2);
+  outline-offset: 4px;
+  border-radius: 4px;
+}
+
 .app-label {
   margin: 0 0 6px;
   color: var(--color-primary);
