@@ -6,8 +6,9 @@
     <meta name="theme-color" content="#176b55">
     <meta name="description" content="Pharmacy OS 薬局ホーム">
     <title>Pharmacy OS | 薬局ホーム</title>
-    <link rel="stylesheet" href="home.css">
-    <script src="home.js" defer></script>
+    <!-- 更新番号を付けて、スマホに古いCSS/JSが残るのを防ぎます。 -->
+    <link rel="stylesheet" href="home.css?v=3">
+    <script src="home.js?v=3" defer></script>
   </head>
 
   <body>
@@ -24,14 +25,6 @@
       </header>
 
       <main class="home-main">
-        <section id="inventory-alert" class="alert-card" hidden>
-          <span aria-hidden="true">⚠️</span>
-          <div>
-            <strong>在庫未確認があります</strong>
-            <p id="inventory-alert-text"></p>
-          </div>
-        </section>
-
         <section class="panel" aria-labelledby="week-heading">
           <div class="section-heading">
             <div>
