@@ -1,8 +1,139 @@
 "use strict";
-const GAS_ENDPOINT="https://script.google.com/macros/s/AKfycbzS1F43nO_ZDG6X6gH4qfUeprWmFFOZuthQKjbXxuxkoTWY0QMvbAfURd2speGZEa6x/exec";
-const categories=["医保","国保","後期高齢","公費（単・複）","労災","総合計"];
-const body=document.querySelector("#results-body"),form=document.querySelector("#insurance-form"),monthInput=document.querySelector("#target-month"),saveButton=document.querySelector("#save-button"),resultMessage=document.querySelector("#result-message");
-categories.forEach(category=>{const row=document.createElement("tr");row.dataset.category=category;row.innerHTML=`<th scope="row">${category}</th>${["case","medical","dental","total","points"].map(field=>`<td><input data-field="${field}" type="number" min="0" inputmode="numeric"></td>`).join("")}`;body.append(row);});
-const now=new Date();monthInput.value=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,"0")}`;
-form.addEventListener("submit",async event=>{event.preventDefault();const rows=[...body.querySelectorAll("tr")].map(row=>({category:row.dataset.category,caseCount:value(row,"case"),medicalCount:value(row,"medical"),dentalCount:value(row,"dental"),totalCount:value(row,"total"),rewardPoints:value(row,"points")}));rows.push({category:"発行医療機関数",caseCount:"",medicalCount:document.querySelector("#institution-medical").value,dentalCount:document.querySelector("#institution-dental").value,totalCount:document.querySelector("#institution-total").value,rewardPoints:""});saveButton.disabled=true;saveButton.textContent="保存中…";resultMessage.className="result-message";resultMessage.textContent="Notionへ保存しています。";try{const response=await fetch(GAS_ENDPOINT,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action:"saveInsuranceRecords",targetMonth:`${monthInput.value}-01`,rows}),redirect:"follow"});const data=await response.json();if(!data.success)throw new Error(data.message||"保存に失敗しました。");resultMessage.textContent=`${data.message}（新規${data.created}件・更新${data.updated}件）`;}catch(error){resultMessage.className="result-message error";resultMessage.textContent=error.message;}finally{saveButton.disabled=false;saveButton.textContent="Notionへ保存";}});
-function value(row,field){return row.querySelector(`[data-field="${field}"]`).value;}
+
+const GAS_URL = "https://script.google.com/macros/s/AKfycbzS1F43nO_ZDG6X6gH4qfUeprWmFFOZuthQKjbXxuxkoTWY0QMvbAfURd2speGZEa6x/exec";
+const categories = ["医保", "国保", "後期高齢", "公費（単・複）", "労災", "総合計"];
+
+const form = document.getElementById("insurance-form");
+const rowsContainer = document.getElementById("insurance-rows");
+const yearSelect = document.getElementById("target-year");
+const monthSelect = document.getElementById("target-month-number");
+const institutionMedical = document.getElementById("institution-medical");
+const institutionDental = document.getElementById("institution-dental");
+const institutionTotal = document.getElementById("institution-total");
+const saveButton = document.getElementById("save-button");
+const statusMessage = document.getElementById("status-message");
+
+function createNumberInput(field, readOnly = false) {
+  const input = document.createElement("input");
+  input.type = "number";
+  input.min = "0";
+  input.inputMode = "numeric";
+  input.dataset.field = field;
+  input.readOnly = readOnly;
+  if (readOnly) input.tabIndex = -1;
+  return input;
+}
+
+function renderRows() {
+  categories.forEach((category, index) => {
+    const row = document.createElement("tr");
+    row.dataset.order = String(index + 1);
+
+    const heading = document.createElement("th");
+    heading.scope = "row";
+    heading.textContent = category;
+    row.appendChild(heading);
+
+    ["caseCount", "medicalCount", "dentalCount", "totalCount", "rewardPoints"].forEach((field) => {
+      const cell = document.createElement("td");
+      cell.appendChild(createNumberInput(field, field === "totalCount"));
+      row.appendChild(cell);
+    });
+
+    rowsContainer.appendChild(row);
+  });
+}
+
+function initializeMonthSelectors() {
+  const today = new Date();
+  const currentYear = today.getFullYear();
+
+  for (let year = currentYear - 10; year <= currentYear + 3; year += 1) {
+    const option = new Option(`${year}年`, String(year), false, year === currentYear);
+    yearSelect.add(option);
+  }
+
+  for (let month = 1; month <= 12; month += 1) {
+    const option = new Option(`${month}月`, String(month), false, month === today.getMonth() + 1);
+    monthSelect.add(option);
+  }
+}
+
+function sumInputs(first, second) {
+  if (first.value === "" && second.value === "") return "";
+  return String(Number(first.value || 0) + Number(second.value || 0));
+}
+
+function updateRowTotal(row) {
+  const medical = row.querySelector('[data-field="medicalCount"]');
+  const dental = row.querySelector('[data-field="dentalCount"]');
+  row.querySelector('[data-field="totalCount"]').value = sumInputs(medical, dental);
+}
+
+function updateInstitutionTotal() {
+  institutionTotal.value = sumInputs(institutionMedical, institutionDental);
+}
+
+function toNullableNumber(value) {
+  return value === "" ? null : Number(value);
+}
+
+function collectRows() {
+  return Array.from(rowsContainer.querySelectorAll("tr")).map((row, index) => ({
+    category: categories[index],
+    caseCount: toNullableNumber(row.querySelector('[data-field="caseCount"]').value),
+    medicalCount: toNullableNumber(row.querySelector('[data-field="medicalCount"]').value),
+    dentalCount: toNullableNumber(row.querySelector('[data-field="dentalCount"]').value),
+    totalCount: toNullableNumber(row.querySelector('[data-field="totalCount"]').value),
+    rewardPoints: toNullableNumber(row.querySelector('[data-field="rewardPoints"]').value),
+    order: index + 1
+  }));
+}
+
+rowsContainer.addEventListener("input", (event) => {
+  if (event.target.matches('[data-field="medicalCount"], [data-field="dentalCount"]')) {
+    updateRowTotal(event.target.closest("tr"));
+  }
+});
+institutionMedical.addEventListener("input", updateInstitutionTotal);
+institutionDental.addEventListener("input", updateInstitutionTotal);
+
+form.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  saveButton.disabled = true;
+  statusMessage.className = "status-message";
+  statusMessage.textContent = "保存しています…";
+
+  const targetMonth = `${yearSelect.value}-${String(monthSelect.value).padStart(2, "0")}-01`;
+  const payload = {
+    action: "saveInsuranceRecords",
+    targetMonth,
+    rows: collectRows(),
+    institution: {
+      medicalCount: toNullableNumber(institutionMedical.value),
+      dentalCount: toNullableNumber(institutionDental.value),
+      totalCount: toNullableNumber(institutionTotal.value)
+    }
+  };
+
+  try {
+    const response = await fetch(GAS_URL, {
+      method: "POST",
+      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      body: JSON.stringify(payload)
+    });
+    const result = await response.json();
+    if (!result.success) throw new Error(result.message || "保存に失敗しました。");
+    statusMessage.className = "status-message success";
+    statusMessage.textContent = result.message || "Notionへの保存が完了しました。";
+  } catch (error) {
+    statusMessage.className = "status-message error";
+    statusMessage.textContent = error.message || "通信に失敗しました。";
+  } finally {
+    saveButton.disabled = false;
+  }
+});
+
+renderRows();
+initializeMonthSelectors();
+updateInstitutionTotal();

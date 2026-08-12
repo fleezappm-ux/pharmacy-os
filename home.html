@@ -7,8 +7,8 @@
     <meta name="description" content="Pharmacy OS 薬局ホーム">
     <title>Pharmacy OS | 薬局ホーム</title>
     <!-- 更新番号を付けて、スマホに古いCSS/JSが残るのを防ぎます。 -->
-    <link rel="stylesheet" href="home.css?v=4">
-    <script src="home.js?v=4" defer></script>
+    <link rel="stylesheet" href="home.css?v=5">
+    <script src="home.js?v=5" defer></script>
   </head>
 
   <body>
@@ -127,6 +127,17 @@
         <button class="nav-item" type="button" data-pending><span>◉</span><small>ステータス</small></button>
         <button class="nav-item" type="button" data-pending><span>✉</span><small>意見箱</small></button>
       </nav>
+
+      <div id="reminder-modal" class="reminder-modal" hidden>
+        <section class="reminder-dialog" role="dialog" aria-modal="true" aria-labelledby="reminder-title">
+          <button id="reminder-close" class="reminder-close" type="button" aria-label="閉じる">×</button>
+          <p class="section-kicker">Reminder</p>
+          <h2 id="reminder-title">未入力の業務があります</h2>
+          <p id="reminder-summary" class="reminder-summary"></p>
+          <div id="reminder-list" class="reminder-list"></div>
+          <button id="reminder-snooze" class="reminder-snooze" type="button">今日は表示しない</button>
+        </section>
+      </div>
 
       <div id="toast" class="toast" role="status" hidden></div>
     </div>

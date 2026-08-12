@@ -181,7 +181,84 @@ document.querySelectorAll("[data-pending]").forEach((element) => {
   });
 });
 
+const reminderModal = document.querySelector("#reminder-modal");
+const reminderClose = document.querySelector("#reminder-close");
+const reminderSnooze = document.querySelector("#reminder-snooze");
+const reminderSummary = document.querySelector("#reminder-summary");
+const reminderList = document.querySelector("#reminder-list");
+const REMINDER_SNOOZE_KEY = "pharmacy-os-reminder-snoozed";
+
+function localDateKey(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function closeReminder() {
+  reminderModal.hidden = true;
+}
+
+function renderReminderStatus(data) {
+  if (localStorage.getItem(REMINDER_SNOOZE_KEY) === localDateKey()) return;
+
+  const missing = [];
+  if (data.dailyMissing) {
+    missing.push({ label: "本日の日次業務", href: "index.html" });
+  }
+  (data.monthlyMissing || []).forEach((item) => {
+    missing.push({
+      label: `${data.previousMonthLabel || "前月"} ${item.label}`,
+      href: item.href,
+    });
+  });
+
+  if (!missing.length) {
+    closeReminder();
+    return;
+  }
+
+  reminderSummary.textContent = `${missing.length}件の入力を確認してください。`;
+  reminderList.replaceChildren();
+  missing.forEach((item) => {
+    const link = document.createElement("a");
+    link.className = "reminder-link";
+    link.href = item.href;
+    link.textContent = item.label;
+    reminderList.append(link);
+  });
+  reminderModal.hidden = false;
+}
+
+async function loadReminderStatus() {
+  try {
+    const response = await fetch(`${GAS_ENDPOINT}?action=reminders&t=${Date.now()}`, { redirect: "follow" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    if (!data.success) throw new Error(data.message || "未入力確認に失敗しました。");
+    renderReminderStatus(data);
+  } catch (error) {
+    console.error("Reminder status error:", error);
+  }
+}
+
+async function refreshHome() {
+  await Promise.all([loadHomeData(), loadReminderStatus()]);
+}
+
+reminderClose.addEventListener("click", closeReminder);
+reminderSnooze.addEventListener("click", () => {
+  localStorage.setItem(REMINDER_SNOOZE_KEY, localDateKey());
+  closeReminder();
+});
+reminderModal.addEventListener("click", (event) => {
+  if (event.target === reminderModal) closeReminder();
+});
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && !reminderModal.hidden) closeReminder();
+});
+
 todayLabel.textContent = formatJapaneseDate(new Date());
 renderWeekCalendar();
-refreshButton.addEventListener("click", loadHomeData);
-loadHomeData();
+refreshButton.addEventListener("click", refreshHome);
+refreshHome();
