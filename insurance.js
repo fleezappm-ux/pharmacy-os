@@ -252,7 +252,7 @@ function collectHomecareRows() {
     },
     {
       category:
-        "介護保険（居宅療養管理指導 等）",
+        "介護保険（居宅療養管理指導　等）",
 
       caseCount: toNullableNumber(
         homecareCareCases.value
@@ -391,12 +391,7 @@ form.addEventListener(
         );
       }
 
-      statusMessage.className =
-        "status-message success";
-
-      statusMessage.textContent =
-        result.message ||
-        "Notionへの保存が完了しました。";
+     showSaveResult(result);
     } catch (error) {
       statusMessage.className =
         "status-message error";
@@ -409,7 +404,47 @@ form.addEventListener(
     }
   }
 );
+function showSaveResult(result) {
+  statusMessage.className = "status-message success";
+  statusMessage.textContent = "";
 
+  const heading = document.createElement("p");
+  heading.textContent =
+    result.message || "Notionへの保存が完了しました。";
+  statusMessage.appendChild(heading);
+
+  const items = [
+    ...((result.insurance && result.insurance.items) || []),
+    ...((result.homecare && result.homecare.items) || [])
+  ];
+
+  items.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = `save-result ${item.status}`;
+
+    const text = document.createElement("span");
+    const detail =
+      item.changes && item.changes.length
+        ? `（${item.changes.join("、")}）`
+        : "";
+
+    text.textContent =
+      `${item.label}：${item.statusLabel}${detail}`;
+
+    row.appendChild(text);
+
+    if (item.url) {
+      const link = document.createElement("a");
+      link.href = item.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = "Notionで確認";
+      row.appendChild(link);
+    }
+
+    statusMessage.appendChild(row);
+  });
+}
 renderRows();
 initializeMonthSelectors();
 updateGrandTotal();
