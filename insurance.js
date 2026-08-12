@@ -238,7 +238,7 @@ function collectHomecareRows() {
   return [
     {
       category:
-        "医療保険（在宅患者訪問薬剤管理指導）",
+        "医療保険（在宅患者訪問薬剤管理指導　等）",
 
       caseCount: toNullableNumber(
         homecareMedicalCases.value
