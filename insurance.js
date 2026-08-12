@@ -2,6 +2,8 @@
 
 const GAS_URL = "https://script.google.com/macros/s/AKfycbzS1F43nO_ZDG6X6gH4qfUeprWmFFOZuthQKjbXxuxkoTWY0QMvbAfURd2speGZEa6x/exec";
 const categories = ["医保", "国保", "後期高齢", "公費（単・複）", "労災", "総合計"];
+const totalCategoryIndex = categories.length - 1;
+const fields = ["caseCount", "medicalCount", "dentalCount", "totalCount", "rewardPoints"];
 
 const form = document.getElementById("insurance-form");
 const rowsContainer = document.getElementById("insurance-rows");
@@ -34,9 +36,13 @@ function renderRows() {
     heading.textContent = category;
     row.appendChild(heading);
 
-    ["caseCount", "medicalCount", "dentalCount", "totalCount", "rewardPoints"].forEach((field) => {
+    const isTotalRow = index === totalCategoryIndex;
+
+    fields.forEach((field) => {
       const cell = document.createElement("td");
-      cell.appendChild(createNumberInput(field, field === "totalCount"));
+      cell.appendChild(
+        createNumberInput(field, isTotalRow || field === "totalCount")
+      );
       row.appendChild(cell);
     });
 
@@ -49,12 +55,22 @@ function initializeMonthSelectors() {
   const currentYear = today.getFullYear();
 
   for (let year = currentYear - 10; year <= currentYear + 3; year += 1) {
-    const option = new Option(`${year}年`, String(year), false, year === currentYear);
+    const option = new Option(
+      `${year}年`,
+      String(year),
+      false,
+      year === currentYear
+    );
     yearSelect.add(option);
   }
 
   for (let month = 1; month <= 12; month += 1) {
-    const option = new Option(`${month}月`, String(month), false, month === today.getMonth() + 1);
+    const option = new Option(
+      `${month}月`,
+      String(month),
+      false,
+      month === today.getMonth() + 1
+    );
     monthSelect.add(option);
   }
 }
@@ -67,11 +83,37 @@ function sumInputs(first, second) {
 function updateRowTotal(row) {
   const medical = row.querySelector('[data-field="medicalCount"]');
   const dental = row.querySelector('[data-field="dentalCount"]');
-  row.querySelector('[data-field="totalCount"]').value = sumInputs(medical, dental);
+
+  row.querySelector('[data-field="totalCount"]').value =
+    sumInputs(medical, dental);
+}
+
+function updateGrandTotal() {
+  const rows = Array.from(rowsContainer.querySelectorAll("tr"));
+  const detailRows = rows.slice(0, totalCategoryIndex);
+  const totalRow = rows[totalCategoryIndex];
+
+  fields.forEach((field) => {
+    const inputs = detailRows.map((row) =>
+      row.querySelector(`[data-field="${field}"]`)
+    );
+
+    const hasValue = inputs.some((input) => input.value !== "");
+    const total = inputs.reduce(
+      (sum, input) => sum + Number(input.value || 0),
+      0
+    );
+
+    totalRow.querySelector(`[data-field="${field}"]`).value =
+      hasValue ? String(total) : "";
+  });
 }
 
 function updateInstitutionTotal() {
-  institutionTotal.value = sumInputs(institutionMedical, institutionDental);
+  institutionTotal.value = sumInputs(
+    institutionMedical,
+    institutionDental
+  );
 }
 
 function toNullableNumber(value) {
@@ -79,22 +121,45 @@ function toNullableNumber(value) {
 }
 
 function collectRows() {
-  return Array.from(rowsContainer.querySelectorAll("tr")).map((row, index) => ({
-    category: categories[index],
-    caseCount: toNullableNumber(row.querySelector('[data-field="caseCount"]').value),
-    medicalCount: toNullableNumber(row.querySelector('[data-field="medicalCount"]').value),
-    dentalCount: toNullableNumber(row.querySelector('[data-field="dentalCount"]').value),
-    totalCount: toNullableNumber(row.querySelector('[data-field="totalCount"]').value),
-    rewardPoints: toNullableNumber(row.querySelector('[data-field="rewardPoints"]').value),
-    order: index + 1
-  }));
+  return Array.from(rowsContainer.querySelectorAll("tr")).map(
+    (row, index) => ({
+      category: categories[index],
+      caseCount: toNullableNumber(
+        row.querySelector('[data-field="caseCount"]').value
+      ),
+      medicalCount: toNullableNumber(
+        row.querySelector('[data-field="medicalCount"]').value
+      ),
+      dentalCount: toNullableNumber(
+        row.querySelector('[data-field="dentalCount"]').value
+      ),
+      totalCount: toNullableNumber(
+        row.querySelector('[data-field="totalCount"]').value
+      ),
+      rewardPoints: toNullableNumber(
+        row.querySelector('[data-field="rewardPoints"]').value
+      ),
+      order: index + 1
+    })
+  );
 }
 
 rowsContainer.addEventListener("input", (event) => {
-  if (event.target.matches('[data-field="medicalCount"], [data-field="dentalCount"]')) {
-    updateRowTotal(event.target.closest("tr"));
+  const row = event.target.closest("tr");
+
+  if (!row || Number(row.dataset.order) === categories.length) return;
+
+  if (
+    event.target.matches(
+      '[data-field="medicalCount"], [data-field="dentalCount"]'
+    )
+  ) {
+    updateRowTotal(row);
   }
+
+  updateGrandTotal();
 });
+
 institutionMedical.addEventListener("input", updateInstitutionTotal);
 institutionDental.addEventListener("input", updateInstitutionTotal);
 
@@ -104,7 +169,10 @@ form.addEventListener("submit", async (event) => {
   statusMessage.className = "status-message";
   statusMessage.textContent = "保存しています…";
 
-  const targetMonth = `${yearSelect.value}-${String(monthSelect.value).padStart(2, "0")}-01`;
+  const targetMonth =
+    `${yearSelect.value}-` +
+    `${String(monthSelect.value).padStart(2, "0")}-01`;
+
   const payload = {
     action: "saveInsuranceRecords",
     targetMonth,
@@ -119,16 +187,25 @@ form.addEventListener("submit", async (event) => {
   try {
     const response = await fetch(GAS_URL, {
       method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
+      headers: {
+        "Content-Type": "text/plain;charset=utf-8"
+      },
       body: JSON.stringify(payload)
     });
+
     const result = await response.json();
-    if (!result.success) throw new Error(result.message || "保存に失敗しました。");
+
+    if (!result.success) {
+      throw new Error(result.message || "保存に失敗しました。");
+    }
+
     statusMessage.className = "status-message success";
-    statusMessage.textContent = result.message || "Notionへの保存が完了しました。";
+    statusMessage.textContent =
+      result.message || "Notionへの保存が完了しました。";
   } catch (error) {
     statusMessage.className = "status-message error";
-    statusMessage.textContent = error.message || "通信に失敗しました。";
+    statusMessage.textContent =
+      error.message || "通信に失敗しました。";
   } finally {
     saveButton.disabled = false;
   }
@@ -136,4 +213,5 @@ form.addEventListener("submit", async (event) => {
 
 renderRows();
 initializeMonthSelectors();
+updateGrandTotal();
 updateInstitutionTotal();
