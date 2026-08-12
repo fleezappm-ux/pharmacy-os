@@ -1,0 +1,7 @@
+<!doctype html>
+<html lang="ja"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#176b55"><title>Pharmacy OS | 保険調剤実績</title><link rel="stylesheet" href="insurance.css?v=1"><script src="insurance.js?v=1" defer></script></head>
+<body><div class="app-shell"><header class="topbar"><a class="back-link" href="monthly.html">‹</a><div><p class="eyebrow">Pharmacy OS</p><h1>保険調剤実績</h1><p>対象月の実績を入力してNotionへ保存します。</p></div></header>
+<main><form id="insurance-form"><section class="panel"><label class="month-label" for="target-month">対象月</label><input id="target-month" type="month" required></section>
+<section class="panel"><p class="kicker">Insurance results</p><h2>保険調剤実績</h2><p class="hint">未入力の欄は空欄のままで大丈夫です。横に動かすと全項目を確認できます。</p><div class="table-scroll"><table><thead><tr><th>区分</th><th>件数</th><th>医科</th><th>歯科</th><th>合計</th><th>報酬点数</th></tr></thead><tbody id="results-body"></tbody></table></div></section>
+<section class="panel"><p class="kicker">Institutions</p><h2>発行医療機関数</h2><div class="institution-grid"><label>医科<input id="institution-medical" type="number" min="0" inputmode="numeric"></label><label>歯科<input id="institution-dental" type="number" min="0" inputmode="numeric"></label><label>合計<input id="institution-total" type="number" min="0" inputmode="numeric"></label></div></section>
+<button id="save-button" class="save-button" type="submit">Notionへ保存</button><p id="result-message" class="result-message" aria-live="polite"></p></form></main></div></body></html>

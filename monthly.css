@@ -47,7 +47,7 @@ a { color: inherit; text-decoration: none; }
 .file-name { min-height: 1.4em; margin: 10px 0 14px; color: var(--muted); font-size: .78rem; overflow-wrap: anywhere; }
 .primary-button { width: 100%; min-height: 52px; padding: 12px; color: #fff; font-weight: 800; background: var(--primary); border: 0; border-radius: 14px; }
 .primary-button:disabled { opacity: .45; }
-.result-message { min-height: 1.4em; margin: 12px 0 0; color: var(--primary); font-size: .84rem; font-weight: 700; line-height: 1.6; }
+.result-message { min-height: 1.4em; margin: 12px 0 0; color: var(--primary); font-size: .84rem; font-weight: 700; line-height: 1.6; white-space: pre-line; }
 .result-message.error, .page-status { color: var(--danger); }
 .page-status { min-height: 1.5em; margin: 0; padding: 0 6px; font-size: .82rem; text-align: center; }
 
@@ -60,4 +60,4 @@ a { color: inherit; text-decoration: none; }
 @media (min-width: 520px) {
   .summary-grid { grid-template-columns: .8fr 1.2fr; }
 }
-
+.insurance-link { display: block; text-align: center; text-decoration: none; }
