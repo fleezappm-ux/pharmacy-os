@@ -7,8 +7,8 @@
     <meta name="description" content="Pharmacy OS 薬局ホーム">
     <title>Pharmacy OS | 薬局ホーム</title>
     <!-- 更新番号を付けて、スマホに古いCSS/JSが残るのを防ぎます。 -->
-    <link rel="stylesheet" href="home.css?v=3">
-    <script src="home.js?v=3" defer></script>
+    <link rel="stylesheet" href="home.css?v=4">
+    <script src="home.js?v=4" defer></script>
   </head>
 
   <body>
@@ -77,10 +77,16 @@
               <p class="metric-value"><span id="average-value">―</span><small>枚</small></p>
               <p id="average-note" class="metric-note">読込中</p>
             </article>
-            <article class="metric-card muted">
-              <p>後発品割合</p>
+            <article class="metric-card">
+              <p id="generic-rate-label">後発品使用率</p>
               <p class="metric-value"><span id="generic-rate-value">―</span><small>%</small></p>
-              <p class="metric-note">DB接続後に表示</p>
+              <p class="metric-note">最新の取込月</p>
+            </article>
+            <article class="metric-card concentration-card">
+              <p id="concentration-label">処方箋集中率 上位4医療機関</p>
+              <ol id="concentration-list" class="concentration-list">
+                <li>データ未取込</li>
+              </ol>
             </article>
           </div>
         </section>
@@ -117,7 +123,7 @@
       <nav class="bottom-nav" aria-label="メインナビゲーション">
         <a class="nav-item active" href="home.html" aria-current="page"><span>⌂</span><small>ホーム</small></a>
         <a class="nav-item" href="index.html"><span>▣</span><small>日次業務</small></a>
-        <button class="nav-item" type="button" data-pending><span>▤</span><small>月次業務</small></button>
+        <a class="nav-item" href="monthly.html"><span>▤</span><small>月次業務</small></a>
         <button class="nav-item" type="button" data-pending><span>◉</span><small>ステータス</small></button>
         <button class="nav-item" type="button" data-pending><span>✉</span><small>意見箱</small></button>
       </nav>

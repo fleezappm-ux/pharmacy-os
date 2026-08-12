@@ -133,6 +133,9 @@ button { color: inherit; }
 .metric-value { margin: 8px 0 3px; color: var(--primary-dark); font-size: 1.65rem; font-weight: 800; }
 .metric-value small { margin-left: 3px; font-size: .72rem; }
 .metric-note { margin: 0; color: var(--muted); font-size: .68rem; }
+.concentration-card { grid-column: 1 / -1; }
+.concentration-list { display: grid; gap: 7px; margin: 8px 0 0; padding-left: 1.4rem; font-size: .8rem; }
+.concentration-list li span { float: right; color: var(--primary); font-weight: 800; }
 
 .quick-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px; }
 .quick-card {

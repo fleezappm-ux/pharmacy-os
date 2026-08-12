@@ -21,6 +21,9 @@ const averageLabel = document.querySelector("#average-label");
 const averageValue = document.querySelector("#average-value");
 const averageNote = document.querySelector("#average-note");
 const genericRateValue = document.querySelector("#generic-rate-value");
+const genericRateLabel = document.querySelector("#generic-rate-label");
+const concentrationLabel = document.querySelector("#concentration-label");
+const concentrationList = document.querySelector("#concentration-list");
 const homeStatus = document.querySelector("#home-status");
 const refreshButton = document.querySelector("#refresh-button");
 const toast = document.querySelector("#toast");
@@ -125,6 +128,10 @@ async function loadHomeData() {
       ? `${data.previousMonthRecordedDays}日分から算出`
       : "記録なし";
     genericRateValue.textContent = data.genericRate ?? "―";
+    genericRateLabel.textContent = data.genericRateLabel && data.genericRateLabel !== "未設定"
+      ? `${data.genericRateLabel} 後発品使用率`
+      : "後発品使用率";
+    renderConcentration(data.concentrationTop4 || [], data.concentrationLabel);
     renderHandovers(data.handovers || []);
   } catch (error) {
     console.error("Home data error:", error);
@@ -134,6 +141,27 @@ async function loadHomeData() {
     refreshButton.disabled = false;
     refreshButton.textContent = "↻";
   }
+}
+
+function renderConcentration(entries, monthLabel) {
+  concentrationLabel.textContent = monthLabel && monthLabel !== "未設定"
+    ? `${monthLabel} 処方箋集中率 上位4医療機関`
+    : "処方箋集中率 上位4医療機関";
+  concentrationList.replaceChildren();
+  if (!entries.length) {
+    const item = document.createElement("li");
+    item.textContent = "データ未取込";
+    concentrationList.append(item);
+    return;
+  }
+  entries.forEach((entry) => {
+    const item = document.createElement("li");
+    item.append(document.createTextNode(entry.medicalInstitution));
+    const percentage = document.createElement("span");
+    percentage.textContent = `${entry.percentage}%`;
+    item.append(percentage);
+    concentrationList.append(item);
+  });
 }
 
 let toastTimer;
