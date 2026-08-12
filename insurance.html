@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>保険調剤実績 | Pharmacy OS</title>
-  <link rel="stylesheet" href="insurance.css?v=3">
+  <link rel="stylesheet" href="insurance.css?v=4">
 </head>
 <body>
   <main class="page-shell">
@@ -20,35 +20,18 @@
         <p class="section-label">TARGET MONTH</p>
         <h2>対象月</h2>
         <div class="month-picker">
-          <label>
-            <span>西暦</span>
-            <select id="target-year" required></select>
-          </label>
-          <label>
-            <span>月</span>
-            <select id="target-month-number" required></select>
-          </label>
+          <label><span>西暦</span><select id="target-year" required></select></label>
+          <label><span>月</span><select id="target-month-number" required></select></label>
         </div>
       </section>
 
       <section class="card table-card">
         <p class="section-label">INSURANCE RESULTS</p>
         <h2>保険調剤実績</h2>
-        <p class="help">
-          未入力の欄は空欄のままで大丈夫です。合計は自動計算します。
-        </p>
+        <p class="help">未入力の欄は空欄のままで大丈夫です。合計は自動計算します。</p>
         <div class="table-scroll">
           <table>
-            <thead>
-              <tr>
-                <th>区分</th>
-                <th>件数</th>
-                <th>医科（回数）</th>
-                <th>歯科（回数）</th>
-                <th>合計</th>
-                <th>報酬点数</th>
-              </tr>
-            </thead>
+            <thead><tr><th>区分</th><th>件数</th><th>医科（回数）</th><th>歯科（回数）</th><th>合計</th><th>報酬点数</th></tr></thead>
             <tbody id="insurance-rows"></tbody>
           </table>
         </div>
@@ -58,114 +41,39 @@
         <p class="section-label">INSTITUTIONS</p>
         <h2>発行医療機関数</h2>
         <div class="institution-grid">
-          <label>
-            医科（回数）
-            <input
-              id="institution-medical"
-              type="number"
-              min="0"
-              inputmode="numeric"
-            >
-          </label>
-          <label>
-            歯科（回数）
-            <input
-              id="institution-dental"
-              type="number"
-              min="0"
-              inputmode="numeric"
-            >
-          </label>
-          <label>
-            合計
-            <input
-              id="institution-total"
-              type="number"
-              readonly
-              tabindex="-1"
-            >
-          </label>
+          <label>医科（回数）<input id="institution-medical" type="number" min="0" inputmode="numeric"></label>
+          <label>歯科（回数）<input id="institution-dental" type="number" min="0" inputmode="numeric"></label>
+          <label>合計<input id="institution-total" type="number" readonly tabindex="-1"></label>
         </div>
       </section>
 
       <section class="card table-card">
         <p class="section-label">HOME CARE</p>
         <h2>在宅患者への薬学的管理及び指導の実施状況</h2>
-        <p class="help">
-          保険調剤実績とは別のNotion DBへ保存します。
-        </p>
-
+        <p class="help">保険調剤実績とは別のNotion DBへ保存します。</p>
         <div class="table-scroll">
           <table class="homecare-table">
-            <thead>
-              <tr>
-                <th>区分</th>
-                <th>件数（件）</th>
-                <th>回数（回）</th>
-              </tr>
-            </thead>
+            <thead><tr><th>区分</th><th>件数（件）</th><th>回数（回）</th></tr></thead>
             <tbody>
               <tr>
-                <th scope="row">
-                  医療保険<br>
-                  <small>在宅患者訪問薬剤管理指導</small>
-                </th>
-                <td>
-                  <input
-                    id="homecare-medical-cases"
-                    type="number"
-                    min="0"
-                    inputmode="numeric"
-                  >
-                </td>
-                <td>
-                  <input
-                    id="homecare-medical-visits"
-                    type="number"
-                    min="0"
-                    inputmode="numeric"
-                  >
-                </td>
+                <th scope="row">医療保険<br><small>在宅患者訪問薬剤管理指導</small></th>
+                <td><input id="homecare-medical-cases" type="number" min="0" inputmode="numeric"></td>
+                <td><input id="homecare-medical-visits" type="number" min="0" inputmode="numeric"></td>
               </tr>
               <tr>
-                <th scope="row">
-                  介護保険<br>
-                  <small>居宅療養管理指導 等</small>
-                </th>
-                <td>
-                  <input
-                    id="homecare-care-cases"
-                    type="number"
-                    min="0"
-                    inputmode="numeric"
-                  >
-                </td>
-                <td>
-                  <input
-                    id="homecare-care-visits"
-                    type="number"
-                    min="0"
-                    inputmode="numeric"
-                  >
-                </td>
+                <th scope="row">介護保険<br><small>居宅療養管理指導 等</small></th>
+                <td><input id="homecare-care-cases" type="number" min="0" inputmode="numeric"></td>
+                <td><input id="homecare-care-visits" type="number" min="0" inputmode="numeric"></td>
               </tr>
             </tbody>
           </table>
         </div>
       </section>
 
-      <button id="save-button" class="save-button" type="submit">
-        Notionへ保存
-      </button>
-
-      <p
-        id="status-message"
-        class="status-message"
-        aria-live="polite"
-      ></p>
+      <button id="save-button" class="save-button" type="submit">Notionへ保存</button>
+      <p id="status-message" class="status-message" aria-live="polite"></p>
     </form>
   </main>
-
-  <script src="insurance.js?v=3"></script>
+  <script src="insurance.js?v=4"></script>
 </body>
 </html>
