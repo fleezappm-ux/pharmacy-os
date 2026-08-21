@@ -24,10 +24,17 @@ const controls = {
 
 const refreshButton = document.querySelector("#refresh-button");
 const monthlyStatus = document.querySelector("#monthly-status");
+const summaryHeading = document.querySelector("#summary-heading");
 const genericSummaryLabel = document.querySelector("#generic-summary-label");
 const genericSummaryValue = document.querySelector("#generic-summary-value");
+const genericSummaryUnit = document.querySelector("#generic-summary-unit");
+const genericSummaryLink = document.querySelector("#generic-summary-link");
 const concentrationSummaryLabel = document.querySelector("#concentration-summary-label");
 const concentrationSummaryList = document.querySelector("#concentration-summary-list");
+const concentrationSummaryLink = document.querySelector("#concentration-summary-link");
+const fiscalYearLabel = document.querySelector("#fiscal-year-label");
+const fiscalHelp = document.querySelector("#fiscal-help");
+const fiscalMonthList = document.querySelector("#fiscal-month-list");
 
 Object.values(controls).forEach((control) => {
   control.file.addEventListener("change", () => {
@@ -90,6 +97,7 @@ async function loadMonthlyData() {
     const data = await response.json();
     if (!data.success) throw new Error(data.message || "取得に失敗しました。");
     renderSummary(data);
+    renderFiscalStatus(data);
   } catch (error) {
     console.error(error);
     monthlyStatus.textContent = `最新情報を取得できませんでした：${error.message}`;
@@ -99,20 +107,74 @@ async function loadMonthlyData() {
   }
 }
 
-function renderSummary(data) {
-  genericSummaryLabel.textContent = data.genericRateLabel && data.genericRateLabel !== "未設定"
-    ? `${data.genericRateLabel} 後発品使用率`
-    : "後発品使用率";
-  genericSummaryValue.textContent = data.genericRate ?? "―";
+function renderFiscalStatus(data) {
+  fiscalYearLabel.textContent = data.fiscalYearLabel || "年度";
+  fiscalHelp.textContent = data.fiscalCheckedThroughLabel && data.fiscalCheckedThroughLabel !== "確認対象月なし"
+    ? `${data.fiscalYearLabel}の4月から${data.fiscalCheckedThroughLabel}までを確認しています。今月分は含みません。`
+    : "今年度は、まだ確認対象となる月がありません。";
+  fiscalMonthList.replaceChildren();
 
-  concentrationSummaryLabel.textContent = data.concentrationLabel && data.concentrationLabel !== "未設定"
-    ? `${data.concentrationLabel} 処方箋集中率 上位4医療機関`
-    : "処方箋集中率 上位4医療機関";
+  const months = data.fiscalMonths || [];
+  if (!months.length) {
+    const message = document.createElement("p");
+    message.className = "fiscal-loading";
+    message.textContent = "確認対象となる月はありません。";
+    fiscalMonthList.append(message);
+    return;
+  }
+
+  months.forEach((month) => {
+    const card = document.createElement("article");
+    card.className = "fiscal-month";
+
+    const header = document.createElement("div");
+    header.className = "fiscal-month-header";
+    const label = document.createElement("strong");
+    label.textContent = month.label;
+    header.append(label);
+
+    const missing = month.missing || [];
+    if (!missing.length) {
+      const complete = document.createElement("span");
+      complete.className = "fiscal-complete";
+      complete.textContent = "入力済み";
+      header.append(complete);
+    }
+    card.append(header);
+
+    if (missing.length) {
+      const links = document.createElement("div");
+      links.className = "missing-links";
+      missing.forEach((item) => {
+        const link = document.createElement("a");
+        link.className = "missing-link";
+        link.href = item.href;
+        link.textContent = item.label;
+        links.append(link);
+      });
+      card.append(links);
+    }
+
+    fiscalMonthList.append(card);
+  });
+}
+
+function renderSummary(data) {
+  const monthLabel = data.summaryMonthLabel || "前月";
+  const hasGeneric = data.genericRate !== null && data.genericRate !== undefined;
+  summaryHeading.textContent = `${monthLabel}のまとめ`;
+  genericSummaryLabel.textContent = `${monthLabel} 後発品使用率`;
+  genericSummaryValue.textContent = hasGeneric ? data.genericRate : "未入力";
+  genericSummaryUnit.hidden = !hasGeneric;
+  genericSummaryLink.hidden = hasGeneric;
+
+  concentrationSummaryLabel.textContent = `${monthLabel} 処方箋集中率 上位4医療機関`;
   concentrationSummaryList.replaceChildren();
   const ranking = data.concentrationTop4 || [];
+  concentrationSummaryLink.hidden = ranking.length > 0;
   if (!ranking.length) {
     const item = document.createElement("li");
-    item.textContent = "データ未取込";
+    item.textContent = "未入力";
     concentrationSummaryList.append(item);
     return;
   }

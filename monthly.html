@@ -6,8 +6,8 @@
     <meta name="theme-color" content="#176b55">
     <meta name="description" content="Pharmacy OS 月次業務">
     <title>Pharmacy OS | 月次業務</title>
-    <link rel="stylesheet" href="monthly.css?v=2">
-    <script src="monthly.js?v=1" defer></script>
+    <link rel="stylesheet" href="monthly.css?v=4">
+    <script src="monthly.js?v=3" defer></script>
   </head>
 
   <body>
@@ -26,21 +26,37 @@
           <div class="section-heading">
             <div>
               <p class="section-kicker">Summary</p>
-              <h2 id="summary-heading">今月のまとめ</h2>
+              <h2 id="summary-heading">前月のまとめ</h2>
             </div>
           </div>
 
           <div class="summary-grid">
             <article class="summary-card">
               <p id="generic-summary-label">後発品使用率</p>
-              <p class="summary-value"><span id="generic-summary-value">―</span><small>%</small></p>
+              <p class="summary-value"><span id="generic-summary-value">―</span><small id="generic-summary-unit">%</small></p>
+              <a id="generic-summary-link" class="summary-input-link" href="#generic-heading" hidden>入力する</a>
             </article>
             <article class="summary-card wide">
               <p id="concentration-summary-label">処方箋集中率 上位4医療機関</p>
               <ol id="concentration-summary-list" class="ranking-list">
                 <li>データ未取込</li>
               </ol>
+              <a id="concentration-summary-link" class="summary-input-link" href="#concentration-heading" hidden>入力する</a>
             </article>
+          </div>
+        </section>
+
+        <section class="panel" aria-labelledby="fiscal-heading">
+          <div class="section-heading">
+            <div>
+              <p class="section-kicker">Annual check</p>
+              <h2 id="fiscal-heading">年度内の未入力確認</h2>
+            </div>
+            <span id="fiscal-year-label" class="status-chip">確認中</span>
+          </div>
+          <p id="fiscal-help" class="help-text">今年度の4月から先月までを確認しています。今月分は含みません。</p>
+          <div id="fiscal-month-list" class="fiscal-month-list" aria-live="polite">
+            <p class="fiscal-loading">未入力状況を取得しています…</p>
           </div>
         </section>
 

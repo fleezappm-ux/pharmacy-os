@@ -8,7 +8,7 @@
     <title>Pharmacy OS | 薬局ホーム</title>
     <!-- 更新番号を付けて、スマホに古いCSS/JSが残るのを防ぎます。 -->
     <link rel="stylesheet" href="home.css?v=5">
-    <script src="home.js?v=5" defer></script>
+    <script src="home.js?v=6" defer></script>
   </head>
 
   <body>
@@ -68,7 +68,7 @@
           <div class="section-heading">
             <div>
               <p class="section-kicker">Monthly</p>
-              <h2 id="monthly-heading">今月の状況</h2>
+              <h2 id="monthly-heading">前月の状況</h2>
             </div>
           </div>
           <div class="metric-grid">
@@ -79,8 +79,8 @@
             </article>
             <article class="metric-card">
               <p id="generic-rate-label">後発品使用率</p>
-              <p class="metric-value"><span id="generic-rate-value">―</span><small>%</small></p>
-              <p class="metric-note">最新の取込月</p>
+              <p class="metric-value"><span id="generic-rate-value">―</span><small id="generic-rate-unit">%</small></p>
+              <p class="metric-note">前月分</p>
             </article>
             <article class="metric-card concentration-card">
               <p id="concentration-label">処方箋集中率 上位4医療機関</p>

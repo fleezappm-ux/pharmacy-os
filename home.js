@@ -22,6 +22,8 @@ const averageValue = document.querySelector("#average-value");
 const averageNote = document.querySelector("#average-note");
 const genericRateValue = document.querySelector("#generic-rate-value");
 const genericRateLabel = document.querySelector("#generic-rate-label");
+const genericRateUnit = document.querySelector("#generic-rate-unit");
+const monthlyHeading = document.querySelector("#monthly-heading");
 const concentrationLabel = document.querySelector("#concentration-label");
 const concentrationList = document.querySelector("#concentration-list");
 const homeStatus = document.querySelector("#home-status");
@@ -127,11 +129,13 @@ async function loadHomeData() {
     averageNote.textContent = data.previousMonthRecordedDays
       ? `${data.previousMonthRecordedDays}日分から算出`
       : "記録なし";
-    genericRateValue.textContent = data.genericRate ?? "―";
-    genericRateLabel.textContent = data.genericRateLabel && data.genericRateLabel !== "未設定"
-      ? `${data.genericRateLabel} 後発品使用率`
-      : "後発品使用率";
-    renderConcentration(data.concentrationTop4 || [], data.concentrationLabel);
+    const summaryMonthLabel = data.summaryMonthLabel || data.previousMonthLabel || "前月";
+    const hasGeneric = data.genericRate !== null && data.genericRate !== undefined;
+    monthlyHeading.textContent = `${summaryMonthLabel}の状況`;
+    genericRateValue.textContent = hasGeneric ? data.genericRate : "未入力";
+    genericRateUnit.hidden = !hasGeneric;
+    genericRateLabel.textContent = `${summaryMonthLabel} 後発品使用率`;
+    renderConcentration(data.concentrationTop4 || [], summaryMonthLabel);
     renderHandovers(data.handovers || []);
   } catch (error) {
     console.error("Home data error:", error);
@@ -150,7 +154,7 @@ function renderConcentration(entries, monthLabel) {
   concentrationList.replaceChildren();
   if (!entries.length) {
     const item = document.createElement("li");
-    item.textContent = "データ未取込";
+    item.textContent = "未入力";
     concentrationList.append(item);
     return;
   }
