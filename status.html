@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>薬局ステータス | Pharmacy OS</title>
+  <link rel="stylesheet" href="status.css?v=1">
+</head>
+<body>
+  <main class="page-shell">
+    <header class="page-header">
+      <p class="eyebrow">PHARMACY OS</p>
+      <h1>薬局ステータス</h1>
+      <p>許可・登録・届出などの状況をまとめて確認します。</p>
+      <button id="reload-button" class="reload-button" type="button" aria-label="再読み込み">↻</button>
+    </header>
+
+    <p id="status-loading" class="loading-message" aria-live="polite">データを読み込んでいます…</p>
+
+    <section class="card alert-card">
+      <p class="section-label">DEADLINE ALERT</p>
+      <h2>更新期限アラート</h2>
+      <div id="deadline-alerts" class="stack-list"><p class="empty-message">確認中です。</p></div>
+    </section>
+
+    <section class="card">
+      <p class="section-label">BASIC INFORMATION</p>
+      <h2>薬局基本情報</h2>
+      <dl class="info-grid">
+        <div><dt>名称</dt><dd id="basic-name">―</dd></div>
+        <div><dt>開設者氏名</dt><dd id="basic-owner">―</dd></div>
+        <div><dt>管理薬剤師氏名</dt><dd id="basic-manager">―</dd></div>
+        <div><dt>所在地</dt><dd id="basic-address">―</dd></div>
+        <div class="wide"><dt>開局時間</dt><dd id="basic-hours">―</dd></div>
+      </dl>
+    </section>
+
+    <section class="card">
+      <div class="section-heading"><div><p class="section-label">LICENSES</p><h2>許可・登録</h2></div><a id="license-all-link" class="all-link" href="#" hidden>全件を見る</a></div>
+      <div id="license-list" class="stack-list"><p class="empty-message">確認中です。</p></div>
+    </section>
+
+    <section class="card">
+      <div class="section-heading"><div><p class="section-label">NOTICES</p><h2>各種届出</h2></div><a id="notice-all-link" class="all-link" href="#" hidden>全件を見る</a></div>
+      <div id="notice-list" class="stack-list"><p class="empty-message">確認中です。</p></div>
+    </section>
+
+    <section class="card survey-card">
+      <p class="section-label">PRESCRIPTION SURVEY</p>
+      <h2>処方箋枚数・受付回数等調べ</h2>
+      <div class="survey-status"><strong id="survey-count">0/13</strong><span id="survey-label" class="badge gray">未入力</span></div>
+    </section>
+
+    <section class="card">
+      <p class="section-label">PHARMACISTS</p>
+      <h2>薬剤師名簿</h2>
+      <div id="pharmacist-list" class="name-list"><p class="empty-message">確認中です。</p></div>
+    </section>
+
+    <section class="card">
+      <p class="section-label">REGISTERED SELLERS</p>
+      <h2>登録販売者名簿</h2>
+      <div id="seller-list" class="name-list"><p class="empty-message">確認中です。</p></div>
+    </section>
+  </main>
+
+  <nav class="bottom-nav" aria-label="メインメニュー">
+    <a class="nav-item" href="home.html"><span>⌂</span><small>ホーム</small></a>
+    <a class="nav-item" href="index.html"><span>▣</span><small>日次業務</small></a>
+    <a class="nav-item" href="monthly.html"><span>▤</span><small>月次業務</small></a>
+    <a class="nav-item active" href="status.html" aria-current="page"><span>◉</span><small>ステータス</small></a>
+    <button class="nav-item" type="button" disabled><span>✉</span><small>意見箱</small></button>
+  </nav>
+  <script src="status.js?v=1"></script>
+</body>
+</html>
