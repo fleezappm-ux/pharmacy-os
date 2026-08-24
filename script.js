@@ -125,6 +125,7 @@ function createPayload(formData) {
     inquiryDetails: formData.get("inquiryDetails").trim(),
     specialNotes: formData.get("specialNotes").trim(),
     handover: formData.get("handover").trim(),
+    confirmedBy: formData.get("confirmedBy") || "",
   };
 }
 
