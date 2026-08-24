@@ -8,11 +8,11 @@ function text(value, fallback = "―") {
 }
 
 function setBasicInfo(info = {}) {
-  document.getElementById("basic-name").textContent = text(info.name || info.名称);
-  document.getElementById("basic-owner").textContent = text(info.owner || info.開設者氏名);
-  document.getElementById("basic-manager").textContent = text(info.manager || info.管理薬剤師氏名);
-  document.getElementById("basic-address").textContent = text(info.address || info.所在地);
-  document.getElementById("basic-hours").textContent = text(info.openingHours || info.開局時間);
+  document.getElementById("basic-name").textContent = text(info.name || info["薬局・店舗販売業の名称"]);
+  document.getElementById("basic-owner").textContent = text(info.owner || info["開設者氏名(又は代表者)"]);
+  document.getElementById("basic-manager").textContent = text(info.manager || info["管理者氏名"]);
+  document.getElementById("basic-address").textContent = text(info.address || info["所在地"]);
+  document.getElementById("basic-hours").textContent = text(info.openingHours || info["開局時間"]);
 }
 
 function statusClass(item) {
