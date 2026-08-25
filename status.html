@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>薬局ステータス | Pharmacy OS</title>
-  <link rel="stylesheet" href="status.css?v=1">
+  <link rel="stylesheet" href="status.css?v=2">
 </head>
 <body>
   <main class="page-shell">
@@ -17,13 +17,21 @@
 
     <p id="status-loading" class="loading-message" aria-live="polite">データを読み込んでいます…</p>
 
+    <nav class="status-tabs" aria-label="ステータス分類">
+      <button class="status-tab" data-target="basic-section">ホーム</button>
+      <button class="status-tab" data-target="license-section">許可・登録</button>
+      <button class="status-tab active" data-target="notice-section">各種届出</button>
+      <button class="status-tab" data-target="pharmacist-section">薬剤師</button>
+      <button class="status-tab" data-target="seller-section">登録販売者</button>
+    </nav>
+
     <section class="card alert-card">
       <p class="section-label">DEADLINE ALERT</p>
       <h2>更新期限アラート</h2>
       <div id="deadline-alerts" class="stack-list"><p class="empty-message">確認中です。</p></div>
     </section>
 
-    <section class="card">
+    <section id="basic-section" class="card">
       <p class="section-label">BASIC INFORMATION</p>
       <h2>薬局基本情報</h2>
       <dl class="info-grid">
@@ -35,14 +43,37 @@
       </dl>
     </section>
 
-    <section class="card">
-      <div class="section-heading"><div><p class="section-label">LICENSES</p><h2>許可・登録</h2></div><a id="license-all-link" class="all-link" href="#" hidden>全件を見る</a></div>
+    <section id="license-section" class="card">
+      <div class="section-heading"><div><p class="section-label">LICENSES</p><h2>許可・登録</h2></div><a id="license-all-link" class="all-link" href="#" hidden>Notionで見る</a></div>
       <div id="license-list" class="stack-list"><p class="empty-message">確認中です。</p></div>
     </section>
 
-    <section class="card">
-      <div class="section-heading"><div><p class="section-label">NOTICES</p><h2>各種届出</h2></div><a id="notice-all-link" class="all-link" href="#" hidden>全件を見る</a></div>
-      <div id="notice-list" class="stack-list"><p class="empty-message">確認中です。</p></div>
+    <section id="notice-section" class="card notice-card">
+      <div class="section-heading">
+        <div><p class="section-label">NOTICES</p><h2>各種届出</h2></div>
+        <button id="add-notice-button" class="primary-small" type="button">＋ 新規追加</button>
+      </div>
+      <div class="notice-summary" aria-label="各種届出の集計">
+        <div><span>届出件数</span><strong id="notice-total">0</strong><small>件</small></div>
+        <div class="summary-valid"><span>有効</span><strong id="notice-valid">0</strong><small>件</small></div>
+        <div class="summary-soon"><span>更新が近い</span><strong id="notice-soon">0</strong><small>件</small></div>
+        <div class="summary-expired"><span>期限切れ</span><strong id="notice-expired">0</strong><small>件</small></div>
+        <div class="summary-none"><span>届出なし</span><strong id="notice-none">0</strong><small>件</small></div>
+      </div>
+      <div class="notice-tools">
+        <input id="notice-search" type="search" placeholder="届出種別で検索" aria-label="届出種別で検索">
+        <select id="notice-filter" aria-label="ステータスで絞り込み">
+          <option value="all">ステータス：すべて</option>
+          <option value="valid">有効</option>
+          <option value="soon">更新が近い</option>
+          <option value="expired">期限切れ</option>
+          <option value="none">届出なし</option>
+          <option value="check">要確認</option>
+        </select>
+      </div>
+      <div class="notice-table-head"><span>#</span><span>届出種別</span><span>有効期限・更新条件</span><span>指定年月日</span><span>状態</span><span></span></div>
+      <div id="notice-list" class="notice-list"><p class="empty-message">確認中です。</p></div>
+      <a id="notice-all-link" class="notion-link" href="#" hidden>Notionで全件を見る</a>
     </section>
 
     <section class="card survey-card">
@@ -51,18 +82,41 @@
       <div class="survey-status"><strong id="survey-count">0/13</strong><span id="survey-label" class="badge gray">未入力</span></div>
     </section>
 
-    <section class="card">
-      <p class="section-label">PHARMACISTS</p>
-      <h2>薬剤師名簿</h2>
+    <section id="pharmacist-section" class="card">
+      <p class="section-label">PHARMACISTS</p><h2>薬剤師名簿</h2>
       <div id="pharmacist-list" class="name-list"><p class="empty-message">確認中です。</p></div>
     </section>
 
-    <section class="card">
-      <p class="section-label">REGISTERED SELLERS</p>
-      <h2>登録販売者名簿</h2>
+    <section id="seller-section" class="card">
+      <p class="section-label">REGISTERED SELLERS</p><h2>登録販売者名簿</h2>
       <div id="seller-list" class="name-list"><p class="empty-message">確認中です。</p></div>
     </section>
   </main>
+
+  <div id="notice-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="notice-modal-title">
+      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="notice-modal-title">届出の詳細</h2></div>
+      <div id="notice-detail-view"></div>
+      <form id="notice-form" hidden>
+        <input id="notice-id" type="hidden">
+        <label>届出種別 <b>*</b><input id="notice-type" required></label>
+        <label>有効期限・更新条件<textarea id="notice-deadline" rows="2"></textarea></label>
+        <label>指定年月日<input id="notice-date" type="date"></label>
+        <label>指定番号・備考<textarea id="notice-number" rows="3"></textarea></label>
+        <label>並び順 <b>*</b><input id="notice-order" type="number" min="1" step="1" required></label>
+        <div class="form-actions"><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div id="delete-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-delete></div>
+    <section class="confirm-panel" role="alertdialog" aria-modal="true">
+      <div class="warning-icon">!</div><h2>この届出を削除しますか？</h2><p id="delete-target-name"></p><p class="muted">この操作は取り消せません。</p>
+      <button id="confirm-delete" class="danger-button" type="button">削除する</button><button class="secondary-button" type="button" data-close-delete>キャンセル</button>
+    </section>
+  </div>
 
   <nav class="bottom-nav" aria-label="メインメニュー">
     <a class="nav-item" href="home.html"><span>⌂</span><small>ホーム</small></a>
@@ -71,6 +125,6 @@
     <a class="nav-item active" href="status.html" aria-current="page"><span>◉</span><small>ステータス</small></a>
     <button class="nav-item" type="button" disabled><span>✉</span><small>意見箱</small></button>
   </nav>
-  <script src="status.js?v=1"></script>
+  <script src="status.js?v=2"></script>
 </body>
 </html>
