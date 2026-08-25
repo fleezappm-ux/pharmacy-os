@@ -96,7 +96,7 @@ function renderStatus(data) {
   setBasicInfo(data.basicInfo);
   renderList("deadline-alerts", data.alerts, { deadline:true, empty:"3ヶ月以内の更新期限はありません。" });
   renderList("license-list", data.licenses, { limit:6, empty:"許可・登録データはありません。" });
-  renderList("notice-list", data.notices, { limit:6, empty:"届出データはありません。" });
+renderList("notice-list", data.notices, { empty:"届出データはありません。" });
   setAllLink("license-all-link", data.licenseDatabaseUrl);
   setAllLink("notice-all-link", data.noticeDatabaseUrl);
 
