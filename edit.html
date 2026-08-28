@@ -43,13 +43,19 @@
     </section>
 
     <section id="pharmacist-edit-section" class="card edit-section" hidden>
-      <p class="section-label">PHARMACISTS</p><h2>薬剤師名簿</h2>
-      <p class="empty-message">準備中です。近日対応予定です。</p>
+      <div class="section-heading">
+        <div><p class="section-label">PHARMACISTS</p><h2>薬剤師名簿</h2></div>
+        <button id="add-pharmacist-button" class="primary-small" type="button">＋ 新規追加</button>
+      </div>
+      <div id="pharmacist-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
     </section>
 
     <section id="seller-edit-section" class="card edit-section" hidden>
-      <p class="section-label">REGISTERED SELLERS</p><h2>登録販売者名簿</h2>
-      <p class="empty-message">準備中です。近日対応予定です。</p>
+      <div class="section-heading">
+        <div><p class="section-label">REGISTERED SELLERS</p><h2>登録販売者名簿</h2></div>
+        <button id="add-seller-button" class="primary-small" type="button">＋ 新規追加</button>
+      </div>
+      <div id="seller-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
     </section>
 
     <section id="basic-edit-section" class="card edit-section" hidden>
@@ -106,6 +112,37 @@
         <label>有効期限<input id="license-date" type="date"></label>
         <label>並び順 <b>*</b><input id="license-order" type="number" min="1" step="1" required></label>
         <div class="form-actions"><button id="license-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div id="pharmacist-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="pharmacist-modal-title">
+      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="pharmacist-modal-title">薬剤師を編集</h2></div>
+      <form id="pharmacist-form">
+        <input id="pharmacist-id" type="hidden">
+        <label>氏名 <b>*</b><input id="pharmacist-name" required></label>
+        <label>薬剤師登録番号<input id="pharmacist-license-number"></label>
+        <label>保険薬剤師登録番号<input id="pharmacist-insurance-number"></label>
+        <label>登録年月日<input id="pharmacist-date" type="date"></label>
+        <label>備考(異動月日)<textarea id="pharmacist-note" rows="2"></textarea></label>
+        <label>並び順 <b>*</b><input id="pharmacist-order" type="number" min="1" step="1" required></label>
+        <div class="form-actions"><button id="pharmacist-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
+      </form>
+    </section>
+  </div>
+
+  <div id="seller-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="seller-modal-title">
+      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="seller-modal-title">登録販売者を編集</h2></div>
+      <form id="seller-form">
+        <input id="seller-id" type="hidden">
+        <label>氏名 <b>*</b><input id="seller-name" required></label>
+        <label>登録年月日<input id="seller-date" type="date"></label>
+        <label>備考<textarea id="seller-note" rows="2"></textarea></label>
+        <div class="form-actions"><button id="seller-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
       </form>
     </section>
   </div>

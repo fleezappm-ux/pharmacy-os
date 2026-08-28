@@ -2,14 +2,15 @@
 
 const GAS_URL="https://script.google.com/macros/s/AKfycbzS1F43nO_ZDG6X6gH4qfUeprWmFFOZuthQKjbXxuxkoTWY0QMvbAfURd2speGZEa6x/exec";
 const loadingMessage=document.getElementById("edit-loading");
-let notices=[]; let licenses=[]; let deleteContext=null;
+let notices=[]; let licenses=[]; let pharmacists=[]; let sellers=[]; let deleteContext=null;
 const text=(v,f="―")=>v===null||v===undefined||v===""?f:String(v);
 const pick=(obj,keys,f="")=>{for(const k of keys){if(obj&&obj[k]!==undefined&&obj[k]!==null&&obj[k]!=="")return obj[k]}return f};
 function formatDate(v){if(!v)return"—";if(typeof v==="object"&&v!==null)v=v.start||"";if(!v)return"—";const s=String(v).slice(0,10);return/^\d{4}-\d{2}-\d{2}$/.test(s)?s.replaceAll("-","/"):s}
 
-const MODAL_IDS=["notice-modal","license-modal","delete-modal"];
+const MODAL_IDS=["notice-modal","license-modal","pharmacist-modal","seller-modal","delete-modal"];
 function showModal(id){document.getElementById(id).hidden=false;document.body.style.overflow="hidden"}
 function hideModal(id){document.getElementById(id).hidden=true;if(MODAL_IDS.every(m=>document.getElementById(m).hidden))document.body.style.overflow=""}
+function hideAllEditModals(){MODAL_IDS.filter(m=>m!=="delete-modal").forEach(hideModal)}
 
 async function apiWrite(action,payload){const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,...payload})});const j=await r.json();if(!j.success)throw new Error(j.message||"保存に失敗しました。");return j}
 
@@ -18,7 +19,7 @@ function normalizeNotice(raw,index){const type=pick(raw,["届出種別","name","
 
 function renderNoticeList(){const c=document.getElementById("notice-edit-list");c.textContent="";if(!notices.length){c.innerHTML='<p class="empty-message">届出データはありません。</p>';return}notices.slice().sort((a,b)=>a.order-b.order).forEach(n=>{const row=document.createElement("button");row.type="button";row.className="list-row";const main=document.createElement("div");main.className="list-main";const title=document.createElement("span");title.className="list-title";title.textContent=`#${n.order}　${n.type}`;main.appendChild(title);const detail=document.createElement("span");detail.className="list-detail";detail.textContent=`有効期限：${formatDate(n.date)} ／ 指定番号：${text(n.number)}`;main.appendChild(detail);const badge=document.createElement("span");badge.className=`badge ${n.acquisition==="取得済み"?"green":"none"}`;badge.textContent=n.acquisition;row.append(main,badge);row.addEventListener("click",()=>openNoticeForm(n));c.appendChild(row)})}
 
-function openNoticeForm(n){document.getElementById("notice-modal-title").textContent=n?"届出を編集":"新規届出を追加";document.getElementById("notice-id").value=n?.id||"";document.getElementById("notice-type").value=n?.type||"";document.getElementById("notice-acquisition").value=n?.acquisition||"取得済み";document.getElementById("notice-deadline").value=n?.condition||"";document.getElementById("notice-date").value=n?.date?String(n.date).slice(0,10):"";document.getElementById("notice-number").value=n?.number||"";document.getElementById("notice-order").value=n?.order||((notices.at(-1)?.order||0)+1);document.getElementById("notice-delete-button").hidden=!n;const btn=document.getElementById("notice-delete-button");btn.onclick=n?()=>openDeleteConfirm("notice",n):null;showModal("notice-modal")}
+function openNoticeForm(n){document.getElementById("notice-modal-title").textContent=n?"届出を編集":"新規届出を追加";document.getElementById("notice-id").value=n?.id||"";document.getElementById("notice-type").value=n?.type||"";document.getElementById("notice-acquisition").value=n?.acquisition||"取得済み";document.getElementById("notice-deadline").value=n?.condition||"";document.getElementById("notice-date").value=n?.date?String(n.date).slice(0,10):"";document.getElementById("notice-number").value=n?.number||"";document.getElementById("notice-order").value=n?.order||((notices.at(-1)?.order||0)+1);const btn=document.getElementById("notice-delete-button");btn.hidden=!n;btn.onclick=n?()=>openDeleteConfirm("notice",n):null;showModal("notice-modal")}
 
 document.getElementById("notice-form").addEventListener("submit",async e=>{
   e.preventDefault();
@@ -70,14 +71,73 @@ document.getElementById("license-form").addEventListener("submit",async e=>{
   }
 });
 
+/* ===== 薬剤師名簿 ===== */
+function normalizePharmacist(raw,index){const name=pick(raw,["薬剤師　氏名"],"氏名未設定");const licenseNumber=pick(raw,["薬剤師登録番号"],"");const insuranceNumber=pick(raw,["保険薬剤師登録番号"],"");const dateRaw=pick(raw,["登録年月日"],"");const date=typeof dateRaw==="object"&&dateRaw!==null?(dateRaw.start||""):dateRaw;const note=pick(raw,["備考(異動月日)"],"");const order=Number(pick(raw,["並び順"],index+1))||index+1;const id=pick(raw,["id"],"");return{raw,id,name,licenseNumber,insuranceNumber,date,note,order}}
+
+function renderPharmacistList(){const c=document.getElementById("pharmacist-edit-list");c.textContent="";if(!pharmacists.length){c.innerHTML='<p class="empty-message">薬剤師の登録はありません。</p>';return}pharmacists.slice().sort((a,b)=>a.order-b.order).forEach(n=>{const row=document.createElement("button");row.type="button";row.className="list-row";const main=document.createElement("div");main.className="list-main";const title=document.createElement("span");title.className="list-title";title.textContent=n.name;main.appendChild(title);const parts=[];if(n.licenseNumber)parts.push(`薬剤師登録番号：${n.licenseNumber}`);if(n.insuranceNumber)parts.push(`保険薬剤師登録番号：${n.insuranceNumber}`);if(n.date)parts.push(`登録年月日：${formatDate(n.date)}`);const detail=document.createElement("span");detail.className="list-detail";detail.textContent=parts.length?parts.join(" ／ "):"―";main.appendChild(detail);row.append(main);row.addEventListener("click",()=>openPharmacistForm(n));c.appendChild(row)})}
+
+function openPharmacistForm(n){document.getElementById("pharmacist-modal-title").textContent=n?"薬剤師を編集":"新規薬剤師を追加";document.getElementById("pharmacist-id").value=n?.id||"";document.getElementById("pharmacist-name").value=n?.name||"";document.getElementById("pharmacist-license-number").value=n?.licenseNumber||"";document.getElementById("pharmacist-insurance-number").value=n?.insuranceNumber||"";document.getElementById("pharmacist-date").value=n?.date?String(n.date).slice(0,10):"";document.getElementById("pharmacist-note").value=n?.note||"";document.getElementById("pharmacist-order").value=n?.order||((pharmacists.at(-1)?.order||0)+1);const btn=document.getElementById("pharmacist-delete-button");btn.hidden=!n;btn.onclick=n?()=>openDeleteConfirm("pharmacist",{id:n.id,type:n.name,order:n.order}):null;showModal("pharmacist-modal")}
+
+document.getElementById("pharmacist-form").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const payload={id:document.getElementById("pharmacist-id").value,pharmacist:{
+    "薬剤師　氏名":document.getElementById("pharmacist-name").value.trim(),
+    "薬剤師登録番号":document.getElementById("pharmacist-license-number").value.trim(),
+    "保険薬剤師登録番号":document.getElementById("pharmacist-insurance-number").value.trim(),
+    "登録年月日":document.getElementById("pharmacist-date").value,
+    "備考(異動月日)":document.getElementById("pharmacist-note").value.trim(),
+    "並び順":Number(document.getElementById("pharmacist-order").value)
+  }};
+  try{
+    loadingMessage.textContent="保存しています…";
+    await apiWrite("saveStatusPharmacist",payload);
+    hideModal("pharmacist-modal");
+    await loadAll();
+  }catch(err){
+    hideModal("pharmacist-modal");
+    loadingMessage.className="loading-message error";
+    loadingMessage.textContent=`保存できません：${err.message}`;
+  }
+});
+
+/* ===== 登録販売者名簿 ===== */
+function normalizeSeller(raw,index){const name=pick(raw,["登録販売者　氏名"],"氏名未設定");const dateRaw=pick(raw,["登録年月日"],"");const date=typeof dateRaw==="object"&&dateRaw!==null?(dateRaw.start||""):dateRaw;const note=pick(raw,["備考"],"");const id=pick(raw,["id"],"");return{raw,id,name,date,note,order:index+1}}
+
+function renderSellerList(){const c=document.getElementById("seller-edit-list");c.textContent="";if(!sellers.length){c.innerHTML='<p class="empty-message">登録販売者の登録はありません。</p>';return}sellers.forEach(n=>{const row=document.createElement("button");row.type="button";row.className="list-row";const main=document.createElement("div");main.className="list-main";const title=document.createElement("span");title.className="list-title";title.textContent=n.name;main.appendChild(title);const parts=[];if(n.date)parts.push(`登録年月日：${formatDate(n.date)}`);if(n.note)parts.push(n.note);const detail=document.createElement("span");detail.className="list-detail";detail.textContent=parts.length?parts.join(" ／ "):"―";main.appendChild(detail);row.append(main);row.addEventListener("click",()=>openSellerForm(n));c.appendChild(row)})}
+
+function openSellerForm(n){document.getElementById("seller-modal-title").textContent=n?"登録販売者を編集":"新規登録販売者を追加";document.getElementById("seller-id").value=n?.id||"";document.getElementById("seller-name").value=n?.name||"";document.getElementById("seller-date").value=n?.date?String(n.date).slice(0,10):"";document.getElementById("seller-note").value=n?.note||"";const btn=document.getElementById("seller-delete-button");btn.hidden=!n;btn.onclick=n?()=>openDeleteConfirm("seller",{id:n.id,type:n.name,order:null}):null;showModal("seller-modal")}
+
+document.getElementById("seller-form").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const payload={id:document.getElementById("seller-id").value,seller:{
+    "登録販売者　氏名":document.getElementById("seller-name").value.trim(),
+    "登録年月日":document.getElementById("seller-date").value,
+    "備考":document.getElementById("seller-note").value.trim()
+  }};
+  try{
+    loadingMessage.textContent="保存しています…";
+    await apiWrite("saveStatusSeller",payload);
+    hideModal("seller-modal");
+    await loadAll();
+  }catch(err){
+    hideModal("seller-modal");
+    loadingMessage.className="loading-message error";
+    loadingMessage.textContent=`保存できません：${err.message}`;
+  }
+});
+
 /* ===== 削除確認（共通） ===== */
-function openDeleteConfirm(type,item){deleteContext={type,item};document.getElementById("delete-modal-title").textContent=type==="notice"?"この届出を削除しますか？":"この許可・登録を削除しますか？";document.getElementById("delete-target-name").textContent=`${item.type}（並び順：${item.order}）`;showModal("delete-modal")}
+const DELETE_LABELS={notice:"この届出を削除しますか？",license:"この許可・登録を削除しますか？",pharmacist:"この薬剤師を削除しますか？",seller:"この登録販売者を削除しますか？"};
+const DELETE_ACTIONS={notice:"deleteStatusNotice",license:"deleteStatusLicense",pharmacist:"deleteStatusPharmacist",seller:"deleteStatusSeller"};
+const DELETE_MODALS={notice:"notice-modal",license:"license-modal",pharmacist:"pharmacist-modal",seller:"seller-modal"};
+
+function openDeleteConfirm(type,item){deleteContext={type,item};document.getElementById("delete-modal-title").textContent=DELETE_LABELS[type];document.getElementById("delete-target-name").textContent=item.order?`${item.type}（並び順：${item.order}）`:item.type;showModal("delete-modal")}
 
 document.getElementById("confirm-delete").addEventListener("click",async()=>{
   if(!deleteContext)return;
   const{type,item}=deleteContext;
-  const action=type==="notice"?"deleteStatusNotice":"deleteStatusLicense";
-  const modalId=type==="notice"?"notice-modal":"license-modal";
+  const action=DELETE_ACTIONS[type];
+  const modalId=DELETE_MODALS[type];
   try{
     loadingMessage.textContent="削除しています…";
     await apiWrite(action,{id:item.id});
@@ -93,12 +153,14 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
 });
 
 /* ===== 読み込み ===== */
-async function loadAll(){loadingMessage.className="loading-message";loadingMessage.textContent="データを読み込んでいます…";try{const response=await fetch(`${GAS_URL}?action=status&_=${Date.now()}`),result=await response.json();if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");const data=result.data||result;notices=(data.notices||[]).map(normalizeNotice);licenses=(data.licenses||[]).map(normalizeLicense);renderNoticeList();renderLicenseList();loadingMessage.textContent=""}catch(e){loadingMessage.className="loading-message error";loadingMessage.textContent="現在、データを読み込めません。GAS連携を確認してください。"}}
+async function loadAll(){loadingMessage.className="loading-message";loadingMessage.textContent="データを読み込んでいます…";try{const response=await fetch(`${GAS_URL}?action=status&_=${Date.now()}`),result=await response.json();if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");const data=result.data||result;notices=(data.notices||[]).map(normalizeNotice);licenses=(data.licenses||[]).map(normalizeLicense);pharmacists=(data.pharmacists||[]).map(normalizePharmacist);sellers=(data.registeredSellers||[]).map(normalizeSeller);renderNoticeList();renderLicenseList();renderPharmacistList();renderSellerList();loadingMessage.textContent=""}catch(e){loadingMessage.className="loading-message error";loadingMessage.textContent="現在、データを読み込めません。GAS連携を確認してください。"}}
 
 document.getElementById("reload-button").addEventListener("click",loadAll);
 document.getElementById("add-notice-button").addEventListener("click",()=>openNoticeForm(null));
 document.getElementById("add-license-button").addEventListener("click",()=>openLicenseForm(null));
-document.querySelectorAll("[data-close-modal]").forEach(x=>x.addEventListener("click",()=>{hideModal("notice-modal");hideModal("license-modal")}));
+document.getElementById("add-pharmacist-button").addEventListener("click",()=>openPharmacistForm(null));
+document.getElementById("add-seller-button").addEventListener("click",()=>openSellerForm(null));
+document.querySelectorAll("[data-close-modal]").forEach(x=>x.addEventListener("click",hideAllEditModals));
 document.querySelectorAll("[data-close-delete]").forEach(x=>x.addEventListener("click",()=>hideModal("delete-modal")));
 document.querySelectorAll(".edit-tab").forEach(t=>t.addEventListener("click",()=>{document.querySelectorAll(".edit-tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");document.querySelectorAll(".edit-section").forEach(s=>s.hidden=true);document.getElementById(t.dataset.target).hidden=false}));
 
