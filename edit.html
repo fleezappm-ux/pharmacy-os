@@ -60,7 +60,18 @@
 
     <section id="basic-edit-section" class="card edit-section" hidden>
       <p class="section-label">BASIC INFORMATION</p><h2>薬局基本情報</h2>
-      <p class="empty-message">準備中です。近日対応予定です。</p>
+      <form id="basic-form">
+        <input id="basic-id" type="hidden">
+        <label>薬局・店舗販売業の名称 <b>*</b><input id="basic-name" required></label>
+        <label>開設者氏名(又は代表者)<input id="basic-owner"></label>
+        <label>管理者氏名<input id="basic-manager"></label>
+        <label>所在地<input id="basic-address"></label>
+        <label>開局時間<input id="basic-hours"></label>
+        <label>休日<input id="basic-holiday"></label>
+        <label>薬局許可年月日<input id="basic-license-date" type="date"></label>
+        <label>保険薬局指定年月日<input id="basic-insurance-date" type="date"></label>
+        <div class="form-actions"><button class="primary-button" type="submit">保存する</button></div>
+      </form>
     </section>
 
     <section id="survey-edit-section" class="card edit-section" hidden>

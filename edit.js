@@ -126,6 +126,34 @@ document.getElementById("seller-form").addEventListener("submit",async e=>{
   }
 });
 
+/* ===== 基本情報（単一レコード） ===== */
+function populateBasicForm(info){info=info||{};document.getElementById("basic-id").value=info.id||"";document.getElementById("basic-name").value=info["薬局・店舗販売業の名称"]||"";document.getElementById("basic-owner").value=info["開設者氏名(又は代表者)"]||"";document.getElementById("basic-manager").value=info["管理者氏名"]||"";document.getElementById("basic-address").value=info["所在地"]||"";document.getElementById("basic-hours").value=info["開局時間"]||"";document.getElementById("basic-holiday").value=info["休日"]||"";const licenseDate=info["薬局許可年月日"];document.getElementById("basic-license-date").value=licenseDate&&licenseDate.start?String(licenseDate.start).slice(0,10):"";const insuranceDate=info["保険薬局指定年月日"];document.getElementById("basic-insurance-date").value=insuranceDate&&insuranceDate.start?String(insuranceDate.start).slice(0,10):""}
+
+document.getElementById("basic-form").addEventListener("submit",async e=>{
+  e.preventDefault();
+  const id=document.getElementById("basic-id").value;
+  if(!id){loadingMessage.className="loading-message error";loadingMessage.textContent="基本情報のIDが取得できていません。再読み込みしてください。";return}
+  const payload={id,basicInfo:{
+    "薬局・店舗販売業の名称":document.getElementById("basic-name").value.trim(),
+    "開設者氏名(又は代表者)":document.getElementById("basic-owner").value.trim(),
+    "管理者氏名":document.getElementById("basic-manager").value.trim(),
+    "所在地":document.getElementById("basic-address").value.trim(),
+    "開局時間":document.getElementById("basic-hours").value.trim(),
+    "休日":document.getElementById("basic-holiday").value.trim(),
+    "薬局許可年月日":document.getElementById("basic-license-date").value,
+    "保険薬局指定年月日":document.getElementById("basic-insurance-date").value
+  }};
+  try{
+    loadingMessage.textContent="保存しています…";
+    await apiWrite("saveStatusBasicInfo",payload);
+    loadingMessage.textContent="保存しました。";
+    await loadAll();
+  }catch(err){
+    loadingMessage.className="loading-message error";
+    loadingMessage.textContent=`保存できません：${err.message}`;
+  }
+});
+
 /* ===== 削除確認（共通） ===== */
 const DELETE_LABELS={notice:"この届出を削除しますか？",license:"この許可・登録を削除しますか？",pharmacist:"この薬剤師を削除しますか？",seller:"この登録販売者を削除しますか？"};
 const DELETE_ACTIONS={notice:"deleteStatusNotice",license:"deleteStatusLicense",pharmacist:"deleteStatusPharmacist",seller:"deleteStatusSeller"};
@@ -153,7 +181,7 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
 });
 
 /* ===== 読み込み ===== */
-async function loadAll(){loadingMessage.className="loading-message";loadingMessage.textContent="データを読み込んでいます…";try{const response=await fetch(`${GAS_URL}?action=status&_=${Date.now()}`),result=await response.json();if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");const data=result.data||result;notices=(data.notices||[]).map(normalizeNotice);licenses=(data.licenses||[]).map(normalizeLicense);pharmacists=(data.pharmacists||[]).map(normalizePharmacist);sellers=(data.registeredSellers||[]).map(normalizeSeller);renderNoticeList();renderLicenseList();renderPharmacistList();renderSellerList();loadingMessage.textContent=""}catch(e){loadingMessage.className="loading-message error";loadingMessage.textContent="現在、データを読み込めません。GAS連携を確認してください。"}}
+async function loadAll(){loadingMessage.className="loading-message";loadingMessage.textContent="データを読み込んでいます…";try{const response=await fetch(`${GAS_URL}?action=status&_=${Date.now()}`),result=await response.json();if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");const data=result.data||result;notices=(data.notices||[]).map(normalizeNotice);licenses=(data.licenses||[]).map(normalizeLicense);pharmacists=(data.pharmacists||[]).map(normalizePharmacist);sellers=(data.registeredSellers||[]).map(normalizeSeller);renderNoticeList();renderLicenseList();renderPharmacistList();renderSellerList();populateBasicForm(data.basicInfo);loadingMessage.textContent=""}catch(e){loadingMessage.className="loading-message error";loadingMessage.textContent="現在、データを読み込めません。GAS連携を確認してください。"}}
 
 document.getElementById("reload-button").addEventListener("click",loadAll);
 document.getElementById("add-notice-button").addEventListener("click",()=>openNoticeForm(null));
