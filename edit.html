@@ -19,11 +19,11 @@
 
     <nav class="edit-tabs" aria-label="編集分類">
       <button class="edit-tab active" data-target="notice-edit-section">各種届出</button>
+      <button class="edit-tab" data-target="institution-edit-section">試験検査機関</button>
       <button class="edit-tab" data-target="license-edit-section">許可・登録</button>
       <button class="edit-tab" data-target="pharmacist-edit-section">薬剤師</button>
       <button class="edit-tab" data-target="seller-edit-section">登録販売者</button>
       <button class="edit-tab" data-target="basic-edit-section">基本情報</button>
-      <button class="edit-tab" data-target="institution-edit-section">試験検査機関</button>
       <button class="edit-tab" data-target="survey-edit-section">処方箋調べ</button>
     </nav>
 
@@ -33,6 +33,14 @@
         <button id="add-notice-button" class="primary-small" type="button">＋ 新規追加</button>
       </div>
       <div id="notice-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
+    </section>
+
+    <section id="institution-edit-section" class="card edit-section" hidden>
+      <div class="section-heading">
+        <div><p class="section-label">TEST INSTITUTIONS</p><h2>試験検査機関の利用契約</h2></div>
+        <button id="add-institution-button" class="primary-small" type="button">＋ 新規追加</button>
+      </div>
+      <div id="institution-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
     </section>
 
     <section id="license-edit-section" class="card edit-section" hidden>
@@ -73,17 +81,9 @@
         <label>薬局許可年月日<input id="basic-license-date" type="date"></label>
         <label>保険薬局指定年月日<input id="basic-insurance-date" type="date"></label>
         <label>保険薬局コード番号<input id="basic-insurance-code"></label>
-        <label>指定更新期限<input id="basic-insurance-renewal" type="date"></label>
+        <label>保険薬局の指定更新期限<input id="basic-insurance-renewal" type="date"></label>
         <div class="form-actions"><button class="primary-button" type="submit">保存する</button></div>
       </form>
-    </section>
-
-    <section id="institution-edit-section" class="card edit-section" hidden>
-      <div class="section-heading">
-        <div><p class="section-label">TEST INSTITUTIONS</p><h2>試験検査機関の利用契約</h2></div>
-        <button id="add-institution-button" class="primary-small" type="button">＋ 新規追加</button>
-      </div>
-      <div id="institution-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
     </section>
 
     <section id="survey-edit-section" class="card edit-section" hidden>
