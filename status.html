@@ -45,6 +45,24 @@
 
     <section id="license-section" class="card">
       <div class="section-heading"><div><p class="section-label">LICENSES</p><h2>許可・登録</h2></div></div>
+      <div class="notice-summary" aria-label="許可・登録の集計">
+        <div><span>許可・登録件数</span><strong id="license-total">0</strong><small>件</small></div>
+        <div class="summary-valid"><span>有効</span><strong id="license-valid">0</strong><small>件</small></div>
+        <div class="summary-soon"><span>更新が近い</span><strong id="license-soon">0</strong><small>件</small></div>
+        <div class="summary-expired"><span>期限切れ</span><strong id="license-expired">0</strong><small>件</small></div>
+        <div class="summary-none"><span>未取得</span><strong id="license-none">0</strong><small>件</small></div>
+      </div>
+      <div class="notice-tools">
+        <input id="license-search" type="search" placeholder="種類で検索" aria-label="種類で検索">
+        <select id="license-filter" aria-label="ステータスで絞り込み">
+          <option value="all">ステータス：すべて</option>
+          <option value="valid">有効</option>
+          <option value="soon">更新が近い</option>
+          <option value="expired">期限切れ</option>
+          <option value="none">未取得</option>
+          <option value="check">期限未設定</option>
+        </select>
+      </div>
       <div id="license-list" class="stack-list"><p class="empty-message">確認中です。</p></div>
     </section>
 
