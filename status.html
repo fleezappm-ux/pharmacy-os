@@ -9,6 +9,7 @@
 <body>
   <main class="page-shell">
     <header class="page-header">
+      <a href="home.html" class="home-button" aria-label="ホームへ" title="ホーム">⌂</a>
       <p class="eyebrow">PHARMACY OS</p>
       <h1>薬局ステータス</h1>
       <p>許可・登録・届出などの状況をまとめて確認します。</p>
@@ -44,14 +45,13 @@
     </section>
 
     <section id="license-section" class="card">
-      <div class="section-heading"><div><p class="section-label">LICENSES</p><h2>許可・登録</h2></div><a id="license-all-link" class="all-link" href="#" hidden>Notionで見る</a></div>
+      <div class="section-heading"><div><p class="section-label">LICENSES</p><h2>許可・登録</h2></div></div>
       <div id="license-list" class="stack-list"><p class="empty-message">確認中です。</p></div>
     </section>
 
     <section id="notice-section" class="card notice-card">
       <div class="section-heading">
         <div><p class="section-label">NOTICES</p><h2>各種届出</h2></div>
-        <button id="add-notice-button" class="primary-small" type="button">＋ 新規追加</button>
       </div>
       <div class="notice-summary" aria-label="各種届出の集計">
         <div><span>届出件数</span><strong id="notice-total">0</strong><small>件</small></div>
@@ -73,7 +73,6 @@
       </div>
       <div class="notice-table-head"><span>#</span><span>届出種別</span><span>有効期限・更新条件</span><span>指定年月日</span><span>状態</span><span></span></div>
       <div id="notice-list" class="notice-list"><p class="empty-message">確認中です。</p></div>
-      <a id="notice-all-link" class="notion-link" href="#" hidden>Notionで全件を見る</a>
     </section>
 
     <section class="card survey-card">
@@ -98,28 +97,10 @@
     <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="notice-modal-title">
       <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="notice-modal-title">届出の詳細</h2></div>
       <div id="notice-detail-view"></div>
-      <form id="notice-form" hidden>
-        <input id="notice-id" type="hidden">
-        <label>届出種別 <b>*</b><input id="notice-type" required></label>
-        <label>有効期限・更新条件<textarea id="notice-deadline" rows="2"></textarea></label>
-        <label>指定年月日<input id="notice-date" type="date"></label>
-        <label>指定番号・備考<textarea id="notice-number" rows="3"></textarea></label>
-        <label>並び順 <b>*</b><input id="notice-order" type="number" min="1" step="1" required></label>
-        <div class="form-actions"><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
-      </form>
     </section>
   </div>
 
-  <div id="delete-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-delete></div>
-    <section class="confirm-panel" role="alertdialog" aria-modal="true">
-      <div class="warning-icon">!</div><h2>この届出を削除しますか？</h2><p id="delete-target-name"></p><p class="muted">この操作は取り消せません。</p>
-      <button id="confirm-delete" class="danger-button" type="button">削除する</button><button class="secondary-button" type="button" data-close-delete>キャンセル</button>
-    </section>
-  </div>
-
-  <nav class="bottom-nav" aria-label="メインメニュー">
-    <a class="nav-item" href="home.html"><span>⌂</span><small>ホーム</small></a>
+  <nav class="bottom-nav bottom-nav-4" aria-label="メインメニュー">
     <a class="nav-item" href="index.html"><span>▣</span><small>日次業務</small></a>
     <a class="nav-item" href="monthly.html"><span>▤</span><small>月次業務</small></a>
     <a class="nav-item active" href="status.html" aria-current="page"><span>◉</span><small>ステータス</small></a>
