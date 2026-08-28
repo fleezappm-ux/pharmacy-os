@@ -7,7 +7,7 @@ const text=(v,f="―")=>v===null||v===undefined||v===""?f:String(v);
 const pick=(obj,keys,f="")=>{for(const k of keys){if(obj&&obj[k]!==undefined&&obj[k]!==null&&obj[k]!=="")return obj[k]}return f};
 function formatDate(v){if(!v)return"—";if(typeof v==="object"&&v!==null)v=v.start||"";if(!v)return"—";const s=String(v).slice(0,10);return/^\d{4}-\d{2}-\d{2}$/.test(s)?s.replaceAll("-","/"):s}
 
-function normalizeNotice(raw,index){const type=pick(raw,["届出種別","name","title"],"名称未設定");const condition=pick(raw,["有効期限・更新条件"],"");const dateRaw=pick(raw,["指定年月日"],"");const date=typeof dateRaw==="object"&&dateRaw!==null?(dateRaw.start||""):dateRaw;const number=pick(raw,["指定番号・備考"],"");const order=Number(pick(raw,["並び順"],index+1))||index+1;const acquisition=pick(raw,["取得状況"],"取得済み");const id=pick(raw,["id"],"");return{raw,id,type,condition,date,number,order,acquisition}}
+function normalizeNotice(raw,index){const type=pick(raw,["届出種別","name","title"],"名称未設定");const condition=pick(raw,["有効期限"],"");const dateRaw=pick(raw,["指定年月日"],"");const date=typeof dateRaw==="object"&&dateRaw!==null?(dateRaw.start||""):dateRaw;const number=pick(raw,["指定番号・備考"],"");const order=Number(pick(raw,["並び順"],index+1))||index+1;const acquisition=pick(raw,["取得状況"],"取得済み");const id=pick(raw,["id"],"");return{raw,id,type,condition,date,number,order,acquisition}}
 
 function renderNoticeList(){const c=document.getElementById("notice-edit-list");c.textContent="";if(!notices.length){c.innerHTML='<p class="empty-message">届出データはありません。</p>';return}notices.slice().sort((a,b)=>a.order-b.order).forEach(n=>{const row=document.createElement("button");row.type="button";row.className="list-row";const main=document.createElement("div");main.className="list-main";const title=document.createElement("span");title.className="list-title";title.textContent=`#${n.order}　${n.type}`;main.appendChild(title);const detail=document.createElement("span");detail.className="list-detail";detail.textContent=`有効期限：${formatDate(n.date)} ／ 指定番号：${text(n.number)}`;main.appendChild(detail);const badge=document.createElement("span");badge.className=`badge ${n.acquisition==="取得済み"?"green":"none"}`;badge.textContent=n.acquisition;row.append(main,badge);row.addEventListener("click",()=>openNoticeForm(n));c.appendChild(row)})}
 
@@ -32,7 +32,7 @@ document.getElementById("notice-form").addEventListener("submit",async e=>{
   const payload={id:document.getElementById("notice-id").value,notice:{
     "届出種別":document.getElementById("notice-type").value.trim(),
     "取得状況":document.getElementById("notice-acquisition").value,
-    "有効期限・更新条件":document.getElementById("notice-deadline").value.trim(),
+    "有効期限":document.getElementById("notice-deadline").value.trim(),
     "指定年月日":document.getElementById("notice-date").value,
     "指定番号・備考":document.getElementById("notice-number").value.trim(),
     "並び順":Number(document.getElementById("notice-order").value)
@@ -43,6 +43,7 @@ document.getElementById("notice-form").addEventListener("submit",async e=>{
     hideModal("notice-modal");
     await loadNotices();
   }catch(err){
+    hideModal("notice-modal");
     loadingMessage.className="loading-message error";
     loadingMessage.textContent=`保存できません：${err.message}`;
   }
@@ -57,6 +58,8 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
     hideModal("notice-modal");
     await loadNotices();
   }catch(err){
+    hideModal("delete-modal");
+    hideModal("notice-modal");
     loadingMessage.className="loading-message error";
     loadingMessage.textContent=`削除できません：${err.message}`;
   }
