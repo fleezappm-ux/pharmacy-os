@@ -35,8 +35,11 @@
     </section>
 
     <section id="license-edit-section" class="card edit-section" hidden>
-      <p class="section-label">LICENSES</p><h2>許可・登録</h2>
-      <p class="empty-message">準備中です。近日対応予定です。</p>
+      <div class="section-heading">
+        <div><p class="section-label">LICENSES</p><h2>許可・登録</h2></div>
+        <button id="add-license-button" class="primary-small" type="button">＋ 新規追加</button>
+      </div>
+      <div id="license-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
     </section>
 
     <section id="pharmacist-edit-section" class="card edit-section" hidden>
@@ -84,10 +87,33 @@
     </section>
   </div>
 
+  <div id="license-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="license-modal-title">
+      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="license-modal-title">許可・登録を編集</h2></div>
+      <form id="license-form">
+        <input id="license-id" type="hidden">
+        <label>種類 <b>*</b><input id="license-type" required></label>
+        <label>取得状況 <b>*</b>
+          <select id="license-acquisition" required>
+            <option value="取得済み">取得済み</option>
+            <option value="未取得">未取得</option>
+            <option value="対象外">対象外</option>
+            <option value="要確認">要確認</option>
+          </select>
+        </label>
+        <label>許可(登録・認定・免許)番号<input id="license-number"></label>
+        <label>有効期限<input id="license-date" type="date"></label>
+        <label>並び順 <b>*</b><input id="license-order" type="number" min="1" step="1" required></label>
+        <div class="form-actions"><button id="license-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
+      </form>
+    </section>
+  </div>
+
   <div id="delete-modal" class="modal" hidden>
     <div class="modal-backdrop" data-close-delete></div>
     <section class="confirm-panel" role="alertdialog" aria-modal="true">
-      <div class="warning-icon">!</div><h2>この届出を削除しますか？</h2><p id="delete-target-name"></p><p class="muted">この操作は取り消せません。</p>
+      <div class="warning-icon">!</div><h2 id="delete-modal-title">削除しますか？</h2><p id="delete-target-name"></p><p class="muted">この操作は取り消せません。</p>
       <button id="confirm-delete" class="danger-button" type="button">削除する</button><button class="secondary-button" type="button" data-close-delete>キャンセル</button>
     </section>
   </div>
