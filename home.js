@@ -126,7 +126,9 @@ async function loadHomeData() {
 
     averageLabel.textContent = `${data.previousMonthLabel} 1日平均処方箋枚数`;
     averageValue.textContent = data.previousMonthAverage ?? "―";
-    averageNote.textContent = data.previousMonthRecordedDays
+    averageNote.textContent = data.previousMonthAverageSource === "survey"
+      ? "処方箋調べより"
+      : data.previousMonthRecordedDays
       ? `${data.previousMonthRecordedDays}日分から算出`
       : "記録なし";
     const summaryMonthLabel = data.summaryMonthLabel || data.previousMonthLabel || "前月";
