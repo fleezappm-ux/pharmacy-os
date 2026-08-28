@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f8f6">
+  <meta name="description" content="Pharmacy OS 薬局ホーム">
+  <title>Pharmacy OS | あおい薬局</title>
+  <link rel="stylesheet" href="home.css?v=7">
+  <script src="home.js?v=6" defer></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="pharmacy-header">
+      <div class="brand-row">
+        <div>
+          <p class="eyebrow">PHARMACY OS</p>
+          <h1>あおい薬局</h1>
+        </div>
+        <button id="refresh-button" class="icon-button" type="button" aria-label="最新情報に更新">↻</button>
+      </div>
+      <p class="address">長野県松本市里山辺12090-2</p>
+      <div class="contact-row">
+        <a href="tel:0263875203">TEL 0263-87-5203</a>
+        <span>FAX 0263-87-5204</span>
+      </div>
+      <p id="today-label" class="today-label"></p>
+    </header>
+
+    <main class="home-main">
+      <section class="panel calendar-panel" aria-labelledby="week-heading">
+        <div class="section-heading">
+          <div><p class="section-kicker">CALENDAR</p><h2 id="week-heading">今週のカレンダー</h2></div>
+          <button class="text-button" type="button" data-pending>全体を見る</button>
+        </div>
+        <div id="week-calendar" class="week-calendar" aria-label="1週間カレンダー"></div>
+      </section>
+
+      <section class="panel task-panel" aria-labelledby="tasks-heading">
+        <div class="section-heading">
+          <div><p class="section-kicker">TASKS</p><h2 id="tasks-heading">タスク</h2></div>
+          <span class="status-chip">準備中</span>
+        </div>
+        <div class="task-placeholder">
+          <span class="task-icon">✓</span>
+          <div><strong>期限の近い業務をここに表示</strong><p>タスクDB連携後に自動表示します。</p></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="handover-heading">
+        <div class="section-heading">
+          <div><p class="section-kicker">HANDOVER</p><h2 id="handover-heading">申し送り</h2></div>
+          <a class="text-button" href="index.html#handover">入力する</a>
+        </div>
+        <div id="handover-list" class="handover-list" aria-live="polite">
+          <div class="skeleton-line"></div><div class="skeleton-line short"></div>
+        </div>
+      </section>
+
+      <section class="panel" aria-labelledby="monthly-heading">
+        <div class="section-heading monthly-title">
+          <div><p class="section-kicker">MONTHLY SNAPSHOT</p><h2 id="monthly-heading">前月の状況</h2></div>
+        </div>
+        <div class="metric-grid">
+          <article class="metric-card featured-metric">
+            <p id="average-label">先月1日平均処方箋枚数</p>
+            <p class="metric-value"><span id="average-value">―</span><small>枚</small></p>
+            <p id="average-note" class="metric-note">読込中</p>
+          </article>
+          <article class="metric-card">
+            <p id="generic-rate-label">先月の後発品使用率</p>
+            <p class="metric-value"><span id="generic-rate-value">―</span><small id="generic-rate-unit">%</small></p>
+            <p class="metric-note">前月分</p>
+          </article>
+          <article class="metric-card concentration-card">
+            <p id="concentration-label">先月までの処方箋集中率 上位4医療機関</p>
+            <ol id="concentration-list" class="concentration-list"><li>データ未取込</li></ol>
+          </article>
+        </div>
+      </section>
+
+      <section class="quick-actions" aria-label="よく使う機能">
+        <a class="quick-action primary" href="index.html"><span>＋</span><strong>日次業務を入力</strong></a>
+        <a class="quick-action" href="monthly.html"><span>▤</span><strong>月次業務</strong></a>
+        <a class="quick-action" href="status.html"><span>◉</span><strong>ステータス</strong></a>
+      </section>
+
+      <p id="home-status" class="home-status" aria-live="polite"></p>
+    </main>
+
+    <nav class="bottom-nav" aria-label="メインナビゲーション">
+      <a class="nav-item active" href="home.html" aria-current="page"><span>⌂</span><small>ホーム</small></a>
+      <a class="nav-item" href="index.html"><span>▣</span><small>日次業務</small></a>
+      <a class="nav-item" href="monthly.html"><span>▤</span><small>月次業務</small></a>
+      <a class="nav-item" href="status.html"><span>◉</span><small>ステータス</small></a>
+      <a class="nav-item" href="edit.html"><span>✎</span><small>編集</small></a>
+    </nav>
+
+    <div id="reminder-modal" class="reminder-modal" hidden>
+      <section class="reminder-dialog" role="dialog" aria-modal="true" aria-labelledby="reminder-title">
+        <button id="reminder-close" class="reminder-close" type="button" aria-label="閉じる">×</button>
+        <p class="section-kicker">REMINDER</p><h2 id="reminder-title">未入力の業務があります</h2>
+        <p id="reminder-summary" class="reminder-summary"></p><div id="reminder-list" class="reminder-list"></div>
+        <button id="reminder-snooze" class="reminder-snooze" type="button">今日は表示しない</button>
+      </section>
+    </div>
+    <div id="toast" class="toast" role="status" hidden></div>
+  </div>
+</body>
+</html>
