@@ -25,7 +25,6 @@
       <button class="edit-tab" data-target="pharmacist-edit-section" data-hash="pharmacist">薬剤師</button>
       <button class="edit-tab" data-target="seller-edit-section" data-hash="seller">登録販売者</button>
       <button class="edit-tab" data-target="basic-edit-section" data-hash="basic">基本情報</button>
-      <button class="edit-tab" data-target="survey-edit-section" data-hash="survey">処方箋調べ</button>
     </nav>
 
     <section id="daily-edit-section" class="card edit-section">
@@ -92,14 +91,6 @@
         <label>保険薬局の指定更新期限<input id="basic-insurance-renewal" type="date"></label>
         <div class="form-actions"><button class="primary-button" type="submit">保存する</button></div>
       </form>
-    </section>
-
-    <section id="survey-edit-section" class="card edit-section" hidden>
-      <div class="section-heading">
-        <div><p class="section-label">PRESCRIPTION SURVEY</p><h2>処方箋枚数・受付回数等調べ</h2></div>
-        <button id="add-survey-button" class="primary-small" type="button">＋ 新規追加</button>
-      </div>
-      <div id="survey-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
     </section>
   </main>
 
@@ -221,27 +212,6 @@
         <label>利用機関名 <b>*</b><input id="institution-name" required></label>
         <label>契約更新期限<input id="institution-date" type="date"></label>
         <div class="form-actions"><button id="institution-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
-      </form>
-    </section>
-  </div>
-
-  <div id="survey-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-modal></div>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="survey-modal-title">
-      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="survey-modal-title">処方箋調べを編集</h2></div>
-      <form id="survey-form">
-        <input id="survey-id" type="hidden">
-        <label>年月 <b>*</b><input id="survey-month" placeholder="例：2026年10月" required></label>
-        <label>処方箋受付回数<input id="survey-count" type="number" step="1"></label>
-        <label>歯科（処方箋受付枚数）<input id="survey-dental" type="number" step="1"></label>
-        <label>眼科（処方箋受付枚数）<input id="survey-ophthalmology" type="number" step="1"></label>
-        <label>耳鼻咽喉科（処方箋受付枚数）<input id="survey-ent" type="number" step="1"></label>
-        <label>その他（処方箋受付枚数）<input id="survey-other" type="number" step="1"></label>
-        <div class="survey-calc-preview">
-          <span>合計（処方箋受付枚数）：<strong id="survey-total-preview">0</strong> 枚</span>
-          <p class="muted">保存すると、日次業務の記録日数をもとに1日平均取扱処方箋枚数も自動計算されます。</p>
-        </div>
-        <div class="form-actions"><button id="survey-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
       </form>
     </section>
   </div>

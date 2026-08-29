@@ -32,9 +32,6 @@ const genericSummaryLink = document.querySelector("#generic-summary-link");
 const concentrationSummaryLabel = document.querySelector("#concentration-summary-label");
 const concentrationSummaryList = document.querySelector("#concentration-summary-list");
 const concentrationSummaryLink = document.querySelector("#concentration-summary-link");
-const fiscalYearLabel = document.querySelector("#fiscal-year-label");
-const fiscalHelp = document.querySelector("#fiscal-help");
-const fiscalMonthList = document.querySelector("#fiscal-month-list");
 
 Object.values(controls).forEach((control) => {
   control.file.addEventListener("change", () => {
@@ -97,7 +94,6 @@ async function loadMonthlyData() {
     const data = await response.json();
     if (!data.success) throw new Error(data.message || "取得に失敗しました。");
     renderSummary(data);
-    renderFiscalStatus(data);
   } catch (error) {
     console.error(error);
     monthlyStatus.textContent = `最新情報を取得できませんでした：${error.message}`;
@@ -105,58 +101,6 @@ async function loadMonthlyData() {
     refreshButton.disabled = false;
     refreshButton.textContent = "↻";
   }
-}
-
-function renderFiscalStatus(data) {
-  fiscalYearLabel.textContent = data.fiscalYearLabel || "年度";
-  fiscalHelp.textContent = data.fiscalCheckedThroughLabel && data.fiscalCheckedThroughLabel !== "確認対象月なし"
-    ? `${data.fiscalYearLabel}の4月から${data.fiscalCheckedThroughLabel}までを確認しています。今月分は含みません。`
-    : "今年度は、まだ確認対象となる月がありません。";
-  fiscalMonthList.replaceChildren();
-
-  const months = data.fiscalMonths || [];
-  if (!months.length) {
-    const message = document.createElement("p");
-    message.className = "fiscal-loading";
-    message.textContent = "確認対象となる月はありません。";
-    fiscalMonthList.append(message);
-    return;
-  }
-
-  months.forEach((month) => {
-    const card = document.createElement("article");
-    card.className = "fiscal-month";
-
-    const header = document.createElement("div");
-    header.className = "fiscal-month-header";
-    const label = document.createElement("strong");
-    label.textContent = month.label;
-    header.append(label);
-
-    const missing = month.missing || [];
-    if (!missing.length) {
-      const complete = document.createElement("span");
-      complete.className = "fiscal-complete";
-      complete.textContent = "入力済み";
-      header.append(complete);
-    }
-    card.append(header);
-
-    if (missing.length) {
-      const links = document.createElement("div");
-      links.className = "missing-links";
-      missing.forEach((item) => {
-        const link = document.createElement("a");
-        link.className = "missing-link";
-        link.href = item.href;
-        link.textContent = item.label;
-        links.append(link);
-      });
-      card.append(links);
-    }
-
-    fiscalMonthList.append(card);
-  });
 }
 
 function renderSummary(data) {
