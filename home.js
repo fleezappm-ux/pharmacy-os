@@ -131,9 +131,9 @@ async function loadHomeData() {
       : data.previousMonthRecordedDays
       ? `${data.previousMonthRecordedDays}日分から算出`
       : "記録なし";
-    const summaryMonthLabel = data.summaryMonthLabel || data.previousMonthLabel || "前月";
+    const summaryMonthLabel = data.previousMonthLabel || "前月";
     const hasGeneric = data.genericRate !== null && data.genericRate !== undefined;
-    monthlyHeading.textContent = `${summaryMonthLabel}の状況`;
+    monthlyHeading.textContent = `${data.currentMonthLabel || "今月"}の状況`;
     genericRateValue.textContent = hasGeneric ? data.genericRate : "未入力";
     genericRateUnit.hidden = !hasGeneric;
     genericRateLabel.textContent = `${summaryMonthLabel} 後発品使用率`;
@@ -209,9 +209,9 @@ function renderReminderStatus(data) {
   if (localStorage.getItem(REMINDER_SNOOZE_KEY) === localDateKey()) return;
 
   const missing = [];
-  if (data.dailyMissing) {
-    missing.push({ label: "本日の日次業務", href: "index.html" });
-  }
+  (data.dailyMissingDates || []).forEach((dateStr) => {
+    missing.push({ label: `${dateStr} の日次業務`, href: "index.html" });
+  });
   (data.monthlyMissing || []).forEach((item) => {
     missing.push({
       label: `${data.previousMonthLabel || "前月"} ${item.label}`,

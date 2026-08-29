@@ -47,7 +47,7 @@ textarea {
 
 .page {
   min-height: 100vh;
-  padding: 20px 12px;
+  padding: 20px 12px 110px;
 }
 
 .app-card {
@@ -274,12 +274,48 @@ button:disabled {
 
 @media (min-width: 560px) {
   .page {
-    padding: 28px 16px;
+    padding: 28px 16px 110px;
   }
 
   .app-card {
     padding: 36px 34px 30px;
   }
+}
+
+.bottom-nav {
+  position: fixed;
+  z-index: 10;
+  left: 50%;
+  bottom: 0;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  width: min(100%, 540px);
+  transform: translateX(-50%);
+  padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+  border-top: 1px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 -8px 24px rgba(23, 70, 57, 0.08);
+}
+
+.nav-item {
+  display: grid;
+  justify-items: center;
+  gap: 3px;
+  border: 0;
+  background: transparent;
+  color: #75827d;
+  text-decoration: none;
+  font: inherit;
+}
+
+.nav-item span {
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.nav-item.active {
+  color: var(--color-primary);
+  font-weight: 800;
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -18,16 +18,24 @@
     <p id="edit-loading" class="loading-message" aria-live="polite">データを読み込んでいます…</p>
 
     <nav class="edit-tabs" aria-label="編集分類">
-      <button class="edit-tab active" data-target="notice-edit-section">各種届出</button>
-      <button class="edit-tab" data-target="institution-edit-section">試験検査機関</button>
-      <button class="edit-tab" data-target="license-edit-section">許可・登録</button>
-      <button class="edit-tab" data-target="pharmacist-edit-section">薬剤師</button>
-      <button class="edit-tab" data-target="seller-edit-section">登録販売者</button>
-      <button class="edit-tab" data-target="basic-edit-section">基本情報</button>
-      <button class="edit-tab" data-target="survey-edit-section">処方箋調べ</button>
+      <button class="edit-tab active" data-target="daily-edit-section" data-hash="daily">日次業務</button>
+      <button class="edit-tab" data-target="notice-edit-section" data-hash="notice">各種届出</button>
+      <button class="edit-tab" data-target="institution-edit-section" data-hash="institution">試験検査機関</button>
+      <button class="edit-tab" data-target="license-edit-section" data-hash="license">許可・登録</button>
+      <button class="edit-tab" data-target="pharmacist-edit-section" data-hash="pharmacist">薬剤師</button>
+      <button class="edit-tab" data-target="seller-edit-section" data-hash="seller">登録販売者</button>
+      <button class="edit-tab" data-target="basic-edit-section" data-hash="basic">基本情報</button>
+      <button class="edit-tab" data-target="survey-edit-section" data-hash="survey">処方箋調べ</button>
     </nav>
 
-    <section id="notice-edit-section" class="card edit-section">
+    <section id="daily-edit-section" class="card edit-section">
+      <div class="section-heading">
+        <div><p class="section-label">DAILY REPORTS</p><h2>日次業務</h2></div>
+      </div>
+      <div id="daily-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
+    </section>
+
+    <section id="notice-edit-section" class="card edit-section" hidden>
       <div class="section-heading">
         <div><p class="section-label">NOTICES</p><h2>各種届出</h2></div>
         <button id="add-notice-button" class="primary-small" type="button">＋ 新規追加</button>
@@ -94,6 +102,37 @@
       <div id="survey-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
     </section>
   </main>
+
+  <div id="daily-modal" class="modal" hidden>
+    <div class="modal-backdrop" data-close-modal></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="daily-modal-title">
+      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="daily-modal-title">日報を編集</h2></div>
+      <form id="daily-edit-form">
+        <input id="daily-edit-id" type="hidden">
+        <label>日付 <b>*</b><input id="daily-edit-date" type="date" required></label>
+        <label class="checkbox-field"><input id="daily-edit-closed" type="checkbox"> 休業日として記録する</label>
+        <label>開局時間<input id="daily-edit-hours" placeholder="例：08:45～18:00"></label>
+        <label>処方箋枚数<input id="daily-edit-count" type="number" step="1"></label>
+        <label>管理者不在時間<input id="daily-edit-manager-absence" placeholder="例：12:00～13:00"></label>
+        <label>管理者不在時対応者<input id="daily-edit-manager-responder"></label>
+        <label>薬剤師不在時間<input id="daily-edit-pharmacist-absence" placeholder="例：12:00～13:00"></label>
+        <label>薬剤師不在時対応者<input id="daily-edit-pharmacist-responder"></label>
+        <label>特記事項<textarea id="daily-edit-notes" rows="2"></textarea></label>
+        <label>申し送り<textarea id="daily-edit-handover" rows="2"></textarea></label>
+        <label>確認印
+          <select id="daily-edit-confirmed">
+            <option value="">未選択</option>
+            <option value="降旗敏文">降旗敏文</option>
+            <option value="藤川律子">藤川律子</option>
+            <option value="金井佳美">金井佳美</option>
+            <option value="井内淳一郎">井内淳一郎</option>
+            <option value="井内学">井内学</option>
+          </select>
+        </label>
+        <div class="form-actions"><button id="daily-edit-delete-button" class="danger-button" type="button">削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
+      </form>
+    </section>
+  </div>
 
   <div id="notice-modal" class="modal" hidden>
     <div class="modal-backdrop" data-close-modal></div>
