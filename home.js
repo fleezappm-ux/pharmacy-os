@@ -124,7 +124,7 @@ async function loadHomeData() {
     const data = await response.json();
     if (!data.success) throw new Error(data.message || "取得に失敗しました。");
 
-    averageLabel.textContent = `${data.previousMonthLabel} 1日平均処方箋枚数`;
+    averageLabel.textContent = `${data.previousMonthLabel}の1日あたり平均処方箋枚数`;
     averageValue.textContent = data.previousMonthAverage ?? "―";
     averageNote.textContent = data.previousMonthAverageSource === "survey"
       ? "処方箋調べより"

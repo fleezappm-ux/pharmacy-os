@@ -194,12 +194,14 @@
         <input id="survey-id" type="hidden">
         <label>年月 <b>*</b><input id="survey-month" placeholder="例：2026年10月" required></label>
         <label>処方箋受付回数<input id="survey-count" type="number" step="1"></label>
-        <label>合計（処方箋受付枚数）<input id="survey-total" type="number" step="1"></label>
-        <label>1日平均取扱処方箋枚数<input id="survey-daily-average" type="number" step="0.1"></label>
         <label>歯科（処方箋受付枚数）<input id="survey-dental" type="number" step="1"></label>
         <label>眼科（処方箋受付枚数）<input id="survey-ophthalmology" type="number" step="1"></label>
         <label>耳鼻咽喉科（処方箋受付枚数）<input id="survey-ent" type="number" step="1"></label>
         <label>その他（処方箋受付枚数）<input id="survey-other" type="number" step="1"></label>
+        <div class="survey-calc-preview">
+          <span>合計（処方箋受付枚数）：<strong id="survey-total-preview">0</strong> 枚</span>
+          <p class="muted">保存すると、日次業務の記録日数をもとに1日平均取扱処方箋枚数も自動計算されます。</p>
+        </div>
         <div class="form-actions"><button id="survey-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
       </form>
     </section>

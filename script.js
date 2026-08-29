@@ -43,16 +43,44 @@ function getDefaultOpeningHours() {
 
 function updateOpeningFields() {
   const isCustom = openingType.value === "custom";
+  const isClosed = openingType.value === "closed";
   const panel = document.querySelector("#custom-opening-fields");
   const start = document.querySelector("#opening-start");
   const end = document.querySelector("#opening-end");
+  const prescriptionCount = document.querySelector("#prescription-count");
 
   panel.hidden = !isCustom;
   start.required = isCustom;
   end.required = isCustom;
-  openingSummary.textContent = isCustom
-    ? "開始・終了時刻を入力してください。"
-    : `選択日の通常営業時間：${getDefaultOpeningHours()}`;
+  prescriptionCount.required = !isClosed;
+  if (isClosed) prescriptionCount.value = prescriptionCount.value || "0";
+
+  if (isClosed) {
+    openingSummary.textContent = "この日は休業日として記録されます。";
+  } else if (isCustom) {
+    openingSummary.textContent = "開始・終了時刻を入力してください。";
+  } else {
+    openingSummary.textContent = `選択日の通常営業時間：${getDefaultOpeningHours()}`;
+  }
+}
+
+let openingTypeTouched = false;
+openingType.addEventListener("change", () => { openingTypeTouched = true; });
+
+async function applyDefaultClosedState() {
+  if (openingTypeTouched || !dateInput.value) return;
+  try {
+    const response = await fetch(
+      `${GAS_ENDPOINT}?action=dayType&date=${dateInput.value}&t=${Date.now()}`
+    );
+    const data = await response.json();
+    if (data.success && data.isDefaultClosed && openingType.value === "normal") {
+      openingType.value = "closed";
+      updateOpeningFields();
+    }
+  } catch (_) {
+    // 判定できない場合は何もしない（通常営業時間のまま）。
+  }
 }
 
 function setupConditionalSelect(selectId, panelId, requiredIds = []) {
@@ -87,8 +115,10 @@ function formatRange(start, end) {
 }
 
 function createPayload(formData) {
-  const openingHours =
-    formData.get("openingType") === "custom"
+  const isClosed = formData.get("openingType") === "closed";
+  const openingHours = isClosed
+    ? "休業日"
+    : formData.get("openingType") === "custom"
       ? formatRange(formData.get("openingStart"), formData.get("openingEnd"))
       : getDefaultOpeningHours();
 
@@ -116,7 +146,8 @@ function createPayload(formData) {
   return {
     workDate: formData.get("date"),
     openingHours,
-    prescriptionCount: Number(formData.get("prescriptionCount")),
+    isClosed,
+    prescriptionCount: Number(formData.get("prescriptionCount") || 0),
     managerAbsence,
     pharmacistAbsence,
     managerResponder,
@@ -177,9 +208,15 @@ form.addEventListener("submit", async (event) => {
 });
 
 dateInput.value = getLocalDateString();
-dateInput.addEventListener("change", updateOpeningFields);
+dateInput.addEventListener("change", () => {
+  openingTypeTouched = false;
+  openingType.value = "normal";
+  updateOpeningFields();
+  applyDefaultClosedState();
+});
 openingType.addEventListener("change", updateOpeningFields);
 updateOpeningFields();
+applyDefaultClosedState();
 
 setupConditionalSelect("#manager-absence", "#manager-absence-fields", [
   "#manager-start",
