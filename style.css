@@ -288,7 +288,7 @@ button:disabled {
   left: 50%;
   bottom: 0;
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: repeat(6, 1fr);
   width: min(100%, 540px);
   transform: translateX(-50%);
   padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
