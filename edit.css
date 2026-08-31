@@ -11,6 +11,10 @@
 #basic-form{padding-top:0}
 .form-actions{display:flex;flex-wrap:wrap;gap:10px}.form-actions>button{flex:1;min-width:120px}.primary-button,.secondary-button,.danger-button{width:100%;padding:13px;border-radius:12px;font:inherit;font-weight:800;cursor:pointer}.primary-button{border:0;background:var(--green);color:#fff}.secondary-button{border:1px solid var(--line);background:#fff;color:var(--text)}.danger-button{border:1px solid #efaaaa;background:#fff;color:var(--red)}
 .checkbox-field{display:flex!important;flex-direction:row;align-items:center;gap:8px}.checkbox-field input{width:auto!important;flex:none}
+.help-text{margin:0 0 16px;color:var(--muted);font-size:.86rem;line-height:1.6}
+.survey-calc-preview{padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--pale)}.survey-calc-preview span{font-weight:800}.survey-calc-preview strong{color:var(--green);font-size:1.15rem}.survey-calc-preview p{margin:6px 0 0;font-size:.8rem;color:var(--muted)}
+#subrow-list{margin-bottom:16px}#subrow-list .list-row{cursor:pointer}#subrow-month-display{margin-top:-8px;margin-bottom:14px}
+#subrow-number-fields{display:grid;gap:14px}
 .confirm-panel{text-align:center;width:min(100%,420px)}.confirm-panel h2{margin:10px 0}.confirm-panel .danger-button{margin:14px 0 8px;background:#e82f35;color:#fff;border-color:#e82f35}.warning-icon{display:grid;place-items:center;width:54px;height:54px;margin:auto;border:3px solid #e82f35;border-radius:50%;color:#e82f35;font-size:2rem;font-weight:900}.muted{color:var(--muted)}
 
 .bottom-nav{position:fixed;z-index:10;left:50%;bottom:0;display:grid;grid-template-columns:repeat(5,1fr);width:min(100%,900px);transform:translateX(-50%);padding:10px 8px calc(10px + env(safe-area-inset-bottom));border-top:1px solid var(--line);background:rgba(255,255,255,.96);box-shadow:0 -8px 24px rgba(23,70,57,.08)}.nav-item{display:grid;justify-items:center;gap:3px;border:0;background:transparent;color:#75827d;text-decoration:none;font:inherit}.nav-item span{font-size:1.4rem;line-height:1}.nav-item.active{color:var(--green);font-weight:800}
