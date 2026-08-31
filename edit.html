@@ -17,19 +17,36 @@
 
     <p id="edit-loading" class="loading-message" aria-live="polite">データを読み込んでいます…</p>
 
-    <nav class="edit-tabs" aria-label="編集分類">
-      <button class="edit-tab active" data-target="daily-edit-section" data-hash="daily">日次業務</button>
-      <button class="edit-tab" data-target="notice-edit-section" data-hash="notice">各種届出</button>
-      <button class="edit-tab" data-target="institution-edit-section" data-hash="institution">試験検査機関</button>
-      <button class="edit-tab" data-target="license-edit-section" data-hash="license">許可・登録</button>
-      <button class="edit-tab" data-target="pharmacist-edit-section" data-hash="pharmacist">薬剤師</button>
-      <button class="edit-tab" data-target="seller-edit-section" data-hash="seller">登録販売者</button>
-      <button class="edit-tab" data-target="basic-edit-section" data-hash="basic">基本情報</button>
-      <button class="edit-tab" data-target="generic-edit-section" data-hash="generic">後発品調剤率</button>
-      <button class="edit-tab" data-target="concentration-edit-section" data-hash="concentration">処方箋集中率</button>
-      <button class="edit-tab" data-target="insurance-edit-section" data-hash="insurance">保険調剤実績</button>
-      <button class="edit-tab" data-target="homecare-edit-section" data-hash="homecare">在宅患者管理</button>
-      <button class="edit-tab" data-target="survey-edit-section" data-hash="survey">処方箋調べ</button>
+    <div id="group-select" class="group-select">
+      <button class="group-card" type="button" data-group="daily">
+        <span class="group-card-title">日次業務</span>
+        <span class="group-card-desc">日報の編集・削除</span>
+      </button>
+      <button class="group-card" type="button" data-group="status">
+        <span class="group-card-title">ステータス</span>
+        <span class="group-card-desc">届出・許可登録・薬剤師名簿など台帳</span>
+      </button>
+      <button class="group-card" type="button" data-group="monthly">
+        <span class="group-card-title">月次業務</span>
+        <span class="group-card-desc">後発品調剤率・集中率・保険実績など</span>
+      </button>
+    </div>
+
+    <button id="group-back-button" class="text-button" type="button" hidden>← 分類選択に戻る</button>
+
+    <nav class="edit-tabs" aria-label="編集分類" hidden>
+      <button class="edit-tab active" data-target="daily-edit-section" data-hash="daily" data-group="daily">日次業務</button>
+      <button class="edit-tab" data-target="notice-edit-section" data-hash="notice" data-group="status">各種届出</button>
+      <button class="edit-tab" data-target="institution-edit-section" data-hash="institution" data-group="status">試験検査機関</button>
+      <button class="edit-tab" data-target="license-edit-section" data-hash="license" data-group="status">許可・登録</button>
+      <button class="edit-tab" data-target="pharmacist-edit-section" data-hash="pharmacist" data-group="status">薬剤師</button>
+      <button class="edit-tab" data-target="seller-edit-section" data-hash="seller" data-group="status">登録販売者</button>
+      <button class="edit-tab" data-target="basic-edit-section" data-hash="basic" data-group="status">基本情報</button>
+      <button class="edit-tab" data-target="generic-edit-section" data-hash="generic" data-group="monthly">後発品調剤率</button>
+      <button class="edit-tab" data-target="concentration-edit-section" data-hash="concentration" data-group="monthly">処方箋集中率</button>
+      <button class="edit-tab" data-target="insurance-edit-section" data-hash="insurance" data-group="monthly">保険調剤実績</button>
+      <button class="edit-tab" data-target="homecare-edit-section" data-hash="homecare" data-group="monthly">在宅患者管理</button>
+      <button class="edit-tab" data-target="survey-edit-section" data-hash="survey" data-group="monthly">処方箋調べ</button>
     </nav>
 
     <section id="daily-edit-section" class="card edit-section">

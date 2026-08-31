@@ -536,8 +536,25 @@ document.querySelectorAll("[data-close-delete]").forEach(x=>x.addEventListener("
 function activateTab(tab){document.querySelectorAll(".edit-tab").forEach(x=>x.classList.remove("active"));tab.classList.add("active");document.querySelectorAll(".edit-section").forEach(s=>s.hidden=true);document.getElementById(tab.dataset.target).hidden=false}
 document.querySelectorAll(".edit-tab").forEach(t=>t.addEventListener("click",()=>activateTab(t)));
 
+function showGroup(group){
+  document.getElementById("group-select").hidden=true;
+  document.getElementById("group-back-button").hidden=false;
+  document.querySelector(".edit-tabs").hidden=false;
+  const tabs=[...document.querySelectorAll(".edit-tab")];
+  const groupTabs=tabs.filter(t=>t.dataset.group===group);
+  tabs.forEach(t=>t.hidden=t.dataset.group!==group);
+  activateTab(groupTabs[0]);
+}
+document.querySelectorAll(".group-card").forEach(c=>c.addEventListener("click",()=>showGroup(c.dataset.group)));
+document.getElementById("group-back-button").addEventListener("click",()=>{
+  document.getElementById("group-select").hidden=false;
+  document.getElementById("group-back-button").hidden=true;
+  document.querySelector(".edit-tabs").hidden=true;
+  document.querySelectorAll(".edit-section").forEach(s=>s.hidden=true);
+});
+
 const hashTab=document.querySelector(`.edit-tab[data-hash="${location.hash.slice(1)}"]`);
-if(hashTab)activateTab(hashTab);
+if(hashTab){showGroup(hashTab.dataset.group);activateTab(hashTab);}
 
 loadAll();
 loadDailyReports();
