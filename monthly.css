@@ -19,6 +19,7 @@ a { color: inherit; text-decoration: none; }
 .app-shell { width: min(100%, 620px); min-height: 100vh; margin: 0 auto; }
 
 .topbar { display: flex; justify-content: space-between; align-items: center; padding: 26px 20px 22px; color: #fff; background: linear-gradient(135deg, var(--primary-dark), var(--primary)); }
+.back-to-list-link { display: inline-block; margin-bottom: 10px; color: var(--primary); font-size: .82rem; font-weight: 800; text-decoration: none; }
 .eyebrow, .section-kicker { margin: 0 0 4px; font-size: .72rem; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
 .topbar h1 { margin: 0; font-size: 1.65rem; }
 .topbar p:last-child { margin: 7px 0 0; font-size: .84rem; opacity: .85; }
@@ -44,8 +45,6 @@ a { color: inherit; text-decoration: none; }
 .summary-input-link[hidden] { display: none; }
 
 .help-text { margin: 0 0 14px; color: var(--muted); font-size: .86rem; line-height: 1.65; }
-.category-badges { display: flex; flex-wrap: wrap; gap: 7px; margin: 0 0 14px; }
-.category-badge { padding: 6px 11px; color: var(--primary); font-size: .78rem; font-weight: 800; background: var(--primary-soft); border-radius: 999px; }
 .file-picker { display: grid; place-items: center; min-height: 68px; padding: 12px; color: var(--primary); font-weight: 800; background: var(--primary-soft); border: 2px dashed #a8cbbf; border-radius: 14px; cursor: pointer; }
 .file-picker input { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .file-name { min-height: 1.4em; margin: 10px 0 14px; color: var(--muted); font-size: .78rem; overflow-wrap: anywhere; }

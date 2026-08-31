@@ -12,6 +12,7 @@ async function loadYearlyData(){
     const response=await fetch(`${GAS_URL}?action=yearlyPerformance&_=${Date.now()}`),result=await response.json();
     if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");
     monthsData=result.months||[];
+    renderCompactView();
     renderGenericList();
     renderSubCategoryList("concentration");
     renderSubCategoryList("insurance");
@@ -23,6 +24,47 @@ async function loadYearlyData(){
     loadingMessage.textContent="現在、データを読み込めません。GAS連携を確認してください。";
   }
 }
+
+/* ===== 直近3ヶ月のコンパクト表示 ===== */
+const COMPACT_CATEGORIES=[
+  {key:"generic",label:"後発品調剤率",kind:"single"},
+  {key:"concentration",label:"処方箋集中率",kind:"multi"},
+  {key:"insurance",label:"保険調剤実績",kind:"multi"},
+  {key:"homecare",label:"在宅患者管理",kind:"multi"},
+  {key:"survey",label:"処方箋調べ",kind:"single"}
+];
+
+function categoryFilled(month,cat){
+  if(cat.kind==="multi")return(month[cat.key]||[]).length>0;
+  if(cat.key==="survey"){const s=month.survey;return!!(s&&s["処方箋受付回数"]!==null&&s["処方箋受付回数"]!==undefined&&s["処方箋受付回数"]!=="")}
+  return!!month[cat.key];
+}
+
+function renderCompactView(){
+  const c=document.getElementById("compact-list");c.textContent="";
+  monthsData.slice(0,3).forEach(month=>{
+    const card=document.createElement("div");card.className="compact-month-card";
+    const title=document.createElement("h3");title.textContent=month.label;card.appendChild(title);
+    const grid=document.createElement("div");grid.className="compact-badge-grid";
+    COMPACT_CATEGORIES.forEach(cat=>{
+      const filled=categoryFilled(month,cat);
+      const chip=document.createElement("span");chip.className=`compact-chip ${filled?"filled":"empty"}`;
+      chip.textContent=`${cat.label}：${filled?"入力済み":"未入力"}`;
+      grid.appendChild(chip);
+    });
+    card.appendChild(grid);
+    c.appendChild(card);
+  });
+}
+
+document.getElementById("show-full-button").addEventListener("click",()=>{
+  document.getElementById("compact-view").hidden=true;
+  document.getElementById("full-view").hidden=false;
+});
+document.getElementById("back-to-compact-button").addEventListener("click",()=>{
+  document.getElementById("full-view").hidden=true;
+  document.getElementById("compact-view").hidden=false;
+});
 
 /* 見るだけの一覧なので、行はボタンではなく静的な表示にしています。 */
 function makeStaticRow(title,detail,badgeText,badgeClass){

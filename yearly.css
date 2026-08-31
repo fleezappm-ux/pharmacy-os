@@ -1,7 +1,16 @@
 :root{color-scheme:light;--green:#126c58;--dark:#0d4d40;--pale:#eef6f3;--line:#d4e1dc;--text:#10251f;--muted:#65766f;--orange:#a85a00;--orange-bg:#fff2dc;--red:#b32828;--red-bg:#fff0ef}
 *{box-sizing:border-box}body{margin:0;background:var(--pale);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}.page-shell{width:min(100%,900px);margin:0 auto;padding:0 18px 120px}.page-header{position:relative;margin:0 -18px 18px;padding:30px 26px;background:var(--dark);color:#fff;border-radius:0 0 28px 28px}.page-header h1{margin:6px 0;font-size:2rem}.page-header p{margin:0}.eyebrow,.section-label{font-size:.78rem;font-weight:800;letter-spacing:.16em}.reload-button{position:absolute;right:24px;top:56px;width:58px;height:58px;border:1px solid rgba(255,255,255,.2);border-radius:18px;background:rgba(255,255,255,.08);color:#fff;font-size:1.7rem;cursor:pointer}.loading-message{min-height:1.5em;margin:12px 0;text-align:center;color:var(--muted);font-weight:700}.loading-message.error{color:var(--red)}
 
-.edit-link-banner{display:block;margin:0 0 18px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--green);font-weight:800;font-size:.88rem;text-align:center;text-decoration:none}
+.edit-link-banner{display:block;margin:0 0 14px;padding:14px 16px;border:1px solid var(--line);border-radius:14px;background:#fff;color:var(--green);font-weight:800;font-size:.88rem;text-align:center;text-decoration:none}
+
+.section-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin-bottom:16px}.primary-small{padding:9px 13px;border:0;border-radius:12px;background:var(--green);color:#fff;font:inherit;font-weight:800;cursor:pointer;white-space:nowrap}
+.text-button{display:inline-block;margin-bottom:16px;border:0;background:transparent;color:var(--green);font:inherit;font-weight:800;cursor:pointer;padding:0}
+
+.compact-month-card{margin:0 0 16px;padding:20px;border-radius:20px;background:#fff;box-shadow:0 12px 30px rgba(23,70,57,.08)}.compact-month-card h3{margin:0 0 12px;font-size:1.1rem}
+.compact-badge-grid{display:grid;gap:8px}
+.compact-chip{padding:11px 13px;border-radius:12px;font-size:.85rem;font-weight:700}
+.compact-chip.filled{background:#e2f3ed;color:var(--green)}
+.compact-chip.empty{background:#f4f5f5;color:#9aa29f;border:1px solid #e4e8e6}
 
 .edit-tabs{position:sticky;top:0;z-index:20;display:flex;gap:6px;overflow-x:auto;margin:0 -18px 18px;padding:12px;background:#fff;border-bottom:1px solid var(--line);box-shadow:0 8px 20px rgba(23,70,57,.05)}.edit-tab{flex:1;min-width:92px;padding:11px 10px;border:0;border-radius:13px;background:transparent;color:var(--muted);font:inherit;font-size:.86rem;font-weight:800;white-space:nowrap;cursor:pointer}.edit-tab.active{background:#e4f3ee;color:var(--green)}
 
