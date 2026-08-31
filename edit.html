@@ -3,333 +3,32 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>ステータス編集 | Pharmacy OS</title>
-<link rel="stylesheet" href="edit.css?v=1">
+  <title>編集 | Pharmacy OS</title>
+<link rel="stylesheet" href="edit.css?v=4">
 </head>
 <body>
   <main class="page-shell">
     <header class="page-header">
       <p class="eyebrow">PHARMACY OS</p>
-      <h1>ステータス編集</h1>
-      <p>各種データをここから直接追加・修正・削除できます。</p>
-      <button id="reload-button" class="reload-button" type="button" aria-label="再読み込み">↻</button>
+      <h1>編集</h1>
+      <p>編集したい分類を選んでください。</p>
     </header>
 
-    <p id="edit-loading" class="loading-message" aria-live="polite">データを読み込んでいます…</p>
-
-    <div id="group-select" class="group-select">
-      <button class="group-card" type="button" data-group="daily">
+    <div class="group-select">
+      <a class="group-card" href="edit-daily.html">
         <span class="group-card-title">日次業務</span>
         <span class="group-card-desc">日報の編集・削除</span>
-      </button>
-      <button class="group-card" type="button" data-group="status">
-        <span class="group-card-title">ステータス</span>
-        <span class="group-card-desc">届出・許可登録・薬剤師名簿など台帳</span>
-      </button>
-      <button class="group-card" type="button" data-group="monthly">
+      </a>
+      <a class="group-card" href="edit-monthly.html">
         <span class="group-card-title">月次業務</span>
         <span class="group-card-desc">後発品調剤率・集中率・保険実績など</span>
-      </button>
+      </a>
+      <a class="group-card" href="edit-status.html">
+        <span class="group-card-title">ステータス</span>
+        <span class="group-card-desc">届出・許可登録・薬剤師名簿など台帳</span>
+      </a>
     </div>
-
-    <button id="group-back-button" class="text-button" type="button" hidden>← 分類選択に戻る</button>
-
-    <nav class="edit-tabs" aria-label="編集分類" hidden>
-      <button class="edit-tab active" data-target="daily-edit-section" data-hash="daily" data-group="daily">日次業務</button>
-      <button class="edit-tab" data-target="notice-edit-section" data-hash="notice" data-group="status">各種届出</button>
-      <button class="edit-tab" data-target="institution-edit-section" data-hash="institution" data-group="status">試験検査機関</button>
-      <button class="edit-tab" data-target="license-edit-section" data-hash="license" data-group="status">許可・登録</button>
-      <button class="edit-tab" data-target="pharmacist-edit-section" data-hash="pharmacist" data-group="status">薬剤師</button>
-      <button class="edit-tab" data-target="seller-edit-section" data-hash="seller" data-group="status">登録販売者</button>
-      <button class="edit-tab" data-target="basic-edit-section" data-hash="basic" data-group="status">基本情報</button>
-      <button class="edit-tab" data-target="generic-edit-section" data-hash="generic" data-group="monthly">後発品調剤率</button>
-      <button class="edit-tab" data-target="concentration-edit-section" data-hash="concentration" data-group="monthly">処方箋集中率</button>
-      <button class="edit-tab" data-target="insurance-edit-section" data-hash="insurance" data-group="monthly">保険調剤実績</button>
-      <button class="edit-tab" data-target="homecare-edit-section" data-hash="homecare" data-group="monthly">在宅患者管理</button>
-      <button class="edit-tab" data-target="survey-edit-section" data-hash="survey" data-group="monthly">処方箋調べ</button>
-    </nav>
-
-    <section id="daily-edit-section" class="card edit-section">
-      <div class="section-heading">
-        <div><p class="section-label">DAILY REPORTS</p><h2>日次業務</h2></div>
-      </div>
-      <div id="daily-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-    </section>
-
-    <section id="notice-edit-section" class="card edit-section" hidden>
-      <div class="section-heading">
-        <div><p class="section-label">NOTICES</p><h2>各種届出</h2></div>
-        <button id="add-notice-button" class="primary-small" type="button">＋ 新規追加</button>
-      </div>
-      <div id="notice-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-    </section>
-
-    <section id="institution-edit-section" class="card edit-section" hidden>
-      <div class="section-heading">
-        <div><p class="section-label">TEST INSTITUTIONS</p><h2>試験検査機関の利用契約</h2></div>
-        <button id="add-institution-button" class="primary-small" type="button">＋ 新規追加</button>
-      </div>
-      <div id="institution-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-    </section>
-
-    <section id="license-edit-section" class="card edit-section" hidden>
-      <div class="section-heading">
-        <div><p class="section-label">LICENSES</p><h2>許可・登録</h2></div>
-        <button id="add-license-button" class="primary-small" type="button">＋ 新規追加</button>
-      </div>
-      <div id="license-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-    </section>
-
-    <section id="pharmacist-edit-section" class="card edit-section" hidden>
-      <div class="section-heading">
-        <div><p class="section-label">PHARMACISTS</p><h2>薬剤師名簿</h2></div>
-        <button id="add-pharmacist-button" class="primary-small" type="button">＋ 新規追加</button>
-      </div>
-      <div id="pharmacist-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-    </section>
-
-    <section id="seller-edit-section" class="card edit-section" hidden>
-      <div class="section-heading">
-        <div><p class="section-label">REGISTERED SELLERS</p><h2>登録販売者名簿</h2></div>
-        <button id="add-seller-button" class="primary-small" type="button">＋ 新規追加</button>
-      </div>
-      <div id="seller-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-    </section>
-
-    <section id="basic-edit-section" class="card edit-section" hidden>
-      <p class="section-label">BASIC INFORMATION</p><h2>薬局基本情報</h2>
-      <form id="basic-form">
-        <input id="basic-id" type="hidden">
-        <input id="basic-insurance-pharmacy-id" type="hidden">
-        <label>薬局・店舗販売業の名称 <b>*</b><input id="basic-name" required></label>
-        <label>開設者氏名(又は代表者)<input id="basic-owner"></label>
-        <label>管理者氏名<input id="basic-manager"></label>
-        <label>所在地<textarea id="basic-address" rows="2"></textarea></label>
-        <label>開局時間<textarea id="basic-hours" rows="3"></textarea></label>
-        <label>休日<input id="basic-holiday"></label>
-        <label>薬局許可年月日<input id="basic-license-date" type="date"></label>
-        <label>保険薬局指定年月日<input id="basic-insurance-date" type="date"></label>
-        <label>保険薬局コード番号<input id="basic-insurance-code"></label>
-        <label>保険薬局の指定更新期限<input id="basic-insurance-renewal" type="date"></label>
-        <div class="form-actions"><button class="primary-button" type="submit">保存する</button></div>
-      </form>
-    </section>
-
-    <section id="generic-edit-section" class="card edit-section" hidden>
-      <p class="section-label">GENERIC RATE</p><h2>後発品調剤率</h2>
-      <p class="help-text">直近36ヶ月分を一覧表示しています。タップして編集できます。</p>
-      <div id="generic-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-    </section>
-
-    <section id="concentration-edit-section" class="card edit-section" hidden>
-      <p class="section-label">CONCENTRATION</p><h2>処方箋集中率</h2>
-      <p class="help-text">直近36ヶ月分を一覧表示しています。月をタップすると、その月の医療機関別の明細を追加・編集できます。</p>
-      <div id="concentration-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-    </section>
-
-    <section id="insurance-edit-section" class="card edit-section" hidden>
-      <p class="section-label">INSURANCE</p><h2>保険調剤実績</h2>
-      <p class="help-text">直近36ヶ月分を一覧表示しています。月をタップすると、その月の区分別の明細を追加・編集できます。</p>
-      <div id="insurance-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-    </section>
-
-    <section id="homecare-edit-section" class="card edit-section" hidden>
-      <p class="section-label">HOMECARE</p><h2>在宅患者への薬学的管理</h2>
-      <p class="help-text">直近36ヶ月分を一覧表示しています。月をタップすると、その月の区分別の明細を追加・編集できます。</p>
-      <div id="homecare-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-    </section>
-
-    <section id="survey-edit-section" class="card edit-section" hidden>
-      <p class="section-label">PRESCRIPTION SURVEY</p><h2>処方箋枚数・受付回数等調べ</h2>
-      <p class="help-text">直近36ヶ月分を一覧表示しています。タップして編集できます。</p>
-      <div id="survey-edit-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-    </section>
   </main>
-
-  <div id="daily-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-modal></div>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="daily-modal-title">
-      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="daily-modal-title">日報を編集</h2></div>
-      <form id="daily-edit-form">
-        <input id="daily-edit-id" type="hidden">
-        <label>日付 <b>*</b><input id="daily-edit-date" type="date" required></label>
-        <label class="checkbox-field"><input id="daily-edit-closed" type="checkbox"> 休業日として記録する</label>
-        <label>開局時間<input id="daily-edit-hours" placeholder="例：08:45～18:00"></label>
-        <label>処方箋枚数<input id="daily-edit-count" type="number" step="1"></label>
-        <label>管理者不在時間<input id="daily-edit-manager-absence" placeholder="例：12:00～13:00"></label>
-        <label>管理者不在時対応者<input id="daily-edit-manager-responder"></label>
-        <label>薬剤師不在時間<input id="daily-edit-pharmacist-absence" placeholder="例：12:00～13:00"></label>
-        <label>薬剤師不在時対応者<input id="daily-edit-pharmacist-responder"></label>
-        <label>特記事項<textarea id="daily-edit-notes" rows="2"></textarea></label>
-        <label>申し送り<textarea id="daily-edit-handover" rows="2"></textarea></label>
-        <label>確認印
-          <select id="daily-edit-confirmed">
-            <option value="">未選択</option>
-            <option value="降旗敏文">降旗敏文</option>
-            <option value="藤川律子">藤川律子</option>
-            <option value="金井佳美">金井佳美</option>
-            <option value="井内淳一郎">井内淳一郎</option>
-            <option value="井内学">井内学</option>
-          </select>
-        </label>
-        <div class="form-actions"><button id="daily-edit-delete-button" class="danger-button" type="button">削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
-      </form>
-    </section>
-  </div>
-
-  <div id="notice-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-modal></div>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="notice-modal-title">
-      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="notice-modal-title">届出を編集</h2></div>
-      <form id="notice-form">
-        <input id="notice-id" type="hidden">
-        <label>届出種別 <b>*</b><input id="notice-type" required></label>
-        <label>取得状況 <b>*</b>
-          <select id="notice-acquisition" required>
-            <option value="取得済み">取得済み</option>
-            <option value="未取得">未取得</option>
-            <option value="対象外">対象外</option>
-            <option value="要確認">要確認</option>
-          </select>
-        </label>
-        <label>有効期限・更新条件<textarea id="notice-deadline" rows="2"></textarea></label>
-        <label>指定年月日<input id="notice-date" type="date"></label>
-        <label>指定番号・備考<textarea id="notice-number" rows="3"></textarea></label>
-        <label>並び順 <b>*</b><input id="notice-order" type="number" min="1" step="1" required></label>
-        <div class="form-actions"><button id="notice-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
-      </form>
-    </section>
-  </div>
-
-  <div id="license-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-modal></div>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="license-modal-title">
-      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="license-modal-title">許可・登録を編集</h2></div>
-      <form id="license-form">
-        <input id="license-id" type="hidden">
-        <label>種類 <b>*</b><input id="license-type" required></label>
-        <label>取得状況 <b>*</b>
-          <select id="license-acquisition" required>
-            <option value="取得済み">取得済み</option>
-            <option value="未取得">未取得</option>
-            <option value="対象外">対象外</option>
-            <option value="要確認">要確認</option>
-          </select>
-        </label>
-        <label>許可(登録・認定・免許)番号<input id="license-number"></label>
-        <label>有効期限<input id="license-date" type="date"></label>
-        <label>並び順 <b>*</b><input id="license-order" type="number" min="1" step="1" required></label>
-        <div class="form-actions"><button id="license-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
-      </form>
-    </section>
-  </div>
-
-  <div id="pharmacist-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-modal></div>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="pharmacist-modal-title">
-      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="pharmacist-modal-title">薬剤師を編集</h2></div>
-      <form id="pharmacist-form">
-        <input id="pharmacist-id" type="hidden">
-        <label>氏名 <b>*</b><input id="pharmacist-name" required></label>
-        <label>薬剤師登録番号<input id="pharmacist-license-number"></label>
-        <label>保険薬剤師登録番号<input id="pharmacist-insurance-number"></label>
-        <label>登録年月日<input id="pharmacist-date" type="date"></label>
-        <label>備考(異動月日)<textarea id="pharmacist-note" rows="2"></textarea></label>
-        <label>並び順 <b>*</b><input id="pharmacist-order" type="number" min="1" step="1" required></label>
-        <div class="form-actions"><button id="pharmacist-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
-      </form>
-    </section>
-  </div>
-
-  <div id="seller-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-modal></div>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="seller-modal-title">
-      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="seller-modal-title">登録販売者を編集</h2></div>
-      <form id="seller-form">
-        <input id="seller-id" type="hidden">
-        <label>氏名 <b>*</b><input id="seller-name" required></label>
-        <label>登録年月日<input id="seller-date" type="date"></label>
-        <label>備考<textarea id="seller-note" rows="2"></textarea></label>
-        <div class="form-actions"><button id="seller-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
-      </form>
-    </section>
-  </div>
-
-  <div id="institution-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-modal></div>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="institution-modal-title">
-      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="institution-modal-title">試験検査機関を編集</h2></div>
-      <form id="institution-form">
-        <input id="institution-id" type="hidden">
-        <label>利用機関名 <b>*</b><input id="institution-name" required></label>
-        <label>契約更新期限<input id="institution-date" type="date"></label>
-        <div class="form-actions"><button id="institution-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
-      </form>
-    </section>
-  </div>
-
-  <div id="generic-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-modal></div>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="generic-modal-title">
-      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="generic-modal-title">後発品調剤率を編集</h2></div>
-      <form id="generic-form">
-        <input id="generic-id" type="hidden">
-        <input id="generic-month-key" type="hidden">
-        <p id="generic-month-display" class="muted"></p>
-        <label>全医薬品規格単位数量<input id="generic-all" type="number" step="any"></label>
-        <label>後発品あり規格単位数量<input id="generic-eligible" type="number" step="any"></label>
-        <label>後発医薬品規格単位数量<input id="generic-generic" type="number" step="any"></label>
-        <label>新指標割合<input id="generic-new-rate" type="number" step="any"></label>
-        <label>カットオフ値割合<input id="generic-cutoff" type="number" step="any"></label>
-        <div class="form-actions"><button id="generic-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
-      </form>
-    </section>
-  </div>
-
-  <div id="subrow-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-modal></div>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="subrow-modal-title">
-      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="subrow-modal-title">明細</h2></div>
-      <p id="subrow-month-display" class="muted"></p>
-      <div id="subrow-list" class="stack-list"></div>
-      <form id="subrow-form">
-        <input id="subrow-id" type="hidden">
-        <label id="subrow-title-label">項目名 <b>*</b><input id="subrow-title" required></label>
-        <div id="subrow-number-fields"></div>
-        <div class="form-actions"><button id="subrow-delete-button" class="danger-button" type="button" hidden>削除する</button><button id="subrow-cancel-button" class="secondary-button" type="button">クリア</button><button class="primary-button" type="submit">この明細を保存</button></div>
-      </form>
-    </section>
-  </div>
-
-  <div id="survey-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-modal></div>
-    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="survey-modal-title">
-      <div class="modal-head"><button class="text-button" type="button" data-close-modal>← 戻る</button><h2 id="survey-modal-title">処方箋調べを編集</h2></div>
-      <form id="survey-form">
-        <input id="survey-id" type="hidden">
-        <input id="survey-month-key" type="hidden">
-        <p id="survey-month-display" class="muted"></p>
-        <label>処方箋受付回数<input id="survey-count" type="number" step="1"></label>
-        <label>歯科（処方箋受付枚数）<input id="survey-dental" type="number" step="1"></label>
-        <label>眼科（処方箋受付枚数）<input id="survey-ophthalmology" type="number" step="1"></label>
-        <label>耳鼻咽喉科（処方箋受付枚数）<input id="survey-ent" type="number" step="1"></label>
-        <label>その他（処方箋受付枚数）<input id="survey-other" type="number" step="1"></label>
-        <div class="survey-calc-preview">
-          <span>合計（処方箋受付枚数）：<strong id="survey-total-preview">0</strong> 枚</span>
-          <p class="muted">保存すると、日次業務の記録日数をもとに1日平均取扱処方箋枚数も自動計算されます。</p>
-        </div>
-        <div class="form-actions"><button id="survey-delete-button" class="danger-button" type="button" hidden>削除する</button><button class="secondary-button" type="button" data-close-modal>キャンセル</button><button class="primary-button" type="submit">保存する</button></div>
-      </form>
-    </section>
-  </div>
-
-  <div id="delete-modal" class="modal" hidden>
-    <div class="modal-backdrop" data-close-delete></div>
-    <section class="confirm-panel" role="alertdialog" aria-modal="true">
-      <div class="warning-icon">!</div><h2 id="delete-modal-title">削除しますか？</h2><p id="delete-target-name"></p><p class="muted">この操作は取り消せません。</p>
-      <button id="confirm-delete" class="danger-button" type="button">削除する</button><button class="secondary-button" type="button" data-close-delete>キャンセル</button>
-    </section>
-  </div>
 
   <nav class="bottom-nav" aria-label="メインメニュー">
     <a class="nav-item" href="home.html"><span>⌂</span><small>ホーム</small></a>
@@ -339,7 +38,5 @@
     <a class="nav-item" href="status.html"><span>◉</span><small>ステータス</small></a>
     <a class="nav-item active" href="edit.html" aria-current="page"><span>✎</span><small>編集</small></a>
   </nav>
-
-<script src="edit.js?v=1"></script>
 </body>
 </html>

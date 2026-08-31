@@ -173,3 +173,67 @@ function formatFileSize(bytes) {
 
 refreshButton.addEventListener("click", loadMonthlyData);
 loadMonthlyData();
+
+/* ===== 処方箋枚数・受付回数等調べ ===== */
+(function () {
+  const monthPicker = document.querySelector("#survey-month-picker");
+  const fields = ["survey-count", "survey-dental", "survey-ophthalmology", "survey-ent", "survey-other"];
+  const totalPreview = document.querySelector("#survey-total-preview");
+  const saveButton = document.querySelector("#survey-save-button");
+  const resultEl = document.querySelector("#survey-result");
+
+  const now = new Date();
+  monthPicker.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+
+  function updateTotalPreview() {
+    const v = (id) => Number(document.getElementById(id).value) || 0;
+    const total = v("survey-dental") + v("survey-ophthalmology") + v("survey-ent") + v("survey-other");
+    totalPreview.textContent = total;
+  }
+  fields.slice(1).forEach((id) => document.getElementById(id).addEventListener("input", updateTotalPreview));
+
+  saveButton.addEventListener("click", async () => {
+    if (!monthPicker.value) {
+      resultEl.textContent = "対象月を選択してください。";
+      resultEl.className = "result-message error";
+      return;
+    }
+    const [year, month] = monthPicker.value.split("-").map(Number);
+    const monthLabel = `${year}年${month}月`;
+    const numOrEmpty = (id) => {
+      const v = document.getElementById(id).value;
+      return v === "" ? "" : Number(v);
+    };
+    const payload = {
+      action: "saveStatusSurveyRow",
+      id: "",
+      row: {
+        "年月": monthLabel,
+        "処方箋受付回数": numOrEmpty("survey-count"),
+        "歯科（処方箋受付枚数）": numOrEmpty("survey-dental"),
+        "眼科（処方箋受付枚数）": numOrEmpty("survey-ophthalmology"),
+        "耳鼻咽喉科（処方箋受付枚数）": numOrEmpty("survey-ent"),
+        "その他（処方箋受付枚数）": numOrEmpty("survey-other")
+      }
+    };
+    saveButton.disabled = true;
+    resultEl.textContent = "保存しています…";
+    resultEl.className = "result-message";
+    try {
+      const response = await fetch(GAS_ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "text/plain;charset=utf-8" },
+        body: JSON.stringify(payload)
+      });
+      const result = await response.json();
+      if (!result.success) throw new Error(result.message || "保存に失敗しました。");
+      resultEl.textContent = `${monthLabel}分を保存しました。`;
+      resultEl.className = "result-message";
+    } catch (error) {
+      resultEl.textContent = `保存できません：${error.message}`;
+      resultEl.className = "result-message error";
+    } finally {
+      saveButton.disabled = false;
+    }
+  });
+})();

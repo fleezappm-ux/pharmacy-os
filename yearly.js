@@ -35,7 +35,7 @@ const COMPACT_CATEGORIES=[
 ];
 
 function compactValue(month,key){
-  if(key==="generic")return month.generic?`${text(month.generic["カットオフ値割合"])}%`:"未入力";
+  if(key==="generic")return month.generic?`${text(month.generic["新指標割合"])}%`:"未入力";
   if(key==="survey"){const v=month.survey?.["1日平均取扱処方箋枚数"];return(v!==null&&v!==undefined&&v!=="")?`${v}枚`:"未入力"}
   if(key==="concentration"){const rows=month.concentration||[];if(!rows.length)return"未入力";const top=[...rows].sort((a,b)=>(Number(b["全体割合"])||0)-(Number(a["全体割合"])||0))[0];return`${top["医療機関名"]||"―"} ${text(top["全体割合"])}%`}
   const rows=month[key]||[];
@@ -83,8 +83,8 @@ function currentFiscalYear(){
 }
 
 function buildGenericItems(){
-  const trend=monthsData.map(m=>({label:m.label,display:m.generic?`${text(m.generic["カットオフ値割合"])}%`:"未入力",key:m.key}));
-  return[{name:"カットオフ値割合",trend}];
+  const trend=monthsData.map(m=>({label:m.label,display:m.generic?`${text(m.generic["新指標割合"])}%`:"未入力",key:m.key}));
+  return[{name:"新指標割合",trend}];
 }
 function buildSurveyItems(){
   const trend=monthsData.map(m=>{const v=m.survey?.["1日平均取扱処方箋枚数"];return{label:m.label,display:(v!==null&&v!==undefined&&v!=="")?`${v}枚`:"未入力",key:m.key}});

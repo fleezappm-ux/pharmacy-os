@@ -36,3 +36,9 @@ tbody th { width:150px; }
   .card { padding:20px 16px; border-radius:20px; }
   .institution-grid { grid-template-columns:1fr; }
 }
+.bottom-nav { position: fixed; z-index: 20; right: 0; bottom: 0; left: 0; display: grid; grid-template-columns: repeat(6, 1fr); width: min(100%, 620px); margin: 0 auto; padding: 8px 4px calc(8px + env(safe-area-inset-bottom)); background: rgba(255,255,255,.97); border-top: 1px solid var(--line); box-shadow: 0 -8px 25px rgba(20,51,42,.07); }
+.nav-item { display: grid; justify-items: center; gap: 2px; padding: 3px 0; color: #78837f; background: transparent; border: 0; text-decoration:none; font: inherit; }
+.nav-item span { font-size: 1.35rem; line-height: 1; }
+.nav-item small { font-size: .67rem; }
+.nav-item.active { color: var(--green); font-weight: 800; }
+.page-shell{padding-bottom:96px}

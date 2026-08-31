@@ -93,6 +93,23 @@
           <p class="help-text">医保・国保などの月間実績と、発行医療機関数を入力します。</p>
           <a class="primary-button insurance-link" href="insurance.html">入力画面を開く</a>
         </section>
+
+        <section class="panel" aria-labelledby="survey-heading">
+          <div class="section-heading">
+            <div><p class="section-kicker">Prescription Survey</p><h2 id="survey-heading">処方箋枚数・受付回数等調べ</h2></div>
+            <span class="status-chip ready">入力式</span>
+          </div>
+          <p class="help-text">診療科別の処方箋枚数を入力すると、合計と1日平均取扱処方箋枚数を自動計算します。</p>
+          <label>対象月<input id="survey-month-picker" type="month"></label>
+          <label>処方箋受付回数<input id="survey-count" type="number" step="1"></label>
+          <label>歯科（処方箋受付枚数）<input id="survey-dental" type="number" step="1"></label>
+          <label>眼科（処方箋受付枚数）<input id="survey-ophthalmology" type="number" step="1"></label>
+          <label>耳鼻咽喉科（処方箋受付枚数）<input id="survey-ent" type="number" step="1"></label>
+          <label>その他（処方箋受付枚数）<input id="survey-other" type="number" step="1"></label>
+          <p class="survey-total-preview">合計（処方箋受付枚数）：<strong id="survey-total-preview">0</strong> 枚</p>
+          <button id="survey-save-button" class="primary-button" type="button">保存する</button>
+          <p id="survey-result" class="result-message" aria-live="polite"></p>
+        </section>
       </main>
 
       <nav class="bottom-nav" aria-label="メインナビゲーション">
