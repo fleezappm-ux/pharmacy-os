@@ -46,7 +46,7 @@ function compactValue(month,key){
 
 function renderCompactView(){
   const c=document.getElementById("compact-list");c.textContent="";
-  monthsData.slice(0,3).forEach(month=>{
+  monthsData.slice(1,4).forEach(month=>{
     const card=document.createElement("div");card.className="compact-month-card";
     const title=document.createElement("h3");title.textContent=month.label;card.appendChild(title);
     const grid=document.createElement("div");grid.className="compact-badge-grid";
