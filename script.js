@@ -5,8 +5,7 @@
 
 "use strict";
 
-const GAS_ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbzS1F43nO_ZDG6X6gH4qfUeprWmFFOZuthQKjbXxuxkoTWY0QMvbAfURd2speGZEa6x/exec";
+const GAS_ENDPOINT = PHARMACY_CONFIG.GAS_URL;
 
 const DEFAULT_HOURS = {
   0: "休局",
@@ -227,3 +226,11 @@ setupConditionalSelect("#pharmacist-absence", "#pharmacist-absence-fields", [
   "#pharmacist-end",
 ]);
 setupConditionalSelect("#inquiry", "#inquiry-fields", ["#inquiry-details"]);
+
+const confirmedBySelect = document.querySelector("#confirmed-by");
+(PHARMACY_CONFIG.PHARMACISTS || []).forEach((name) => {
+  const option = document.createElement("option");
+  option.value = name;
+  option.textContent = name;
+  confirmedBySelect.appendChild(option);
+});

@@ -1,7 +1,6 @@
 "use strict";
 
-const GAS_ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbzS1F43nO_ZDG6X6gH4qfUeprWmFFOZuthQKjbXxuxkoTWY0QMvbAfURd2speGZEa6x/exec";
+const GAS_ENDPOINT = PHARMACY_CONFIG.GAS_URL;
 
 const controls = {
   generic: {

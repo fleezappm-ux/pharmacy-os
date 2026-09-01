@@ -1,6 +1,6 @@
 "use strict";
 
-const GAS_URL = "https://script.google.com/macros/s/AKfycbzS1F43nO_ZDG6X6gH4qfUeprWmFFOZuthQKjbXxuxkoTWY0QMvbAfURd2speGZEa6x/exec";
+const GAS_URL = PHARMACY_CONFIG.GAS_URL;
 const categories = ["医保", "国保", "後期高齢", "公費（単・複）", "労災", "総合計"];
 const totalCategoryIndex = categories.length - 1;
 const fields = [

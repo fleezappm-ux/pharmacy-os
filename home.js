@@ -1,7 +1,8 @@
 "use strict";
 
-const GAS_ENDPOINT =
-  "https://script.google.com/macros/s/AKfycbzS1F43nO_ZDG6X6gH4qfUeprWmFFOZuthQKjbXxuxkoTWY0QMvbAfURd2speGZEa6x/exec";
+const GAS_ENDPOINT = PHARMACY_CONFIG.GAS_URL;
+document.title=`Pharmacy OS | ${PHARMACY_CONFIG.PHARMACY_NAME}`;
+document.addEventListener("DOMContentLoaded",()=>{const h=document.getElementById("pharmacy-name-heading");if(h)h.textContent=PHARMACY_CONFIG.PHARMACY_NAME});
 
 const WEEKDAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
 const DEFAULT_HOURS = {

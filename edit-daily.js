@@ -1,6 +1,6 @@
 "use strict";
 
-const GAS_URL="https://script.google.com/macros/s/AKfycbzS1F43nO_ZDG6X6gH4qfUeprWmFFOZuthQKjbXxuxkoTWY0QMvbAfURd2speGZEa6x/exec";
+const GAS_URL=PHARMACY_CONFIG.GAS_URL;
 const loadingMessage=document.getElementById("edit-loading");
 let deleteContext=null;
 const text=(v,f="―")=>v===null||v===undefined||v===""?f:String(v);
@@ -87,5 +87,11 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
 
 document.querySelectorAll("[data-close-modal]").forEach(x=>x.addEventListener("click",hideAllEditModals));
 document.querySelectorAll("[data-close-delete]").forEach(x=>x.addEventListener("click",()=>hideModal("delete-modal")));
+
+(PHARMACY_CONFIG.PHARMACISTS||[]).forEach(name=>{
+  const option=document.createElement("option");
+  option.value=name;option.textContent=name;
+  document.getElementById("daily-edit-confirmed").appendChild(option);
+});
 
 loadDailyReports();
