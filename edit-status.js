@@ -74,7 +74,7 @@ document.getElementById("license-form").addEventListener("submit",async e=>{
 /* ===== 薬剤師名簿 ===== */
 function normalizePharmacist(raw,index){const name=pick(raw,["薬剤師　氏名"],"氏名未設定");const licenseNumber=pick(raw,["薬剤師登録番号"],"");const insuranceNumber=pick(raw,["保険薬剤師登録番号"],"");const dateRaw=pick(raw,["登録年月日"],"");const date=typeof dateRaw==="object"&&dateRaw!==null?(dateRaw.start||""):dateRaw;const note=pick(raw,["備考(異動月日)"],"");const order=Number(pick(raw,["並び順"],index+1))||index+1;const id=pick(raw,["id"],"");return{raw,id,name,licenseNumber,insuranceNumber,date,note,order}}
 
-function renderPharmacistList(){const c=document.getElementById("pharmacist-edit-list");c.innerHTML='<p class="empty-message">セキュリティ対応のため、現在この機能は一時停止しています。</p>'}
+function renderPharmacistList(){const c=document.getElementById("pharmacist-edit-list");c.textContent="";if(!pharmacists.length){c.innerHTML='<p class="empty-message">薬剤師の登録はありません。</p>';return}pharmacists.slice().sort((a,b)=>a.order-b.order).forEach(n=>{const row=document.createElement("button");row.type="button";row.className="list-row";const main=document.createElement("div");main.className="list-main";const title=document.createElement("span");title.className="list-title";title.textContent=n.name;main.appendChild(title);const parts=[];if(n.licenseNumber)parts.push(`薬剤師登録番号：${n.licenseNumber}`);if(n.insuranceNumber)parts.push(`保険薬剤師登録番号：${n.insuranceNumber}`);if(n.date)parts.push(`登録年月日：${formatDate(n.date)}`);const detail=document.createElement("span");detail.className="list-detail";detail.textContent=parts.length?parts.join(" ／ "):"―";main.appendChild(detail);row.append(main);row.addEventListener("click",()=>openPharmacistForm(n));c.appendChild(row)})}
 
 function openPharmacistForm(n){document.getElementById("pharmacist-modal-title").textContent=n?"薬剤師を編集":"新規薬剤師を追加";document.getElementById("pharmacist-id").value=n?.id||"";document.getElementById("pharmacist-name").value=n?.name||"";document.getElementById("pharmacist-license-number").value=n?.licenseNumber||"";document.getElementById("pharmacist-insurance-number").value=n?.insuranceNumber||"";document.getElementById("pharmacist-date").value=n?.date?String(n.date).slice(0,10):"";document.getElementById("pharmacist-note").value=n?.note||"";document.getElementById("pharmacist-order").value=n?.order||((pharmacists.at(-1)?.order||0)+1);const btn=document.getElementById("pharmacist-delete-button");btn.hidden=!n;btn.onclick=n?()=>openDeleteConfirm("pharmacist",{id:n.id,type:n.name,order:n.order}):null;showModal("pharmacist-modal")}
 
@@ -217,7 +217,7 @@ async function loadAll(){loadingMessage.className="loading-message";loadingMessa
 document.getElementById("reload-button").addEventListener("click",loadAll);
 document.getElementById("add-notice-button").addEventListener("click",()=>openNoticeForm(null));
 document.getElementById("add-license-button").addEventListener("click",()=>openLicenseForm(null));
-document.getElementById("add-pharmacist-button").disabled=true;
+document.getElementById("add-pharmacist-button").addEventListener("click",()=>openPharmacistForm(null));
 document.getElementById("add-seller-button").addEventListener("click",()=>openSellerForm(null));
 document.getElementById("add-institution-button").addEventListener("click",()=>openInstitutionForm(null));
 document.querySelectorAll("[data-close-modal]").forEach(x=>x.addEventListener("click",hideAllEditModals));
