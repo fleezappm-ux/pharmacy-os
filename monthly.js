@@ -55,20 +55,10 @@ async function uploadCsv(control) {
   try {
     const csvBase64 = await fileToBase64(selectedFile);
     setResult(control, "Notionへ保存しています。画面を閉じずにお待ちください…");
-    const response = await fetch(GAS_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "text/plain;charset=utf-8" },
-      body: JSON.stringify({
-        action: control.action,
-        idToken: getIdToken(),
-        fileName: selectedFile.name,
-        csvBase64,
-      }),
-      redirect: "follow",
+    const data = await authFetch(control.action, {
+      fileName: selectedFile.name,
+      csvBase64,
     });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    if (handleAuthErrorIfNeeded(data)) return;
     if (!data.success) throw new Error(data.message || "取込に失敗しました。");
 
     setBadge(control, "取込済み", "success");
@@ -202,8 +192,6 @@ requireAuth(loadMonthlyData);
       return v === "" ? "" : Number(v);
     };
     const payload = {
-      action: "saveStatusSurveyRow",
-      idToken: getIdToken(),
       id: "",
       row: {
         "年月": monthLabel,
@@ -218,13 +206,7 @@ requireAuth(loadMonthlyData);
     resultEl.textContent = "保存しています…";
     resultEl.className = "result-message";
     try {
-      const response = await fetch(GAS_ENDPOINT, {
-        method: "POST",
-        headers: { "Content-Type": "text/plain;charset=utf-8" },
-        body: JSON.stringify(payload)
-      });
-      const result = await response.json();
-      if (handleAuthErrorIfNeeded(result)) return;
+      const result = await authFetch("saveStatusSurveyRow", payload);
       if (!result.success) throw new Error(result.message || "保存に失敗しました。");
       resultEl.textContent = `${monthLabel}分を保存しました。`;
       resultEl.className = "result-message";

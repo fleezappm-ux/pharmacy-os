@@ -347,11 +347,6 @@ form.addEventListener(
       collectHomecareRows();
 
     const payload = {
-      action:
-        "saveInsuranceAndHomecareRecords",
-
-      idToken: getIdToken(),
-
       targetMonth,
 
       rows,
@@ -371,22 +366,7 @@ form.addEventListener(
     };
 
     try {
-      const response =
-        await fetch(GAS_URL, {
-          method: "POST",
-
-          headers: {
-            "Content-Type":
-              "text/plain;charset=utf-8"
-          },
-
-          body: JSON.stringify(payload)
-        });
-
-      const result =
-        await response.json();
-
-      if (handleAuthErrorIfNeeded(result)) return;
+      const result = await authFetch("saveInsuranceAndHomecareRecords", payload);
 
       if (!result.success) {
         throw new Error(

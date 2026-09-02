@@ -173,10 +173,24 @@ async function sendDailyRecord(payload) {
   }
 
   const result = await response.json();
+
   if (result.authError) {
     clearAuth();
-    throw new Error("ログインの有効期限が切れています。ページを再読み込みしてログインし直してください。");
+    // 入力内容(payload)を保持したままログイン画面を出し、
+    // ログイン成功後に新しいトークンで自動的に再送します。
+    return new Promise((resolve, reject) => {
+      requireAuth(async () => {
+        try {
+          const retryPayload = { ...payload, idToken: getIdToken() };
+          const retryResult = await sendDailyRecord(retryPayload);
+          resolve(retryResult);
+        } catch (e) {
+          reject(e);
+        }
+      });
+    });
   }
+
   if (!result.success) {
     throw new Error(result.message || "Notionへの保存に失敗しました。");
   }
@@ -230,11 +244,21 @@ requireAuth(() => {
   ]);
   setupConditionalSelect("#inquiry", "#inquiry-fields", ["#inquiry-details"]);
 
-  const confirmedBySelect = document.querySelector("#confirmed-by");
-  (PHARMACY_CONFIG.PHARMACISTS || []).forEach((name) => {
-    const option = document.createElement("option");
-    option.value = name;
-    option.textContent = name;
-    confirmedBySelect.appendChild(option);
-  });
+  loadPharmacistNames();
 });
+
+async function loadPharmacistNames() {
+  try {
+    const result = await authFetch("pharmacistNames");
+    if (!result.success) return;
+    const confirmedBySelect = document.querySelector("#confirmed-by");
+    (result.names || []).forEach((name) => {
+      const option = document.createElement("option");
+      option.value = name;
+      option.textContent = name;
+      confirmedBySelect.appendChild(option);
+    });
+  } catch (e) {
+    console.error("薬剤師名簿の取得に失敗しました。", e);
+  }
+}
