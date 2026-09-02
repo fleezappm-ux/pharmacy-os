@@ -88,12 +88,7 @@ async function loadMonthlyData() {
   refreshButton.textContent = "…";
   monthlyStatus.textContent = "";
   try {
-    const response = await fetch(`${GAS_ENDPOINT}?action=monthly&idToken=${encodeURIComponent(getIdToken())}&t=${Date.now()}`, {
-      redirect: "follow",
-    });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const data = await response.json();
-    if (handleAuthErrorIfNeeded(data, loadMonthlyData)) return;
+    const data = await authFetch("monthly");
     if (!data.success) throw new Error(data.message || "取得に失敗しました。");
     renderSummary(data);
   } catch (error) {

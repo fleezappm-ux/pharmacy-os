@@ -12,7 +12,7 @@ function showModal(id){document.getElementById(id).hidden=false;document.body.st
 function hideModal(id){document.getElementById(id).hidden=true;if(MODAL_IDS.every(m=>document.getElementById(m).hidden))document.body.style.overflow=""}
 function hideAllEditModals(){MODAL_IDS.filter(m=>m!=="delete-modal").forEach(hideModal)}
 
-async function apiWrite(action,payload){const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,idToken:getIdToken(),...payload})});const j=await r.json();if(j.authError){clearAuth();requireAuth(()=>location.reload());throw new Error("ログインし直してください。")}if(!j.success)throw new Error(j.message||"保存に失敗しました。");return j}
+async function apiWrite(action,payload){const j=await authFetch(action,payload);if(!j.success)throw new Error(j.message||"保存に失敗しました。");return j}
 
 /* ===== 後発品調剤率（月1件） ===== */
 function findMonth(monthKey){return monthsData.find(m=>m.key===monthKey)}
@@ -297,8 +297,7 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
 
 async function loadYearlyCategories(){
   try{
-    const response=await fetch(`${GAS_URL}?action=yearlyPerformance&idToken=${encodeURIComponent(getIdToken())}&_=${Date.now()}`),result=await response.json();
-    if(handleAuthErrorIfNeeded(result,loadYearlyCategories))return;
+    const result=await authFetch("yearlyPerformance");
     if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");
     monthsData=result.months||[];
     renderGenericList();

@@ -69,10 +69,7 @@ openingType.addEventListener("change", () => { openingTypeTouched = true; });
 async function applyDefaultClosedState() {
   if (openingTypeTouched || !dateInput.value) return;
   try {
-    const response = await fetch(
-      `${GAS_ENDPOINT}?action=dayType&date=${dateInput.value}&idToken=${encodeURIComponent(getIdToken())}&t=${Date.now()}`
-    );
-    const data = await response.json();
+    const data = await authFetch("dayType", { date: dateInput.value });
     if (data.success && data.isDefaultClosed && openingType.value === "normal") {
       openingType.value = "closed";
       updateOpeningFields();

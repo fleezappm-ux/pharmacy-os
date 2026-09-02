@@ -100,6 +100,26 @@ function renderGoogleButton() {
 }
 
 /**
+ * GASへ認証付きでリクエストします。読み取り・書き込みどちらも、
+ * ログイントークンをURLに含めず、POSTのJSON本文で送ります。
+ * 認証エラー(authError)が返ってきた場合は、ログイン画面を出し直します。
+ */
+async function authFetch(action, extraBody) {
+  const response = await fetch(PHARMACY_CONFIG.GAS_URL, {
+    method: "POST",
+    headers: { "Content-Type": "text/plain;charset=utf-8" },
+    body: JSON.stringify({ action, idToken: getIdToken(), ...(extraBody || {}) })
+  });
+  const result = await response.json();
+  if (result.authError) {
+    clearAuth();
+    requireAuth(() => location.reload());
+    throw new Error(result.message || "ログインし直してください。");
+  }
+  return result;
+}
+
+/**
  * GASからの応答が認証エラー(authError:true)だった場合、ログイン状態をクリアして
  * ログイン画面を出し直します。処理した場合はtrueを返します。
  */

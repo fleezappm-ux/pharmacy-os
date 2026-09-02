@@ -9,8 +9,7 @@ async function loadYearlyData(){
   loadingMessage.className="loading-message";
   loadingMessage.textContent="データを読み込んでいます…";
   try{
-    const response=await fetch(`${GAS_URL}?action=yearlyPerformance&idToken=${encodeURIComponent(getIdToken())}&_=${Date.now()}`),result=await response.json();
-    if(handleAuthErrorIfNeeded(result,loadYearlyData))return;
+    const result=await authFetch("yearlyPerformance");
     if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");
     monthsData=result.months||[];
     renderCompactView();
