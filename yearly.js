@@ -9,7 +9,8 @@ async function loadYearlyData(){
   loadingMessage.className="loading-message";
   loadingMessage.textContent="データを読み込んでいます…";
   try{
-    const response=await fetch(`${GAS_URL}?action=yearlyPerformance&_=${Date.now()}`),result=await response.json();
+    const response=await fetch(`${GAS_URL}?action=yearlyPerformance&idToken=${encodeURIComponent(getIdToken())}&_=${Date.now()}`),result=await response.json();
+    if(handleAuthErrorIfNeeded(result,loadYearlyData))return;
     if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");
     monthsData=result.months||[];
     renderCompactView();
@@ -187,4 +188,4 @@ document.querySelectorAll(".edit-tab").forEach(t=>t.addEventListener("click",()=
   document.getElementById(t.dataset.target).hidden=false;
 }));
 
-loadYearlyData();
+requireAuth(loadYearlyData);

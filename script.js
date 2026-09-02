@@ -70,7 +70,7 @@ async function applyDefaultClosedState() {
   if (openingTypeTouched || !dateInput.value) return;
   try {
     const response = await fetch(
-      `${GAS_ENDPOINT}?action=dayType&date=${dateInput.value}&t=${Date.now()}`
+      `${GAS_ENDPOINT}?action=dayType&date=${dateInput.value}&idToken=${encodeURIComponent(getIdToken())}&t=${Date.now()}`
     );
     const data = await response.json();
     if (data.success && data.isDefaultClosed && openingType.value === "normal") {
@@ -144,6 +144,7 @@ function createPayload(formData) {
 
   return {
     workDate: formData.get("date"),
+    idToken: getIdToken(),
     openingHours,
     isClosed,
     prescriptionCount: Number(formData.get("prescriptionCount") || 0),
@@ -175,6 +176,10 @@ async function sendDailyRecord(payload) {
   }
 
   const result = await response.json();
+  if (result.authError) {
+    clearAuth();
+    throw new Error("ログインの有効期限が切れています。ページを再読み込みしてログインし直してください。");
+  }
   if (!result.success) {
     throw new Error(result.message || "Notionへの保存に失敗しました。");
   }
@@ -206,31 +211,33 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
-dateInput.value = getLocalDateString();
-dateInput.addEventListener("change", () => {
-  openingTypeTouched = false;
-  openingType.value = "normal";
+requireAuth(() => {
+  dateInput.value = getLocalDateString();
+  dateInput.addEventListener("change", () => {
+    openingTypeTouched = false;
+    openingType.value = "normal";
+    updateOpeningFields();
+    applyDefaultClosedState();
+  });
+  openingType.addEventListener("change", updateOpeningFields);
   updateOpeningFields();
   applyDefaultClosedState();
-});
-openingType.addEventListener("change", updateOpeningFields);
-updateOpeningFields();
-applyDefaultClosedState();
 
-setupConditionalSelect("#manager-absence", "#manager-absence-fields", [
-  "#manager-start",
-  "#manager-end",
-]);
-setupConditionalSelect("#pharmacist-absence", "#pharmacist-absence-fields", [
-  "#pharmacist-start",
-  "#pharmacist-end",
-]);
-setupConditionalSelect("#inquiry", "#inquiry-fields", ["#inquiry-details"]);
+  setupConditionalSelect("#manager-absence", "#manager-absence-fields", [
+    "#manager-start",
+    "#manager-end",
+  ]);
+  setupConditionalSelect("#pharmacist-absence", "#pharmacist-absence-fields", [
+    "#pharmacist-start",
+    "#pharmacist-end",
+  ]);
+  setupConditionalSelect("#inquiry", "#inquiry-fields", ["#inquiry-details"]);
 
-const confirmedBySelect = document.querySelector("#confirmed-by");
-(PHARMACY_CONFIG.PHARMACISTS || []).forEach((name) => {
-  const option = document.createElement("option");
-  option.value = name;
-  option.textContent = name;
-  confirmedBySelect.appendChild(option);
+  const confirmedBySelect = document.querySelector("#confirmed-by");
+  (PHARMACY_CONFIG.PHARMACISTS || []).forEach((name) => {
+    const option = document.createElement("option");
+    option.value = name;
+    option.textContent = name;
+    confirmedBySelect.appendChild(option);
+  });
 });

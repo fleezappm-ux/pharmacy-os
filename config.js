@@ -11,5 +11,8 @@ const PHARMACY_CONFIG = {
   PHARMACISTS: ["降旗敏文", "藤川律子", "金井佳美", "井内淳一郎", "井内学"],
 
   // 薬局名
-  PHARMACY_NAME: "あおい薬局"
+  PHARMACY_NAME: "あおい薬局",
+
+  // Googleログイン用のOAuthクライアントID
+  GOOGLE_CLIENT_ID: "891093126584-adu91hage8pfhvqqi4dlr9upvnl32m69.apps.googleusercontent.com"
 };

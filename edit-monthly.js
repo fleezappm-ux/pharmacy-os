@@ -12,7 +12,7 @@ function showModal(id){document.getElementById(id).hidden=false;document.body.st
 function hideModal(id){document.getElementById(id).hidden=true;if(MODAL_IDS.every(m=>document.getElementById(m).hidden))document.body.style.overflow=""}
 function hideAllEditModals(){MODAL_IDS.filter(m=>m!=="delete-modal").forEach(hideModal)}
 
-async function apiWrite(action,payload){const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,...payload})});const j=await r.json();if(!j.success)throw new Error(j.message||"保存に失敗しました。");return j}
+async function apiWrite(action,payload){const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,idToken:getIdToken(),...payload})});const j=await r.json();if(j.authError){clearAuth();requireAuth(()=>location.reload());throw new Error("ログインし直してください。")}if(!j.success)throw new Error(j.message||"保存に失敗しました。");return j}
 
 /* ===== 後発品調剤率（月1件） ===== */
 function findMonth(monthKey){return monthsData.find(m=>m.key===monthKey)}
@@ -255,24 +255,7 @@ document.getElementById("survey-form").addEventListener("submit",async e=>{
   }
 });
 
-async function loadYearlyCategories(){
-  try{
-    const response=await fetch(`${GAS_URL}?action=yearlyPerformance&_=${Date.now()}`),result=await response.json();
-    if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");
-    monthsData=result.months||[];
-    renderGenericList();
-    renderSubCategoryList("concentration");
-    renderSubCategoryList("insurance");
-    renderSubCategoryList("homecare");
-    renderSurveyList();
-  }catch(e){
-    ["generic-edit-list","concentration-edit-list","insurance-edit-list","homecare-edit-list","survey-edit-list"].forEach(id=>{
-      document.getElementById(id).innerHTML='<p class="empty-message">読み込みに失敗しました。</p>';
-    });
-  }
-}
 
-/* ===== 削除確認 ===== */
 const DELETE_LABELS={generic:"この月の後発品調剤率データを削除しますか？",subrow:"この明細を削除しますか？",survey:"この月の処方箋調べデータを削除しますか？"};
 const DELETE_ACTIONS={generic:"deleteGenericRateRow",subrow:"deleteMonthlyCategoryRow",survey:"deleteStatusSurveyRow"};
 const DELETE_MODALS={generic:"generic-modal",subrow:"subrow-modal",survey:"survey-modal"};
@@ -314,7 +297,8 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
 
 async function loadYearlyCategories(){
   try{
-    const response=await fetch(`${GAS_URL}?action=yearlyPerformance&_=${Date.now()}`),result=await response.json();
+    const response=await fetch(`${GAS_URL}?action=yearlyPerformance&idToken=${encodeURIComponent(getIdToken())}&_=${Date.now()}`),result=await response.json();
+    if(handleAuthErrorIfNeeded(result,loadYearlyCategories))return;
     if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");
     monthsData=result.months||[];
     renderGenericList();
@@ -334,4 +318,4 @@ document.querySelectorAll("[data-close-modal]").forEach(x=>x.addEventListener("c
 document.querySelectorAll("[data-close-delete]").forEach(x=>x.addEventListener("click",()=>hideModal("delete-modal")));
 document.querySelectorAll(".edit-tab").forEach(t=>t.addEventListener("click",()=>{document.querySelectorAll(".edit-tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");document.querySelectorAll(".edit-section").forEach(s=>s.hidden=true);document.getElementById(t.dataset.target).hidden=false}));
 
-loadYearlyCategories();
+requireAuth(loadYearlyCategories);

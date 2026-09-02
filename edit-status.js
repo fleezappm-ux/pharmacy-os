@@ -12,7 +12,7 @@ function showModal(id){document.getElementById(id).hidden=false;document.body.st
 function hideModal(id){document.getElementById(id).hidden=true;if(MODAL_IDS.every(m=>document.getElementById(m).hidden))document.body.style.overflow=""}
 function hideAllEditModals(){MODAL_IDS.filter(m=>m!=="delete-modal").forEach(hideModal)}
 
-async function apiWrite(action,payload){const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,...payload})});const j=await r.json();if(!j.success)throw new Error(j.message||"保存に失敗しました。");return j}
+async function apiWrite(action,payload){const r=await fetch(GAS_URL,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({action,idToken:getIdToken(),...payload})});const j=await r.json();if(j.authError){clearAuth();requireAuth(()=>location.reload());throw new Error("ログインし直してください。")}if(!j.success)throw new Error(j.message||"保存に失敗しました。");return j}
 
 /* ===== 各種届出 ===== */
 function normalizeNotice(raw,index){const type=pick(raw,["届出種別","name","title"],"名称未設定");const condition=pick(raw,["有効期限"],"");const dateRaw=pick(raw,["指定年月日"],"");const date=typeof dateRaw==="object"&&dateRaw!==null?(dateRaw.start||""):dateRaw;const number=pick(raw,["指定番号・備考"],"");const order=Number(pick(raw,["並び順"],index+1))||index+1;const acquisition=pick(raw,["取得状況"],"取得済み");const id=pick(raw,["id"],"");return{raw,id,type,condition,date,number,order,acquisition}}
@@ -212,7 +212,7 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
 });
 
 /* ===== 読み込み ===== */
-async function loadAll(){loadingMessage.className="loading-message";loadingMessage.textContent="データを読み込んでいます…";try{const response=await fetch(`${GAS_URL}?action=status&_=${Date.now()}`),result=await response.json();if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");const data=result.data||result;notices=(data.notices||[]).map(normalizeNotice);licenses=(data.licenses||[]).map(normalizeLicense);pharmacists=(data.pharmacists||[]).map(normalizePharmacist);sellers=(data.registeredSellers||[]).map(normalizeSeller);institutions=(data.testInstitutions||[]).map(normalizeInstitution);renderNoticeList();renderLicenseList();renderPharmacistList();renderSellerList();renderInstitutionList();populateBasicForm(data.basicInfo);loadingMessage.textContent=""}catch(e){loadingMessage.className="loading-message error";loadingMessage.textContent="現在、データを読み込めません。GAS連携を確認してください。"}}
+async function loadAll(){loadingMessage.className="loading-message";loadingMessage.textContent="データを読み込んでいます…";try{const response=await fetch(`${GAS_URL}?action=status&idToken=${encodeURIComponent(getIdToken())}&_=${Date.now()}`),result=await response.json();if(handleAuthErrorIfNeeded(result,loadAll))return;if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");const data=result.data||result;notices=(data.notices||[]).map(normalizeNotice);licenses=(data.licenses||[]).map(normalizeLicense);pharmacists=(data.pharmacists||[]).map(normalizePharmacist);sellers=(data.registeredSellers||[]).map(normalizeSeller);institutions=(data.testInstitutions||[]).map(normalizeInstitution);renderNoticeList();renderLicenseList();renderPharmacistList();renderSellerList();renderInstitutionList();populateBasicForm(data.basicInfo);loadingMessage.textContent=""}catch(e){loadingMessage.className="loading-message error";loadingMessage.textContent="現在、データを読み込めません。GAS連携を確認してください。"}}
 
 document.getElementById("reload-button").addEventListener("click",loadAll);
 document.getElementById("add-notice-button").addEventListener("click",()=>openNoticeForm(null));
@@ -224,4 +224,4 @@ document.querySelectorAll("[data-close-modal]").forEach(x=>x.addEventListener("c
 document.querySelectorAll("[data-close-delete]").forEach(x=>x.addEventListener("click",()=>hideModal("delete-modal")));
 document.querySelectorAll(".edit-tab").forEach(t=>t.addEventListener("click",()=>{document.querySelectorAll(".edit-tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");document.querySelectorAll(".edit-section").forEach(s=>s.hidden=true);document.getElementById(t.dataset.target).hidden=false}));
 
-loadAll();
+requireAuth(loadAll);

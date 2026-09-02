@@ -350,6 +350,8 @@ form.addEventListener(
       action:
         "saveInsuranceAndHomecareRecords",
 
+      idToken: getIdToken(),
+
       targetMonth,
 
       rows,
@@ -383,6 +385,8 @@ form.addEventListener(
 
       const result =
         await response.json();
+
+      if (handleAuthErrorIfNeeded(result)) return;
 
       if (!result.success) {
         throw new Error(
@@ -445,7 +449,9 @@ function showSaveResult(result) {
     statusMessage.appendChild(row);
   });
 }
-renderRows();
-initializeMonthSelectors();
-updateGrandTotal();
-updateInstitutionTotal();
+requireAuth(() => {
+  renderRows();
+  initializeMonthSelectors();
+  updateGrandTotal();
+  updateInstitutionTotal();
+});

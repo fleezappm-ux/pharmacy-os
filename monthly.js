@@ -60,6 +60,7 @@ async function uploadCsv(control) {
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
         action: control.action,
+        idToken: getIdToken(),
         fileName: selectedFile.name,
         csvBase64,
       }),
@@ -67,6 +68,7 @@ async function uploadCsv(control) {
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
+    if (handleAuthErrorIfNeeded(data)) return;
     if (!data.success) throw new Error(data.message || "取込に失敗しました。");
 
     setBadge(control, "取込済み", "success");
@@ -86,11 +88,12 @@ async function loadMonthlyData() {
   refreshButton.textContent = "…";
   monthlyStatus.textContent = "";
   try {
-    const response = await fetch(`${GAS_ENDPOINT}?action=monthly&t=${Date.now()}`, {
+    const response = await fetch(`${GAS_ENDPOINT}?action=monthly&idToken=${encodeURIComponent(getIdToken())}&t=${Date.now()}`, {
       redirect: "follow",
     });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
+    if (handleAuthErrorIfNeeded(data, loadMonthlyData)) return;
     if (!data.success) throw new Error(data.message || "取得に失敗しました。");
     renderSummary(data);
   } catch (error) {
@@ -171,7 +174,7 @@ function formatFileSize(bytes) {
 }
 
 refreshButton.addEventListener("click", loadMonthlyData);
-loadMonthlyData();
+requireAuth(loadMonthlyData);
 
 /* ===== 処方箋枚数・受付回数等調べ ===== */
 (function () {
@@ -205,6 +208,7 @@ loadMonthlyData();
     };
     const payload = {
       action: "saveStatusSurveyRow",
+      idToken: getIdToken(),
       id: "",
       row: {
         "年月": monthLabel,
@@ -225,6 +229,7 @@ loadMonthlyData();
         body: JSON.stringify(payload)
       });
       const result = await response.json();
+      if (handleAuthErrorIfNeeded(result)) return;
       if (!result.success) throw new Error(result.message || "保存に失敗しました。");
       resultEl.textContent = `${monthLabel}分を保存しました。`;
       resultEl.className = "result-message";

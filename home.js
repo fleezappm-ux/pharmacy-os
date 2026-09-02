@@ -118,11 +118,12 @@ async function loadHomeData() {
   homeStatus.textContent = "";
 
   try {
-    const url = `${GAS_ENDPOINT}?action=home&t=${Date.now()}`;
+    const url = `${GAS_ENDPOINT}?action=home&idToken=${encodeURIComponent(getIdToken())}&t=${Date.now()}`;
     const response = await fetch(url, { redirect: "follow" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
     const data = await response.json();
+    if (handleAuthErrorIfNeeded(data, loadHomeData)) return;
     if (!data.success) throw new Error(data.message || "取得に失敗しました。");
 
     averageLabel.textContent = `${data.previousMonthLabel}の1日あたり平均処方箋枚数`;
@@ -239,9 +240,10 @@ function renderReminderStatus(data) {
 
 async function loadReminderStatus() {
   try {
-    const response = await fetch(`${GAS_ENDPOINT}?action=reminders&t=${Date.now()}`, { redirect: "follow" });
+    const response = await fetch(`${GAS_ENDPOINT}?action=reminders&idToken=${encodeURIComponent(getIdToken())}&t=${Date.now()}`, { redirect: "follow" });
     if (!response.ok) throw new Error(`HTTP ${response.status}`);
     const data = await response.json();
+    if (handleAuthErrorIfNeeded(data, loadReminderStatus)) return;
     if (!data.success) throw new Error(data.message || "未入力確認に失敗しました。");
     renderReminderStatus(data);
   } catch (error) {
@@ -268,4 +270,4 @@ document.addEventListener("keydown", (event) => {
 todayLabel.textContent = formatJapaneseDate(new Date());
 renderWeekCalendar();
 refreshButton.addEventListener("click", refreshHome);
-refreshHome();
+requireAuth(refreshHome);
