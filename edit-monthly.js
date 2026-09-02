@@ -142,7 +142,7 @@ function renderSubrowList(){
       document.querySelectorAll("#subrow-number-fields input").forEach(i=>{i.value=r[i.dataset.field]??""});
       const btn=document.getElementById("subrow-delete-button");
       btn.hidden=false;
-      btn.onclick=()=>openDeleteConfirm("subrow",{id:r.id,type:r[config.titleProp]||"この明細"});
+      btn.onclick=()=>openDeleteConfirm("subrow",{id:r.id,type:r[config.titleProp]||"この明細",category:category});
     });
     c.appendChild(row);
   });
@@ -289,7 +289,8 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
   const{type,item}=deleteContext;
   try{
     loadingMessage.textContent="削除しています…";
-    await apiWrite(DELETE_ACTIONS[type],{id:item.id});
+    const payload=type==="subrow"?{id:item.id,category:item.category}:{id:item.id};
+    await apiWrite(DELETE_ACTIONS[type],payload);
     hideModal("delete-modal");
     loadingMessage.textContent="";
     if(type==="subrow"){
