@@ -1,6 +1,6 @@
 "use strict";
 
-const GAS_URL="https://script.google.com/macros/s/AKfycbzS1F43nO_ZDG6X6gH4qfUeprWmFFOZuthQKjbXxuxkoTWY0QMvbAfURd2speGZEa6x/exec";
+const GAS_URL=PHARMACY_CONFIG.GAS_URL;
 const loadingMessage=document.getElementById("edit-loading");
 let notices=[]; let licenses=[]; let pharmacists=[]; let sellers=[]; let institutions=[]; let deleteContext=null;
 const text=(v,f="―")=>v===null||v===undefined||v===""?f:String(v);
