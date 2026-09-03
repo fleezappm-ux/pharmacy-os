@@ -40,6 +40,15 @@ function compactValue(month,key){
   if(key==="concentration"){const rows=month.concentration||[];if(!rows.length)return"未入力";const top=[...rows].sort((a,b)=>(Number(b["全体割合"])||0)-(Number(a["全体割合"])||0))[0];return`${top["医療機関名"]||"―"} ${text(top["全体割合"])}%`}
   const rows=month[key]||[];
   if(!rows.length)return"未入力";
+  if(key==="insurance"){
+    const totalRow=rows.find(r=>String(r["区分"]||"").replace(/\s/g,"")==="総合計");
+    const totalValue=totalRow?.["件数（件）"];
+    if(totalValue!==null&&totalValue!==undefined&&totalValue!=="")return`総合計 ${text(totalValue)}件`;
+    const sum=rows
+      .filter(r=>String(r["区分"]||"").replace(/\s/g,"")!=="総合計")
+      .reduce((s,r)=>s+(Number(r["件数（件）"])||0),0);
+    return`総合計 ${sum}件`;
+  }
   const sum=rows.reduce((s,r)=>s+(Number(r["件数（件）"])||0),0);
   return`件数合計 ${sum}件`;
 }
