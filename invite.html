@@ -22,6 +22,11 @@
     .status-message.success{color:var(--green)}
     .spinner{display:inline-block;width:16px;height:16px;border:2px solid var(--line);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
     @keyframes spin{to{transform:rotate(360deg)}}
+    .profile-form{display:none;text-align:left}
+    .profile-form.show{display:block}
+    .profile-form label{display:block;margin:0 0 12px;font-size:.82rem;font-weight:700;color:var(--muted)}
+    .profile-form input,.profile-form select{display:block;width:100%;margin-top:6px;padding:11px 12px;border:1px solid var(--line);border-radius:12px;font:inherit;color:var(--text)}
+    .profile-submit{width:100%;padding:13px;border:0;border-radius:12px;background:var(--green);color:#fff;font:inherit;font-weight:800;cursor:pointer}
   </style>
 </head>
 <body>
@@ -35,9 +40,30 @@
     </div>
 
     <div id="google-signin-button"></div>
+
+    <form id="profile-form" class="profile-form">
+      <label>お名前
+        <input id="profile-name" type="text" required maxlength="100" placeholder="例：山田花子">
+      </label>
+      <label>役職
+        <select id="profile-role" required>
+          <option value="">選択してください</option>
+          <option value="owner">開設者</option>
+          <option value="managing_pharmacist">管理薬剤師</option>
+          <option value="pharmacist">薬剤師</option>
+          <option value="clerk">事務</option>
+          <option value="other">その他</option>
+        </select>
+      </label>
+      <label>所属店舗
+        <input id="profile-store" type="text" required maxlength="100" placeholder="例：あおい薬局">
+      </label>
+      <button class="profile-submit" type="submit">登録する</button>
+    </form>
+
     <p id="status-message" class="status-message" aria-live="polite"></p>
   </main>
 
-<script src="invite.js?v=1"></script>
+<script src="invite.js?v=2"></script>
 </body>
 </html>

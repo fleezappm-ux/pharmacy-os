@@ -4,6 +4,9 @@ const statusMessage = document.getElementById("status-message");
 const lineWarning = document.getElementById("line-warning");
 const introText = document.getElementById("intro-text");
 const signinButtonEl = document.getElementById("google-signin-button");
+const profileForm = document.getElementById("profile-form");
+
+let googleCredential = null;
 
 function getInviteTokenFromUrl() {
   const params = new URLSearchParams(window.location.search);
@@ -50,23 +53,46 @@ function initGoogleSignin() {
   });
 }
 
-async function handleCredentialResponse(response) {
+function handleCredentialResponse(response) {
+  googleCredential = response.credential;
   signinButtonEl.hidden = true;
+  introText.textContent = "お名前・役職・所属店舗を入力してください。管理者が内容を確認したうえで、利用できる範囲が設定されます。";
+  profileForm.classList.add("show");
+}
+
+profileForm.addEventListener("submit", async (event) => {
+  event.preventDefault();
+  const name = document.getElementById("profile-name").value.trim();
+  const role = document.getElementById("profile-role").value;
+  const store = document.getElementById("profile-store").value.trim();
+
+  if (!name || !role || !store) {
+    setStatus("すべての項目を入力してください。", "error");
+    return;
+  }
+
+  const submitButton = profileForm.querySelector(".profile-submit");
+  submitButton.disabled = true;
   setStatus("登録処理をしています…", "");
+
   try {
     const result = await fetch(PHARMACY_CONFIG.GAS_URL, {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
       body: JSON.stringify({
         action: "registerViaInvite",
-        idToken: response.credential,
-        inviteToken: inviteToken
+        idToken: googleCredential,
+        inviteToken: inviteToken,
+        name: name,
+        role: role,
+        store: store
       })
     });
     const data = await result.json();
     if (data.success) {
+      profileForm.hidden = true;
       setStatus(data.message || "登録が完了しました。", "success");
-      introText.textContent = "登録が完了しました。下のリンクからPharmacy OSを開いてください。";
+      introText.textContent = "登録が完了しました。管理者が内容を確認するまで、閲覧のみの利用となります。下のリンクからPharmacy OSを開いてください。";
       const link = document.createElement("a");
       link.href = "home.html";
       link.textContent = "Pharmacy OSを開く";
@@ -77,11 +103,11 @@ async function handleCredentialResponse(response) {
       statusMessage.after(link);
     } else {
       setStatus(data.message || "登録に失敗しました。", "error");
-      signinButtonEl.hidden = false;
+      submitButton.disabled = false;
     }
   } catch (e) {
     console.error(e);
     setStatus("通信エラーが発生しました。しばらくしてから再度お試しください。", "error");
-    signinButtonEl.hidden = false;
+    submitButton.disabled = false;
   }
-}
+});

@@ -64,6 +64,7 @@ function handleCredentialResponse(response) {
   hideAuthGate();
   silentRefreshInFlight = false;
   scheduleTokenRefresh();
+  applyEditNavVisibility();
 
   const callbacks = authReadyCallbacks;
   authReadyCallbacks = [];
@@ -84,6 +85,7 @@ function handleCredentialResponse(response) {
 function requireAuth(onReady) {
   if (isTokenValid(getIdToken())) {
     scheduleTokenRefresh();
+    applyEditNavVisibility();
     onReady();
     return;
   }
@@ -91,6 +93,24 @@ function requireAuth(onReady) {
   authReadyCallbacks.push(onReady);
   showAuthGate();
   renderGoogleButton();
+}
+
+/**
+ * ログイン中の利用者の編集権限を確認し、下部ナビの「編集」リンクを
+ * 権限が1つもない場合は非表示にします。失敗しても他の処理には影響しません。
+ */
+async function applyEditNavVisibility() {
+  const navLink = document.getElementById("nav-edit-link");
+  if (!navLink) return;
+  try {
+    const result = await authFetch("whoAmI");
+    if (!result.success) return;
+    const permissions = result.permissions || {};
+    const hasAnyEditPermission = permissions.canEditDaily || permissions.canEditMonthly || permissions.canEditOther;
+    navLink.style.display = hasAnyEditPermission ? "" : "none";
+  } catch (e) {
+    // 取得に失敗した場合は、リンクの表示状態を変更せずそのままにします。
+  }
 }
 
 function renderGoogleButton() {

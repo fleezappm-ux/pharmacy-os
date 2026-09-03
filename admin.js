@@ -24,7 +24,7 @@ async function init() {
     try {
       const who = await authFetch("whoAmI");
       if (!who.success) throw new Error(who.message || "確認に失敗しました。");
-      if (who.role !== "admin") {
+      if (who.role !== "system_admin" && who.role !== "admin") {
         loadingMessage.hidden = true;
         deniedArea.hidden = false;
         return;
@@ -54,6 +54,18 @@ async function loadUsers() {
   renderUserList(result.users || []);
 }
 
+const ROLE_OPTIONS = [
+  { value: "owner", label: "開設者" },
+  { value: "managing_pharmacist", label: "管理薬剤師" },
+  { value: "pharmacist", label: "薬剤師" },
+  { value: "clerk", label: "事務" },
+  { value: "other", label: "その他" }
+];
+
+function isSystemAdmin(role) {
+  return role === "system_admin" || role === "admin";
+}
+
 function renderUserList(users) {
   const c = document.getElementById("user-list");
   c.textContent = "";
@@ -65,33 +77,133 @@ function renderUserList(users) {
   users.slice().sort((a, b) => new Date(b.registeredAt) - new Date(a.registeredAt)).forEach((u) => {
     const row = document.createElement("div");
     row.className = "list-row";
+    row.style.flexDirection = "column";
+    row.style.alignItems = "stretch";
+
+    const topRow = document.createElement("div");
+    topRow.style.display = "flex";
+    topRow.style.justifyContent = "space-between";
+    topRow.style.alignItems = "center";
+    topRow.style.flexWrap = "wrap";
+    topRow.style.gap = "8px";
 
     const main = document.createElement("div");
     main.className = "list-main";
     const title = document.createElement("span");
     title.className = "list-title";
-    title.textContent = u.email;
+    title.textContent = u.name ? `${u.name}（${u.email}）` : u.email;
     main.appendChild(title);
 
     const detail = document.createElement("span");
     detail.className = "list-detail";
-    detail.textContent = `${u.role === "admin" ? "管理者" : "従業員"} ／ 登録：${formatDateTime(u.registeredAt)}（${methodLabel[u.registrationMethod] || u.registrationMethod}） ／ 最終利用：${formatDateTime(u.lastUsedAt)}`;
+    const storeText = u.store ? `所属：${u.store} ／ ` : "";
+    detail.textContent = `${u.roleLabel || u.role} ／ ${storeText}登録：${formatDateTime(u.registeredAt)}（${methodLabel[u.registrationMethod] || u.registrationMethod}） ／ 最終利用：${formatDateTime(u.lastUsedAt)}`;
     main.appendChild(detail);
-    row.appendChild(main);
+    topRow.appendChild(main);
+
+    const badgeWrap = document.createElement("div");
+    badgeWrap.style.display = "flex";
+    badgeWrap.style.gap = "6px";
+    badgeWrap.style.flexWrap = "wrap";
 
     const badge = document.createElement("span");
     badge.className = `badge ${u.status === "active" ? "green" : "orange"}`;
     badge.textContent = u.status === "active" ? "利用中" : "一時停止";
-    row.appendChild(badge);
+    badgeWrap.appendChild(badge);
 
-    if (u.confirmedByAdmin !== true && u.confirmedByAdmin !== "TRUE" && u.role !== "admin") {
+    if (u.confirmedByAdmin !== true && u.confirmedByAdmin !== "TRUE" && !isSystemAdmin(u.role)) {
       const newBadge = document.createElement("span");
       newBadge.className = "badge orange";
       newBadge.textContent = "未確認";
-      row.appendChild(newBadge);
+      badgeWrap.appendChild(newBadge);
     }
+    topRow.appendChild(badgeWrap);
+    row.appendChild(topRow);
 
-    if (u.role !== "admin") {
+    if (!isSystemAdmin(u.role)) {
+      const editArea = document.createElement("div");
+      editArea.style.marginTop = "10px";
+      editArea.style.paddingTop = "10px";
+      editArea.style.borderTop = "1px solid var(--line)";
+      editArea.style.display = "grid";
+      editArea.style.gap = "8px";
+
+      // 氏名・役職・所属店舗の編集欄
+      const profileRow = document.createElement("div");
+      profileRow.className = "inline-form";
+
+      const nameInput = document.createElement("input");
+      nameInput.type = "text";
+      nameInput.value = u.name || "";
+      nameInput.placeholder = "氏名";
+      nameInput.style.flex = "1";
+      nameInput.style.minWidth = "120px";
+
+      const roleSelect = document.createElement("select");
+      ROLE_OPTIONS.forEach((opt) => {
+        const optionEl = document.createElement("option");
+        optionEl.value = opt.value;
+        optionEl.textContent = opt.label;
+        if (opt.value === u.role) optionEl.selected = true;
+        roleSelect.appendChild(optionEl);
+      });
+
+      const storeInput = document.createElement("input");
+      storeInput.type = "text";
+      storeInput.value = u.store || "";
+      storeInput.placeholder = "所属店舗";
+      storeInput.style.flex = "1";
+      storeInput.style.minWidth = "120px";
+
+      const profileSaveBtn = document.createElement("button");
+      profileSaveBtn.className = "small secondary";
+      profileSaveBtn.type = "button";
+      profileSaveBtn.textContent = "プロフィールを保存";
+      profileSaveBtn.addEventListener("click", () => updateProfile(u.email, nameInput.value, roleSelect.value, storeInput.value));
+
+      profileRow.append(nameInput, roleSelect, storeInput, profileSaveBtn);
+      editArea.appendChild(profileRow);
+
+      // 権限チェックボックス
+      const permRow = document.createElement("div");
+      permRow.style.display = "flex";
+      permRow.style.gap = "14px";
+      permRow.style.flexWrap = "wrap";
+      permRow.style.alignItems = "center";
+      permRow.style.fontSize = ".82rem";
+
+      const permKeys = [
+        { key: "canEditDaily", label: "日次業務編集" },
+        { key: "canEditMonthly", label: "月次業務編集" },
+        { key: "canEditOther", label: "ステータス編集" }
+      ];
+      const checkboxes = {};
+      permKeys.forEach((p) => {
+        const label = document.createElement("label");
+        label.style.display = "flex";
+        label.style.alignItems = "center";
+        label.style.gap = "4px";
+        const checkbox = document.createElement("input");
+        checkbox.type = "checkbox";
+        checkbox.checked = !!(u.permissions && u.permissions[p.key]);
+        checkboxes[p.key] = checkbox;
+        label.append(checkbox, document.createTextNode(p.label));
+        permRow.appendChild(label);
+      });
+
+      const permSaveBtn = document.createElement("button");
+      permSaveBtn.className = "small secondary";
+      permSaveBtn.type = "button";
+      permSaveBtn.textContent = "権限を保存";
+      permSaveBtn.addEventListener("click", () => updatePermissions(u.email, {
+        canEditDaily: checkboxes.canEditDaily.checked,
+        canEditMonthly: checkboxes.canEditMonthly.checked,
+        canEditOther: checkboxes.canEditOther.checked
+      }));
+      permRow.appendChild(permSaveBtn);
+      editArea.appendChild(permRow);
+
+      // 利用承認・一時停止・削除ボタン
       const actions = document.createElement("div");
       actions.className = "list-actions";
 
@@ -118,11 +230,24 @@ function renderUserList(users) {
       deleteBtn.addEventListener("click", () => deleteUser(u.email));
       actions.appendChild(deleteBtn);
 
-      row.appendChild(actions);
+      editArea.appendChild(actions);
+      row.appendChild(editArea);
     }
 
     c.appendChild(row);
   });
+}
+
+async function updateProfile(email, name, role, store) {
+  const result = await authFetch("adminUpdateUserProfile", { targetEmail: email, name, role, store });
+  if (!result.success) { alert(result.message || "更新に失敗しました。"); return; }
+  await loadUsers();
+}
+
+async function updatePermissions(email, permissions) {
+  const result = await authFetch("adminUpdateUserPermissions", { targetEmail: email, permissions });
+  if (!result.success) { alert(result.message || "更新に失敗しました。"); return; }
+  await loadUsers();
 }
 
 async function toggleUserStatus(email, newStatus) {
