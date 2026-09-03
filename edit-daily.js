@@ -3,6 +3,8 @@
 const GAS_URL=PHARMACY_CONFIG.GAS_URL;
 const loadingMessage=document.getElementById("edit-loading");
 let deleteContext=null;
+let ownName="";
+let isSystemAdminUser=false;
 const text=(v,f="―")=>v===null||v===undefined||v===""?f:String(v);
 const pick=(obj,keys,f="")=>{for(const k of keys){if(obj&&obj[k]!==undefined&&obj[k]!==null&&obj[k]!=="")return obj[k]}return f};
 function formatDate(v){if(!v)return"—";if(typeof v==="object"&&v!==null)v=v.start||"";if(!v)return"—";const s=String(v).slice(0,10);return/^\d{4}-\d{2}-\d{2}$/.test(s)?s.replaceAll("-","/"):s}
@@ -22,7 +24,7 @@ async function loadDailyReports(){try{const result=await authFetch("dailyReports
 
 function renderDailyList(){const c=document.getElementById("daily-edit-list");c.textContent="";if(!dailyReports.length){c.innerHTML='<p class="empty-message">日次業務の記録はありません。</p>';return}dailyReports.forEach(n=>{const row=document.createElement("button");row.type="button";row.className="list-row";const main=document.createElement("div");main.className="list-main";const title=document.createElement("span");title.className="list-title";title.textContent=formatDate(n.date);main.appendChild(title);const detail=document.createElement("span");detail.className="list-detail";detail.textContent=n.closed?"休業日":`開局時間：${text(n.hours)} ／ 処方箋枚数：${text(n.count)}`;main.appendChild(detail);const badge=document.createElement("span");badge.className=`badge ${n.closed?"none":"green"}`;badge.textContent=n.closed?"休業日":"営業日";row.append(main,badge);row.addEventListener("click",()=>openDailyForm(n));c.appendChild(row)})}
 
-function openDailyForm(n){document.getElementById("daily-edit-id").value=n.id;document.getElementById("daily-edit-date").value=n.date?String(n.date).slice(0,10):"";document.getElementById("daily-edit-closed").checked=n.closed;document.getElementById("daily-edit-hours").value=n.hours||"";document.getElementById("daily-edit-count").value=n.count??"";document.getElementById("daily-edit-manager-absence").value=n.managerAbsence||"";document.getElementById("daily-edit-manager-responder").value=n.managerResponder||"";document.getElementById("daily-edit-pharmacist-absence").value=n.pharmacistAbsence||"";document.getElementById("daily-edit-pharmacist-responder").value=n.pharmacistResponder||"";document.getElementById("daily-edit-notes").value=n.notes||"";document.getElementById("daily-edit-handover").value=n.handover||"";document.getElementById("daily-edit-confirmed").value=n.confirmedBy||"";document.getElementById("daily-edit-delete-button").onclick=()=>openDeleteConfirm("daily",{id:n.id,type:formatDate(n.date),order:null});showModal("daily-modal")}
+function openDailyForm(n){document.getElementById("daily-edit-id").value=n.id;document.getElementById("daily-edit-date").value=n.date?String(n.date).slice(0,10):"";document.getElementById("daily-edit-closed").checked=n.closed;document.getElementById("daily-edit-hours").value=n.hours||"";document.getElementById("daily-edit-count").value=n.count??"";document.getElementById("daily-edit-manager-absence").value=n.managerAbsence||"";document.getElementById("daily-edit-manager-responder").value=n.managerResponder||"";document.getElementById("daily-edit-pharmacist-absence").value=n.pharmacistAbsence||"";document.getElementById("daily-edit-pharmacist-responder").value=n.pharmacistResponder||"";document.getElementById("daily-edit-notes").value=n.notes||"";document.getElementById("daily-edit-handover").value=n.handover||"";document.getElementById("daily-edit-confirmed").value=ownName||"読み込み中…";document.getElementById("daily-edit-confirmed-select").value=n.confirmedBy||"";document.getElementById("daily-edit-delete-button").onclick=()=>openDeleteConfirm("daily",{id:n.id,type:formatDate(n.date),order:null});showModal("daily-modal")}
 
 document.getElementById("daily-edit-form").addEventListener("submit",async e=>{
   e.preventDefault();
@@ -39,7 +41,7 @@ document.getElementById("daily-edit-form").addEventListener("submit",async e=>{
     "薬剤師不在時対応者":document.getElementById("daily-edit-pharmacist-responder").value.trim(),
     "特記事項":document.getElementById("daily-edit-notes").value.trim(),
     "申し送り":document.getElementById("daily-edit-handover").value.trim(),
-    "確認印":document.getElementById("daily-edit-confirmed").value
+    "確認印":isSystemAdminUser?document.getElementById("daily-edit-confirmed-select").value:document.getElementById("daily-edit-confirmed").value
   }};
   try{
     loadingMessage.textContent="保存しています…";
@@ -88,18 +90,30 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
 document.querySelectorAll("[data-close-modal]").forEach(x=>x.addEventListener("click",hideAllEditModals));
 document.querySelectorAll("[data-close-delete]").forEach(x=>x.addEventListener("click",()=>hideModal("delete-modal")));
 
-async function loadPharmacistNames(){
+async function loadOwnName(){
   try{
-    const result=await authFetch("pharmacistNames");
-    if(!result.success)return;
-    (result.names||[]).forEach(name=>{
-      const option=document.createElement("option");
-      option.value=name;option.textContent=name;
-      document.getElementById("daily-edit-confirmed").appendChild(option);
-    });
+    const result=await authFetch("whoAmI");
+    isSystemAdminUser=result.success&&(result.role==="system_admin"||result.role==="admin");
+    if(isSystemAdminUser){
+      document.getElementById("daily-edit-confirmed").hidden=true;
+      document.getElementById("daily-edit-confirmed-select").hidden=false;
+      const namesResult=await authFetch("pharmacistNames");
+      if(namesResult.success){
+        const select=document.getElementById("daily-edit-confirmed-select");
+        (namesResult.names||[]).forEach(name=>{
+          const option=document.createElement("option");
+          option.value=name;option.textContent=name;
+          select.appendChild(option);
+        });
+      }
+    }else{
+      ownName=(result.success&&result.name)?result.name:"（氏名未登録）";
+      document.getElementById("daily-edit-confirmed").value=ownName;
+    }
   }catch(e){
-    console.error("薬剤師名簿の取得に失敗しました。",e);
+    console.error("氏名の取得に失敗しました。",e);
+    document.getElementById("daily-edit-confirmed").value="（取得できませんでした）";
   }
 }
 
-requireAuth(()=>{loadDailyReports();loadPharmacistNames()});
+requireAuth(()=>{loadDailyReports();loadOwnName()});

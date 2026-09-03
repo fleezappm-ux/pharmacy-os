@@ -244,19 +244,39 @@ requireAuth(() => {
   ]);
   setupConditionalSelect("#inquiry", "#inquiry-fields", ["#inquiry-details"]);
 
-  loadPharmacistNames();
+  loadOwnName();
 });
 
-async function loadPharmacistNames() {
+async function loadOwnName() {
+  const confirmedByInput = document.querySelector("#confirmed-by");
+  const confirmedBySelect = document.querySelector("#confirmed-by-select");
+  try {
+    const result = await authFetch("whoAmI");
+    const isSystemAdmin = result.success && (result.role === "system_admin" || result.role === "admin");
+    if (isSystemAdmin) {
+      confirmedByInput.hidden = true;
+      confirmedByInput.name = "";
+      confirmedBySelect.hidden = false;
+      confirmedBySelect.name = "confirmedBy";
+      await loadPharmacistNamesForAdmin(confirmedBySelect);
+    } else {
+      confirmedByInput.value = (result.success && result.name) ? result.name : "（氏名未登録）";
+    }
+  } catch (e) {
+    console.error("氏名の取得に失敗しました。", e);
+    confirmedByInput.value = "（取得できませんでした）";
+  }
+}
+
+async function loadPharmacistNamesForAdmin(selectEl) {
   try {
     const result = await authFetch("pharmacistNames");
     if (!result.success) return;
-    const confirmedBySelect = document.querySelector("#confirmed-by");
     (result.names || []).forEach((name) => {
       const option = document.createElement("option");
       option.value = name;
       option.textContent = name;
-      confirmedBySelect.appendChild(option);
+      selectEl.appendChild(option);
     });
   } catch (e) {
     console.error("薬剤師名簿の取得に失敗しました。", e);

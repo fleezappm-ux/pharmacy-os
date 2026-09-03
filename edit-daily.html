@@ -61,8 +61,9 @@
         <label>薬剤師不在時対応者<input id="daily-edit-pharmacist-responder"></label>
         <label>特記事項<textarea id="daily-edit-notes" rows="2"></textarea></label>
         <label>申し送り<textarea id="daily-edit-handover" rows="2"></textarea></label>
-        <label>確認印
-          <select id="daily-edit-confirmed">
+        <label id="daily-edit-confirmed-label">確認印（保存すると、あなたの氏名で更新されます）
+          <input id="daily-edit-confirmed" type="text" readonly value="読み込み中…">
+          <select id="daily-edit-confirmed-select" hidden>
             <option value="">未選択</option>
           </select>
         </label>
