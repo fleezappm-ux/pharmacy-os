@@ -62,6 +62,16 @@ const ROLE_OPTIONS = [
   { value: "other", label: "その他" }
 ];
 
+// 役職を選んだ時に入れる編集権限の初期値です。
+// チェック後も管理者が個別にオン・オフでき、保存時は画面上の状態を優先します。
+const ROLE_DEFAULT_PERMISSIONS = {
+  owner: { canEditDaily: true, canEditMonthly: true, canEditOther: true },
+  managing_pharmacist: { canEditDaily: true, canEditMonthly: true, canEditOther: true },
+  pharmacist: { canEditDaily: true, canEditMonthly: false, canEditOther: false },
+  clerk: { canEditDaily: false, canEditMonthly: false, canEditOther: false },
+  other: { canEditDaily: false, canEditMonthly: false, canEditOther: false }
+};
+
 function isSystemAdmin(role) {
   return role === "system_admin" || role === "admin";
 }
@@ -159,7 +169,17 @@ function renderUserList(users) {
       profileSaveBtn.className = "small secondary";
       profileSaveBtn.type = "button";
       profileSaveBtn.textContent = "プロフィールを保存";
-      profileSaveBtn.addEventListener("click", () => updateProfile(u.email, nameInput.value, roleSelect.value, storeInput.value));
+      profileSaveBtn.addEventListener("click", () => updateProfile(
+        u.email,
+        nameInput.value,
+        roleSelect.value,
+        storeInput.value,
+        {
+          canEditDaily: checkboxes.canEditDaily.checked,
+          canEditMonthly: checkboxes.canEditMonthly.checked,
+          canEditOther: checkboxes.canEditOther.checked
+        }
+      ));
 
       profileRow.append(nameInput, roleSelect, storeInput, profileSaveBtn);
       editArea.appendChild(profileRow);
@@ -189,6 +209,14 @@ function renderUserList(users) {
         checkboxes[p.key] = checkbox;
         label.append(checkbox, document.createTextNode(p.label));
         permRow.appendChild(label);
+      });
+
+      roleSelect.addEventListener("change", () => {
+        const defaults = ROLE_DEFAULT_PERMISSIONS[roleSelect.value];
+        if (!defaults) return;
+        Object.keys(checkboxes).forEach((key) => {
+          checkboxes[key].checked = !!defaults[key];
+        });
       });
 
       const permSaveBtn = document.createElement("button");
@@ -238,9 +266,15 @@ function renderUserList(users) {
   });
 }
 
-async function updateProfile(email, name, role, store) {
+async function updateProfile(email, name, role, store, permissions) {
   const result = await authFetch("adminUpdateUserProfile", { targetEmail: email, name, role, store });
   if (!result.success) { alert(result.message || "更新に失敗しました。"); return; }
+  const permissionResult = await authFetch("adminUpdateUserPermissions", { targetEmail: email, permissions });
+  if (!permissionResult.success) {
+    alert(permissionResult.message || "プロフィールは保存されましたが、権限の保存に失敗しました。");
+    await loadUsers();
+    return;
+  }
   await loadUsers();
 }
 
