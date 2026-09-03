@@ -22,7 +22,8 @@
     .slot-box{padding:14px;background:var(--pale);border-radius:14px;text-align:center}
     .slot-box strong{display:block;font-size:1.5rem;color:var(--green)}
     .slot-box span{font-size:.75rem;color:var(--muted)}
-    .inline-form{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .inline-form{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+    .field-label{display:flex;flex-direction:column;gap:4px;font-size:.76rem;font-weight:800;color:var(--muted)}
     input,select{padding:9px 11px;border:1px solid var(--line);border-radius:10px;font:inherit}
     button{padding:10px 14px;border:0;border-radius:10px;background:var(--green);color:#fff;font:inherit;font-weight:800;cursor:pointer}
     button.secondary{background:#fff;border:1px solid var(--line);color:var(--text)}
@@ -88,12 +89,21 @@
       <section class="card">
         <h2>招待URLを発行する</h2>
         <div class="inline-form">
-          <select id="invite-type">
-            <option value="group">グループ招待（複数人）</option>
-            <option value="individual">個別招待（1人限定）</option>
-          </select>
-          <input id="invite-max-uses" type="number" min="1" step="1" value="5" placeholder="登録可能人数">
-          <input id="invite-expires" type="number" min="1" step="1" value="7" placeholder="有効日数">
+          <label class="field-label">
+            種類
+            <select id="invite-type">
+              <option value="group">グループ招待（複数人）</option>
+              <option value="individual">個別招待（1人限定）</option>
+            </select>
+          </label>
+          <label id="invite-max-uses-label" class="field-label">
+            登録可能人数
+            <input id="invite-max-uses" type="number" min="1" step="1" value="5">
+          </label>
+          <label class="field-label">
+            有効日数
+            <input id="invite-expires" type="number" min="1" step="1" value="7">
+          </label>
           <button id="invite-create-button" type="button">発行する</button>
         </div>
         <div id="invite-result" class="invite-url-box" hidden></div>

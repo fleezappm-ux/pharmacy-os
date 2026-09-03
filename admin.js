@@ -216,6 +216,13 @@ async function invalidateInvite(inviteId) {
   await loadInvites();
 }
 
+function updateInviteTypeFields() {
+  const isIndividual = document.getElementById("invite-type").value === "individual";
+  document.getElementById("invite-max-uses-label").style.display = isIndividual ? "none" : "";
+}
+document.getElementById("invite-type").addEventListener("change", updateInviteTypeFields);
+updateInviteTypeFields();
+
 document.getElementById("invite-create-button").addEventListener("click", async () => {
   const inviteType = document.getElementById("invite-type").value;
   const maxUses = document.getElementById("invite-max-uses").value;
