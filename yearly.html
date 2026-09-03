@@ -3,16 +3,13 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#0d4d40">
   <title>年度実績 | Pharmacy OS</title>
-<link rel="stylesheet" href="yearly.css?v=3">
+  <link rel="stylesheet" href="yearly.css?v=4">
   <style>
     .auth-gate{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(15,45,38,.55);backdrop-filter:blur(2px)}
-    .auth-gate[hidden]{display:none}
-    .auth-gate-box{width:min(90%,360px);padding:32px 28px;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.25);text-align:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
-    .auth-gate-title{margin:0 0 4px;font-size:.75rem;font-weight:800;letter-spacing:.1em;color:#126c58;text-transform:uppercase}
-    .auth-gate-box h2{margin:0 0 10px;font-size:1.3rem;color:#10251f}
-    .auth-gate-desc{margin:0 0 20px;color:#65766f;font-size:.86rem;line-height:1.6}
-    #google-signin-button{display:flex;justify-content:center}
+    .auth-gate[hidden]{display:none}.auth-gate-box{width:min(90%,360px);padding:32px 28px;background:#fff;border-radius:20px;box-shadow:0 24px 60px rgba(0,0,0,.25);text-align:center;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
+    .auth-gate-title{margin:0 0 4px;font-size:.75rem;font-weight:800;letter-spacing:.1em;color:#126c58}.auth-gate-box h2{margin:0 0 10px;font-size:1.3rem;color:#10251f}.auth-gate-desc{margin:0 0 20px;color:#65766f;font-size:.86rem;line-height:1.6}#google-signin-button{display:flex;justify-content:center}
   </style>
 </head>
 <body>
@@ -25,61 +22,52 @@
     </div>
   </div>
 
-
   <main class="page-shell">
-    <header class="page-header">
-      <p class="eyebrow">PHARMACY OS</p>
-      <h1>年度実績</h1>
-      <p>月次業務の実績を確認できます。数値の入力・修正は「編集」ページから行ってください。</p>
-      <button id="reload-button" class="reload-button" type="button" aria-label="再読み込み">↻</button>
+    <header class="hero">
+      <div class="hero-copy">
+        <p class="eyebrow">PERFORMANCE ARCHIVE</p>
+        <h1>年度実績</h1>
+        <p>月ごとの実績を、必要な情報だけすっきり確認できます。</p>
+      </div>
+      <button id="reload-button" class="reload-button" type="button" aria-label="最新情報に更新">↻</button>
     </header>
 
-    <p id="yearly-loading" class="loading-message" aria-live="polite">データを読み込んでいます…</p>
-
-    <div id="compact-view">
-      <div class="section-heading">
-        <div><p class="section-label">RECENT</p><h2>先月からの3ヶ月</h2></div>
-        <button id="show-full-button" class="primary-small" type="button">詳細を見る</button>
+    <section class="control-card" aria-label="表示する年度">
+      <div>
+        <p class="control-label">表示年度</p>
+        <p id="year-range" class="year-range">4月 — 3月</p>
       </div>
-      <div id="compact-list" class="stack-list"></div>
-    </div>
+      <label class="year-select-wrap">
+        <span class="sr-only">年度を選択</span>
+        <select id="fiscal-year-select" class="year-select"></select>
+      </label>
+    </section>
 
-    <div id="full-view" hidden>
-      <button id="back-to-compact-button" class="text-button" type="button">← 先月からの3ヶ月に戻る</button>
+    <p id="yearly-loading" class="loading-message" aria-live="polite">データを読み込んでいます…</p>
+    <nav id="category-tabs" class="category-tabs" aria-label="実績分類"></nav>
 
-      <nav class="edit-tabs" aria-label="実績分類">
-        <button class="edit-tab active" data-target="generic-yearly-section">後発品調剤率</button>
-        <button class="edit-tab" data-target="concentration-yearly-section">処方箋集中率</button>
-        <button class="edit-tab" data-target="insurance-yearly-section">保険調剤実績</button>
-        <button class="edit-tab" data-target="homecare-yearly-section">在宅患者管理</button>
-        <button class="edit-tab" data-target="survey-yearly-section">処方箋調べ</button>
-      </nav>
+    <section id="performance-overview" class="overview-card" aria-live="polite">
+      <div class="overview-heading">
+        <div><p id="category-kicker" class="section-label">PERFORMANCE</p><h2 id="category-title">実績</h2></div>
+        <span id="completion-badge" class="completion-badge">—</span>
+      </div>
+      <div class="overview-grid">
+        <div class="overview-stat overview-stat-primary">
+          <span>最新実績</span><strong id="latest-value">—</strong><small id="latest-month">—</small>
+        </div>
+        <div class="overview-stat">
+          <span>入力月</span><strong id="filled-count">—</strong><small id="month-count-label">—</small>
+        </div>
+      </div>
+    </section>
 
-      <section id="generic-yearly-section" class="card yearly-section">
-        <p class="section-label">GENERIC RATE</p><h2>後発品調剤率</h2>
-        <div id="generic-yearly-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-      </section>
-
-      <section id="concentration-yearly-section" class="card yearly-section" hidden>
-        <p class="section-label">CONCENTRATION</p><h2>処方箋集中率</h2>
-        <div id="concentration-yearly-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-      </section>
-
-      <section id="insurance-yearly-section" class="card yearly-section" hidden>
-        <p class="section-label">INSURANCE</p><h2>保険調剤実績</h2>
-        <div id="insurance-yearly-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-      </section>
-
-      <section id="homecare-yearly-section" class="card yearly-section" hidden>
-        <p class="section-label">HOMECARE</p><h2>在宅患者への薬学的管理</h2>
-        <div id="homecare-yearly-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-      </section>
-
-      <section id="survey-yearly-section" class="card yearly-section" hidden>
-        <p class="section-label">PRESCRIPTION SURVEY</p><h2>処方箋枚数・受付回数等調べ</h2>
-        <div id="survey-yearly-list" class="stack-list"><p class="empty-message">読み込み中です。</p></div>
-      </section>
-    </div>
+    <section class="months-section">
+      <div class="months-heading">
+        <div><p class="section-label">MONTHLY DETAIL</p><h2>月ごとの記録</h2></div>
+        <p>月を押すと内訳が開きます</p>
+      </div>
+      <div id="month-list" class="month-list"></div>
+    </section>
   </main>
 
   <nav class="bottom-nav" aria-label="メインメニュー">
@@ -91,9 +79,9 @@
     <a id="nav-edit-link" class="nav-item" href="edit.html"><span>✎</span><small>編集</small></a>
   </nav>
 
-<script src="config.js"></script>
+  <script src="config.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="auth.js"></script>
-<script src="yearly.js?v=4"></script>
+  <script src="yearly.js?v=5"></script>
 </body>
 </html>

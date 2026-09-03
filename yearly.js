@@ -1,199 +1,336 @@
 "use strict";
 
-const GAS_URL=PHARMACY_CONFIG.GAS_URL;
-const loadingMessage=document.getElementById("yearly-loading");
-let monthsData=[];
-const text=(v,f="―")=>v===null||v===undefined||v===""?f:String(v);
-
-async function loadYearlyData(){
-  loadingMessage.className="loading-message";
-  loadingMessage.textContent="データを読み込んでいます…";
-  try{
-    const result=await authFetch("yearlyPerformance");
-    if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");
-    monthsData=result.months||[];
-    renderCompactView();
-    renderDetailSection("generic");
-    renderDetailSection("concentration");
-    renderDetailSection("insurance");
-    renderDetailSection("homecare");
-    renderDetailSection("survey");
-    loadingMessage.textContent="";
-  }catch(e){
-    loadingMessage.className="loading-message error";
-    loadingMessage.textContent="現在、データを読み込めません。GAS連携を確認してください。";
-  }
-}
-
-/* ===== 直近3ヶ月のコンパクト表示（実数値） ===== */
-const COMPACT_CATEGORIES=[
-  {key:"generic",label:"後発品調剤率"},
-  {key:"concentration",label:"処方箋集中率"},
-  {key:"insurance",label:"保険調剤実績"},
-  {key:"homecare",label:"在宅患者管理"},
-  {key:"survey",label:"処方箋調べ"}
+const CATEGORIES = [
+  { key: "generic", label: "後発品調剤率", kicker: "GENERIC RATE" },
+  { key: "concentration", label: "処方箋集中率", kicker: "CONCENTRATION" },
+  { key: "insurance", label: "保険調剤実績", kicker: "INSURANCE" },
+  { key: "homecare", label: "在宅患者管理", kicker: "HOMECARE" },
+  { key: "survey", label: "処方箋調べ", kicker: "PRESCRIPTION SURVEY" }
 ];
 
-function compactValue(month,key){
-  if(key==="generic")return month.generic?`${text(month.generic["新指標割合"])}%`:"未入力";
-  if(key==="survey"){const v=month.survey?.["1日平均取扱処方箋枚数"];return(v!==null&&v!==undefined&&v!=="")?`${v}枚`:"未入力"}
-  if(key==="concentration"){const rows=month.concentration||[];if(!rows.length)return"未入力";const top=[...rows].sort((a,b)=>(Number(b["全体割合"])||0)-(Number(a["全体割合"])||0))[0];return`${top["医療機関名"]||"―"} ${text(top["全体割合"])}%`}
-  const rows=month[key]||[];
-  if(!rows.length)return"未入力";
-  if(key==="insurance"){
-    const totalRow=rows.find(r=>String(r["区分"]||"").replace(/\s/g,"")==="総合計");
-    const totalValue=totalRow?.["件数（件）"];
-    if(totalValue!==null&&totalValue!==undefined&&totalValue!=="")return`総合計 ${text(totalValue)}件`;
-    const sum=rows
-      .filter(r=>String(r["区分"]||"").replace(/\s/g,"")!=="総合計")
-      .reduce((s,r)=>s+(Number(r["件数（件）"])||0),0);
-    return`総合計 ${sum}件`;
+const INSURANCE_ORDER = ["医保", "国保", "後期高齢", "公費（単・複）", "労災", "総合計"];
+const els = {
+  loading: document.getElementById("yearly-loading"),
+  yearSelect: document.getElementById("fiscal-year-select"),
+  yearRange: document.getElementById("year-range"),
+  tabs: document.getElementById("category-tabs"),
+  kicker: document.getElementById("category-kicker"),
+  title: document.getElementById("category-title"),
+  completion: document.getElementById("completion-badge"),
+  latestValue: document.getElementById("latest-value"),
+  latestMonth: document.getElementById("latest-month"),
+  filledCount: document.getElementById("filled-count"),
+  monthCountLabel: document.getElementById("month-count-label"),
+  monthList: document.getElementById("month-list")
+};
+
+let monthsData = [];
+let selectedFiscalYear = "";
+let activeCategory = "generic";
+
+const hasValue = (value) => value !== null && value !== undefined && value !== "";
+const numberValue = (value) => hasValue(value) && Number.isFinite(Number(value)) ? Number(value) : null;
+const formatNumber = (value, suffix = "") => {
+  const n = numberValue(value);
+  return n === null ? "―" : `${n.toLocaleString("ja-JP", { maximumFractionDigits: 2 })}${suffix}`;
+};
+const normalizeLabel = (value) => String(value || "").replace(/[\s　]/g, "");
+const isTotalRow = (row) => normalizeLabel(row?.["区分"]) === "総合計";
+
+function fiscalYearOf(monthKey) {
+  const [year, month] = monthKey.split("-").map(Number);
+  return month >= 4 ? year : year - 1;
+}
+
+function currentFiscalYear() {
+  const now = new Date();
+  return now.getMonth() + 1 >= 4 ? now.getFullYear() : now.getFullYear() - 1;
+}
+
+function monthsForSelectedYear() {
+  return monthsData.filter((month) => fiscalYearOf(month.key) === Number(selectedFiscalYear));
+}
+
+function rowsFor(month, key) {
+  const value = month[key];
+  if (key === "generic" || key === "survey") return value ? [value] : [];
+  return Array.isArray(value) ? value : [];
+}
+
+function monthHasData(month, key = activeCategory) {
+  return rowsFor(month, key).length > 0;
+}
+
+function sumField(rows, field, excludeTotal = true) {
+  return rows
+    .filter((row) => !excludeTotal || !isTotalRow(row))
+    .reduce((sum, row) => sum + (numberValue(row[field]) || 0), 0);
+}
+
+function insuranceTotals(rows) {
+  const total = rows.find(isTotalRow);
+  const pick = (field) => {
+    const totalValue = numberValue(total?.[field]);
+    return totalValue === null ? sumField(rows, field) : totalValue;
+  };
+  return {
+    cases: pick("件数（件）"),
+    medical: pick("処方箋回数_医科"),
+    dental: pick("処方箋回数_歯科"),
+    prescriptions: pick("処方箋回数_合計"),
+    points: pick("調剤報酬点数_合計")
+  };
+}
+
+function homecareTotals(rows) {
+  return { cases: sumField(rows, "件数（件）", false), visits: sumField(rows, "回数（回）", false) };
+}
+
+function primaryValue(month, key = activeCategory) {
+  if (!monthHasData(month, key)) return "未入力";
+  if (key === "generic") return formatNumber(month.generic["新指標割合"], "%");
+  if (key === "survey") return formatNumber(month.survey["1日平均取扱処方箋枚数"], "枚/日");
+  if (key === "concentration") {
+    const top = [...month.concentration].sort((a, b) => (numberValue(b["全体割合"]) || 0) - (numberValue(a["全体割合"]) || 0))[0];
+    return `${top?.["医療機関名"] || "名称未設定"} ${formatNumber(top?.["全体割合"], "%")}`;
   }
-  const sum=rows.reduce((s,r)=>s+(Number(r["件数（件）"])||0),0);
-  return`件数合計 ${sum}件`;
+  if (key === "insurance") return `総合計 ${formatNumber(insuranceTotals(month.insurance).cases, "件")}`;
+  const totals = homecareTotals(month.homecare);
+  return `${formatNumber(totals.cases, "件")}・${formatNumber(totals.visits, "回")}`;
 }
 
-function renderCompactView(){
-  const c=document.getElementById("compact-list");c.textContent="";
-  monthsData.slice(1,4).forEach(month=>{
-    const card=document.createElement("div");card.className="compact-month-card";
-    const title=document.createElement("h3");title.textContent=month.label;card.appendChild(title);
-    const grid=document.createElement("div");grid.className="compact-badge-grid";
-    COMPACT_CATEGORIES.forEach(cat=>{
-      const value=compactValue(month,cat.key);
-      const filled=value!=="未入力";
-      const chip=document.createElement("span");chip.className=`compact-chip ${filled?"filled":"empty"}`;
-      chip.textContent=`${cat.label}：${value}`;
-      grid.appendChild(chip);
+function renderYearOptions() {
+  const years = [...new Set(monthsData.map((month) => fiscalYearOf(month.key)))].sort((a, b) => b - a);
+  const preferred = years.includes(currentFiscalYear()) ? currentFiscalYear() : years[0];
+  selectedFiscalYear = String(preferred || "");
+  els.yearSelect.textContent = "";
+  years.forEach((year) => {
+    const option = new Option(`${year}年度`, String(year), false, String(year) === selectedFiscalYear);
+    els.yearSelect.add(option);
+  });
+  updateYearRange();
+}
+
+function updateYearRange() {
+  if (!selectedFiscalYear) return;
+  els.yearRange.textContent = `${selectedFiscalYear}年4月 — ${Number(selectedFiscalYear) + 1}年3月`;
+}
+
+function renderTabs() {
+  els.tabs.textContent = "";
+  CATEGORIES.forEach((category) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `category-tab${category.key === activeCategory ? " active" : ""}`;
+    button.textContent = category.label;
+    button.setAttribute("aria-pressed", String(category.key === activeCategory));
+    button.addEventListener("click", () => {
+      activeCategory = category.key;
+      renderTabs();
+      renderView();
     });
-    card.appendChild(grid);
-    c.appendChild(card);
+    els.tabs.appendChild(button);
   });
 }
 
-document.getElementById("show-full-button").addEventListener("click",()=>{
-  document.getElementById("compact-view").hidden=true;
-  document.getElementById("full-view").hidden=false;
+function renderOverview(months) {
+  const category = CATEGORIES.find((item) => item.key === activeCategory);
+  const filled = months.filter((month) => monthHasData(month));
+  const latest = filled[0];
+  els.kicker.textContent = category.kicker;
+  els.title.textContent = category.label;
+  els.filledCount.textContent = `${filled.length} / ${months.length}`;
+  els.monthCountLabel.textContent = months.length === 12 ? "年度内の入力状況" : "取得範囲内の入力状況";
+  els.latestValue.textContent = latest ? primaryValue(latest) : "未入力";
+  els.latestMonth.textContent = latest ? latest.label : "入力済みの月はありません";
+  els.completion.textContent = filled.length === months.length && months.length ? "すべて入力済み" : `${months.length - filled.length}か月 未入力`;
+  els.completion.classList.toggle("partial", filled.length !== months.length);
+}
+
+function addMetric(container, label, value) {
+  const box = document.createElement("div");
+  box.className = "metric";
+  const caption = document.createElement("span");
+  caption.textContent = label;
+  const strong = document.createElement("strong");
+  strong.textContent = value;
+  box.append(caption, strong);
+  container.appendChild(box);
+}
+
+function addRecordRow(container, titleText, values, total = false) {
+  const row = document.createElement("div");
+  row.className = `record-row${total ? " total" : ""}`;
+  const title = document.createElement("div");
+  title.className = "record-title";
+  title.textContent = titleText || "名称未設定";
+  const valueWrap = document.createElement("div");
+  valueWrap.className = "record-values";
+  values.filter((item) => item.value !== "―").forEach((item) => {
+    const span = document.createElement("span");
+    span.append(`${item.label} `);
+    const bold = document.createElement("b");
+    bold.textContent = item.value;
+    span.appendChild(bold);
+    valueWrap.appendChild(span);
+  });
+  if (!valueWrap.childNodes.length) valueWrap.textContent = "数値なし";
+  row.append(title, valueWrap);
+  container.appendChild(row);
+}
+
+function sortInsuranceRows(rows) {
+  return [...rows].sort((a, b) => {
+    const aName = normalizeLabel(a["区分"]);
+    const bName = normalizeLabel(b["区分"]);
+    const aKnown = INSURANCE_ORDER.indexOf(aName);
+    const bKnown = INSURANCE_ORDER.indexOf(bName);
+    if (aKnown >= 0 || bKnown >= 0) return (aKnown < 0 ? 999 : aKnown) - (bKnown < 0 ? 999 : bKnown);
+    const aOrder = numberValue(a["並び順"]);
+    const bOrder = numberValue(b["並び順"]);
+    if (aOrder !== null || bOrder !== null) return (aOrder ?? 999) - (bOrder ?? 999);
+    return aName.localeCompare(bName, "ja");
+  });
+}
+
+function renderDetail(month, container) {
+  if (!monthHasData(month)) {
+    const empty = document.createElement("p");
+    empty.className = "empty-detail";
+    empty.textContent = "この月はまだ入力されていません。";
+    container.appendChild(empty);
+    return;
+  }
+
+  const metrics = document.createElement("div");
+  metrics.className = "detail-lead";
+  const records = document.createElement("div");
+  records.className = "record-list";
+
+  if (activeCategory === "generic") {
+    const row = month.generic;
+    addMetric(metrics, "新指標割合", formatNumber(row["新指標割合"], "%"));
+    addMetric(metrics, "カットオフ値割合", formatNumber(row["カットオフ値割合"], "%"));
+    addRecordRow(records, "数量内訳", [
+      { label: "全医薬品", value: formatNumber(row["全医薬品規格単位数量"]) },
+      { label: "後発品あり", value: formatNumber(row["後発品あり規格単位数量"]) },
+      { label: "後発医薬品", value: formatNumber(row["後発医薬品規格単位数量"]) }
+    ]);
+  } else if (activeCategory === "concentration") {
+    const sorted = [...month.concentration].sort((a, b) => (numberValue(b["全体割合"]) || 0) - (numberValue(a["全体割合"]) || 0));
+    addMetric(metrics, "最も高い医療機関", sorted[0]?.["医療機関名"] || "―");
+    addMetric(metrics, "最高集中率", formatNumber(sorted[0]?.["全体割合"], "%"));
+    sorted.forEach((row) => addRecordRow(records, row["医療機関名"], [
+      { label: "受付", value: formatNumber(row["受付回数"], "回") },
+      { label: "集中率", value: formatNumber(row["全体割合"], "%") }
+    ]));
+  } else if (activeCategory === "insurance") {
+    const totals = insuranceTotals(month.insurance);
+    addMetric(metrics, "総合計", formatNumber(totals.cases, "件"));
+    addMetric(metrics, "処方箋受付", formatNumber(totals.prescriptions, "回"));
+    addMetric(metrics, "調剤報酬", formatNumber(totals.points, "点"));
+    sortInsuranceRows(month.insurance).forEach((row) => addRecordRow(records, row["区分"], [
+      { label: "件数", value: formatNumber(row["件数（件）"], "件") },
+      { label: "医科", value: formatNumber(row["処方箋回数_医科"], "回") },
+      { label: "歯科", value: formatNumber(row["処方箋回数_歯科"], "回") },
+      { label: "受付計", value: formatNumber(row["処方箋回数_合計"], "回") },
+      { label: "点数", value: formatNumber(row["調剤報酬点数_合計"], "点") }
+    ], isTotalRow(row)));
+  } else if (activeCategory === "homecare") {
+    const totals = homecareTotals(month.homecare);
+    addMetric(metrics, "患者件数", formatNumber(totals.cases, "件"));
+    addMetric(metrics, "訪問回数", formatNumber(totals.visits, "回"));
+    [...month.homecare].sort((a, b) => (numberValue(a["並び順"]) ?? 999) - (numberValue(b["並び順"]) ?? 999)).forEach((row) => addRecordRow(records, row["区分"], [
+      { label: "件数", value: formatNumber(row["件数（件）"], "件") },
+      { label: "回数", value: formatNumber(row["回数（回）"], "回") }
+    ]));
+  } else {
+    const row = month.survey;
+    addMetric(metrics, "1日平均", formatNumber(row["1日平均取扱処方箋枚数"], "枚"));
+    ["処方箋受付回数", "取扱処方箋枚数", "月間取扱処方箋枚数", "営業日数", "開局日数"].forEach((field) => {
+      if (hasValue(row[field])) addRecordRow(records, field, [{ label: "", value: formatNumber(row[field]) }]);
+    });
+  }
+
+  if (metrics.childNodes.length) container.appendChild(metrics);
+  if (records.childNodes.length) container.appendChild(records);
+}
+
+function renderMonthCard(month, openFirst) {
+  const details = document.createElement("details");
+  details.className = `month-card${monthHasData(month) ? " has-data" : ""}`;
+  details.open = openFirst;
+  const summary = document.createElement("summary");
+  summary.className = "month-summary";
+  const marker = document.createElement("span");
+  marker.className = "month-marker";
+  marker.textContent = `${Number(month.key.slice(5))}月`;
+  const copy = document.createElement("span");
+  copy.className = "month-copy";
+  const name = document.createElement("span");
+  name.className = "month-name";
+  name.textContent = month.label;
+  const primary = document.createElement("span");
+  primary.className = "month-primary";
+  primary.textContent = primaryValue(month);
+  copy.append(name, primary);
+  const status = document.createElement("span");
+  status.className = "month-status";
+  const dot = document.createElement("span");
+  dot.className = "status-dot";
+  const chevron = document.createElement("span");
+  chevron.className = "chevron";
+  chevron.textContent = "⌄";
+  status.append(dot, chevron);
+  summary.append(marker, copy, status);
+  const body = document.createElement("div");
+  body.className = "month-detail";
+  renderDetail(month, body);
+  details.append(summary, body);
+  return details;
+}
+
+function renderView() {
+  updateYearRange();
+  const months = monthsForSelectedYear();
+  renderOverview(months);
+  els.monthList.textContent = "";
+  if (!months.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-detail";
+    empty.textContent = "この年度のデータは取得範囲にありません。";
+    els.monthList.appendChild(empty);
+    return;
+  }
+  let firstDataOpened = false;
+  months.forEach((month) => {
+    const shouldOpen = !firstDataOpened && monthHasData(month);
+    if (shouldOpen) firstDataOpened = true;
+    els.monthList.appendChild(renderMonthCard(month, shouldOpen));
+  });
+}
+
+async function loadYearlyData() {
+  els.loading.className = "loading-message";
+  els.loading.textContent = "データを読み込んでいます…";
+  try {
+    const result = await authFetch("yearlyPerformance");
+    if (!result.success) throw new Error(result.message || "読み込みに失敗しました。");
+    monthsData = result.months || [];
+    renderYearOptions();
+    renderTabs();
+    renderView();
+    els.loading.textContent = "";
+  } catch (error) {
+    console.error(error);
+    els.loading.className = "loading-message error";
+    els.loading.textContent = "現在、データを読み込めません。時間をおいて更新してください。";
+  }
+}
+
+els.yearSelect.addEventListener("change", () => {
+  selectedFiscalYear = els.yearSelect.value;
+  renderView();
 });
-document.getElementById("back-to-compact-button").addEventListener("click",()=>{
-  document.getElementById("full-view").hidden=true;
-  document.getElementById("compact-view").hidden=false;
-});
-
-/* ===== 詳細（項目別・年度アコーディオン） ===== */
-function fiscalYearOf(monthKey){
-  const[y,m]=monthKey.split("-").map(Number);
-  return`${m>=4?y:y-1}年度`;
-}
-function currentFiscalYear(){
-  const now=new Date();
-  const y=now.getFullYear(),m=now.getMonth()+1;
-  return`${m>=4?y:y-1}年度`;
-}
-
-function buildGenericItems(){
-  const trend=monthsData.map(m=>({label:m.label,display:m.generic?`${text(m.generic["新指標割合"])}%`:"未入力",key:m.key}));
-  return[{name:"新指標割合",trend}];
-}
-function buildSurveyItems(){
-  const trend=monthsData.map(m=>{const v=m.survey?.["1日平均取扱処方箋枚数"];return{label:m.label,display:(v!==null&&v!==undefined&&v!=="")?`${v}枚`:"未入力",key:m.key}});
-  return[{name:"1日平均処方箋枚数",trend}];
-}
-function buildHomecareItems(){
-  const trend=monthsData.map(m=>{
-    const rows=m.homecare||[];
-    if(!rows.length)return{label:m.label,display:"未入力",key:m.key};
-    const caseSum=rows.reduce((s,r)=>s+(Number(r["件数（件）"])||0),0);
-    const countSum=rows.reduce((s,r)=>s+(Number(r["回数（回）"])||0),0);
-    return{label:m.label,display:`件数合計 ${caseSum}件 ／ 回数合計 ${countSum}回`,key:m.key};
-  });
-  return[{name:"在宅患者管理 合計",trend}];
-}
-function buildConcentrationItems(){
-  const latestByName={};
-  monthsData.forEach(m=>(m.concentration||[]).forEach(r=>{
-    const name=r["医療機関名"];if(!name)return;
-    if(!(name in latestByName))latestByName[name]=Number(r["全体割合"])||0;
-  }));
-  const top3=Object.entries(latestByName).sort((a,b)=>b[1]-a[1]).slice(0,3).map(e=>e[0]);
-  return top3.map(name=>({
-    name,
-    trend:monthsData.map(m=>{
-      const row=(m.concentration||[]).find(r=>r["医療機関名"]===name);
-      return{label:m.label,display:row?`${text(row["全体割合"])}%`:"未入力",key:m.key};
-    })
-  }));
-}
-function buildInsuranceItems(){
-  const names=new Set();
-  monthsData.forEach(m=>(m.insurance||[]).forEach(r=>{if(r["区分"])names.add(r["区分"])}));
-  return[...names].map(name=>({
-    name,
-    trend:monthsData.map(m=>{
-      const row=(m.insurance||[]).find(r=>r["区分"]===name);
-      if(!row)return{label:m.label,display:"未入力",key:m.key};
-      const parts=[];
-      if(row["件数（件）"]!==null&&row["件数（件）"]!==undefined)parts.push(`件数${text(row["件数（件）"])}`);
-      if(row["処方箋回数_医科"]!==null&&row["処方箋回数_医科"]!==undefined)parts.push(`医科${text(row["処方箋回数_医科"])}`);
-      if(row["処方箋回数_歯科"]!==null&&row["処方箋回数_歯科"]!==undefined)parts.push(`歯科${text(row["処方箋回数_歯科"])}`);
-      if(row["調剤報酬点数_合計"]!==null&&row["調剤報酬点数_合計"]!==undefined)parts.push(`点数${text(row["調剤報酬点数_合計"])}`);
-      return{label:m.label,display:parts.length?parts.join(" ／ "):"―",key:m.key};
-    })
-  }));
-}
-
-const ITEM_BUILDERS={generic:buildGenericItems,concentration:buildConcentrationItems,insurance:buildInsuranceItems,homecare:buildHomecareItems,survey:buildSurveyItems};
-
-function monthRow(entry){
-  const row=document.createElement("div");row.className="item-month-row";
-  const label=document.createElement("span");label.className="item-month-label";label.textContent=entry.label;
-  const value=document.createElement("span");value.className="item-month-value";value.textContent=entry.display;
-  row.append(label,value);
-  return row;
-}
-
-function renderItemCard(item){
-  const card=document.createElement("div");card.className="item-card";
-  const title=document.createElement("p");title.className="item-title";title.textContent=item.name;card.appendChild(title);
-
-  const groups=new Map();
-  item.trend.forEach(entry=>{
-    const fy=fiscalYearOf(entry.key);
-    if(!groups.has(fy))groups.set(fy,[]);
-    groups.get(fy).push(entry);
-  });
-  const curFY=currentFiscalYear();
-
-  groups.forEach((rows,fy)=>{
-    if(fy===curFY){
-      const list=document.createElement("div");list.className="item-month-list";
-      rows.forEach(r=>list.appendChild(monthRow(r)));
-      card.appendChild(list);
-    }else{
-      const details=document.createElement("details");details.className="fy-accordion";
-      const summary=document.createElement("summary");summary.textContent=fy;details.appendChild(summary);
-      const list=document.createElement("div");list.className="item-month-list";
-      rows.forEach(r=>list.appendChild(monthRow(r)));
-      details.appendChild(list);
-      card.appendChild(details);
-    }
-  });
-  return card;
-}
-
-function renderDetailSection(category){
-  const c=document.getElementById(`${category}-yearly-list`);c.textContent="";
-  const items=ITEM_BUILDERS[category]();
-  if(!items.length){c.innerHTML='<p class="empty-message">データがありません。</p>';return}
-  items.forEach(item=>c.appendChild(renderItemCard(item)));
-}
-
-document.getElementById("reload-button").addEventListener("click",loadYearlyData);
-document.querySelectorAll(".edit-tab").forEach(t=>t.addEventListener("click",()=>{
-  document.querySelectorAll(".edit-tab").forEach(x=>x.classList.remove("active"));
-  t.classList.add("active");
-  document.querySelectorAll(".yearly-section").forEach(s=>s.hidden=true);
-  document.getElementById(t.dataset.target).hidden=false;
-}));
-
+document.getElementById("reload-button").addEventListener("click", loadYearlyData);
 requireAuth(loadYearlyData);
