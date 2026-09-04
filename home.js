@@ -2,7 +2,12 @@
 
 const GAS_ENDPOINT = PHARMACY_CONFIG.GAS_URL;
 document.title=`Pharmacy OS | ${PHARMACY_CONFIG.PHARMACY_NAME}`;
-document.addEventListener("DOMContentLoaded",()=>{const h=document.getElementById("pharmacy-name-heading");if(h)h.textContent=PHARMACY_CONFIG.PHARMACY_NAME});
+document.addEventListener("DOMContentLoaded",()=>{
+  ["pharmacy-name-heading", "side-pharmacy-name"].forEach((id)=>{
+    const element=document.getElementById(id);
+    if(element) element.textContent=PHARMACY_CONFIG.PHARMACY_NAME;
+  });
+});
 
 const WEEKDAY_LABELS = ["日", "月", "火", "水", "木", "金", "土"];
 const DEFAULT_HOURS = {
@@ -29,6 +34,7 @@ const concentrationLabel = document.querySelector("#concentration-label");
 const concentrationList = document.querySelector("#concentration-list");
 const homeStatus = document.querySelector("#home-status");
 const refreshButton = document.querySelector("#refresh-button");
+const mobileRefreshButton = document.querySelector("#mobile-refresh-button");
 const toast = document.querySelector("#toast");
 
 function formatJapaneseDate(date) {
@@ -262,4 +268,5 @@ document.addEventListener("keydown", (event) => {
 todayLabel.textContent = formatJapaneseDate(new Date());
 renderWeekCalendar();
 refreshButton.addEventListener("click", refreshHome);
+if (mobileRefreshButton) mobileRefreshButton.addEventListener("click", refreshHome);
 requireAuth(refreshHome);

@@ -100,14 +100,19 @@ function requireAuth(onReady) {
  * 権限が1つもない場合は非表示にします。失敗しても他の処理には影響しません。
  */
 async function applyEditNavVisibility() {
-  const navLink = document.getElementById("nav-edit-link");
-  if (!navLink) return;
+  const navLinks = [
+    document.getElementById("nav-edit-link"),
+    document.getElementById("side-edit-link")
+  ].filter(Boolean);
+  if (!navLinks.length) return;
   try {
     const result = await authFetch("whoAmI");
     if (!result.success) return;
     const permissions = result.permissions || {};
     const hasAnyEditPermission = permissions.canEditDaily || permissions.canEditMonthly || permissions.canEditOther;
-    navLink.style.display = hasAnyEditPermission ? "" : "none";
+    navLinks.forEach((navLink) => {
+      navLink.style.display = hasAnyEditPermission ? "" : "none";
+    });
   } catch (e) {
     // 取得に失敗した場合は、リンクの表示状態を変更せずそのままにします。
   }
