@@ -9,11 +9,11 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/aoi-icon-32.png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="home.css?v=8">
+  <link rel="stylesheet" href="home.css?v=9">
   <script src="config.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="auth.js"></script>
-  <script src="home.js?v=7" defer></script>
+  <script src="home.js?v=8" defer></script>
 </head>
 <body>
   <div id="auth-gate" class="auth-gate" hidden>
@@ -77,7 +77,7 @@
               <div class="section-heading monthly-title"><div><p class="section-kicker">MONTHLY SNAPSHOT</p><h2 id="monthly-heading">前月の実績</h2></div><a class="text-button" href="yearly.html">詳しく見る <span>›</span></a></div>
               <div class="metric-grid">
                 <article class="metric-card featured-metric"><span class="metric-icon pink">▤</span><div><p id="average-label">先月の1日あたり平均処方箋枚数</p><p class="metric-value"><span id="average-value">―</span><small>枚</small></p><p id="average-note" class="metric-note">読込中</p></div></article>
-                <article class="metric-card"><span class="metric-icon blue">↗</span><div><p id="generic-rate-label">先月の後発品使用率</p><p class="metric-value"><span id="generic-rate-value">―</span><small id="generic-rate-unit">%</small></p><p class="metric-note">前月分</p></div></article>
+                <article class="metric-card"><span class="metric-icon blue">↗</span><div><p id="generic-rate-label">後発品使用率</p><p class="metric-value"><span id="generic-rate-value">―</span><small id="generic-rate-unit">%</small></p><p id="generic-rate-note" class="metric-note">前月分</p></div></article>
                 <article class="metric-card concentration-card"><span class="metric-icon green">◎</span><div><p id="concentration-label">先月までの処方箋集中率 上位4医療機関</p><ol id="concentration-list" class="concentration-list"><li>データ未取込</li></ol></div></article>
               </div>
             </section>

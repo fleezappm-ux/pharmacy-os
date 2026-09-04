@@ -29,6 +29,7 @@ const averageNote = document.querySelector("#average-note");
 const genericRateValue = document.querySelector("#generic-rate-value");
 const genericRateLabel = document.querySelector("#generic-rate-label");
 const genericRateUnit = document.querySelector("#generic-rate-unit");
+const genericRateNote = document.querySelector("#generic-rate-note");
 const monthlyHeading = document.querySelector("#monthly-heading");
 const concentrationLabel = document.querySelector("#concentration-label");
 const concentrationList = document.querySelector("#concentration-list");
@@ -127,19 +128,20 @@ async function loadHomeData() {
     const data = await authFetch("home");
     if (!data.success) throw new Error(data.message || "取得に失敗しました。");
 
-    averageLabel.textContent = `${data.previousMonthLabel}の1日あたり平均処方箋枚数`;
+    averageLabel.textContent = "1日平均処方箋枚数";
     averageValue.textContent = data.previousMonthAverage ?? "―";
     averageNote.textContent = data.previousMonthAverageSource === "survey"
-      ? "処方箋調べより"
+      ? `${data.previousMonthLabel}・処方箋調べより`
       : data.previousMonthRecordedDays
-      ? `${data.previousMonthRecordedDays}日分から算出`
-      : "記録なし";
+      ? `${data.previousMonthLabel}・${data.previousMonthRecordedDays}日分から算出`
+      : `${data.previousMonthLabel}・記録なし`;
     const summaryMonthLabel = data.previousMonthLabel || "前月";
     const hasGeneric = data.genericRate !== null && data.genericRate !== undefined;
     monthlyHeading.textContent = `${data.currentMonthLabel || "今月"}の状況`;
     genericRateValue.textContent = hasGeneric ? data.genericRate : "未入力";
     genericRateUnit.hidden = !hasGeneric;
-    genericRateLabel.textContent = `${summaryMonthLabel} 後発品使用率`;
+    genericRateLabel.textContent = "後発品使用率";
+    genericRateNote.textContent = `${summaryMonthLabel}の実績`;
     renderConcentration(data.concentrationTop4 || [], summaryMonthLabel);
     renderHandovers(data.handovers || []);
   } catch (error) {
