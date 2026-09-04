@@ -1,11 +1,11 @@
 "use strict";
 
 const OVERVIEW_CATEGORIES = [
+  { key: "insurance", label: "保険調剤実績" },
   { key: "generic", label: "後発品調剤率" },
   { key: "concentration", label: "処方箋集中率" },
-  { key: "insurance", label: "保険調剤実績" },
   { key: "homecare", label: "在宅患者管理" },
-  { key: "survey", label: "処方箋調べ" }
+  { key: "survey", label: "1日平均処方箋枚数" }
 ];
 
 const loading = document.getElementById("yearly-loading");
@@ -54,6 +54,12 @@ function insuranceTotal(rows, field) {
   return totalValue === null ? sumField(rows, field) : totalValue;
 }
 
+function topConcentrationRow(month) {
+  return [...(month.concentration || [])].sort((a, b) =>
+    (numberValue(b["全体割合"]) || 0) - (numberValue(a["全体割合"]) || 0)
+  )[0];
+}
+
 function categoryValue(month, key) {
   if (!hasCategoryData(month, key)) return "未入力";
   if (key === "generic") return formatNumber(month.generic["新指標割合"], "%");
@@ -64,7 +70,32 @@ function categoryValue(month, key) {
     const visits = month.homecare.reduce((sum, row) => sum + (numberValue(row["回数（回）"]) || 0), 0);
     return `${formatNumber(cases, "件")}・${formatNumber(visits, "回")}`;
   }
-  const top = [...month.concentration].sort((a, b) => (numberValue(b["全体割合"]) || 0) - (numberValue(a["全体割合"]) || 0))[0];
+  const top = topConcentrationRow(month);
+  return formatNumber(top?.["全体割合"], "%");
+}
+
+function categoryNote(month, key) {
+  if (!hasCategoryData(month, key)) return "";
+  if (key === "concentration") {
+    return topConcentrationRow(month)?.["医療機関名"] || "医療機関名未設定";
+  }
+  if (key === "insurance") {
+    const medical = insuranceTotal(month.insurance, "処方箋回数_医科");
+    const dental = insuranceTotal(month.insurance, "処方箋回数_歯科");
+    const points = insuranceTotal(month.insurance, "調剤報酬点数_合計");
+    const parts = [];
+    if (numberValue(medical) !== null) parts.push(`医科 ${formatNumber(medical, "回")}`);
+    if (numberValue(dental) !== null) parts.push(`歯科 ${formatNumber(dental, "回")}`);
+    if (numberValue(points) !== null) parts.push(`点数 ${formatNumber(points, "点")}`);
+    return parts.join(" ・ ");
+  }
+  if (key === "survey") return "営業日から算出";
+  return "";
+}
+
+function monthlyCategoryValue(month, key) {
+  if (key !== "concentration") return categoryValue(month, key);
+  const top = topConcentrationRow(month);
   return `${top?.["医療機関名"] || "名称未設定"} ${formatNumber(top?.["全体割合"], "%")}`;
 }
 
@@ -73,7 +104,7 @@ function renderLatestCards() {
   OVERVIEW_CATEGORIES.forEach((category) => {
     const latest = monthsData.find((month) => hasCategoryData(month, category.key));
     const card = document.createElement("a");
-    card.className = `latest-card${latest ? "" : " empty"}`;
+    card.className = `latest-card latest-card-${category.key}${latest ? "" : " empty"}`;
     card.href = `yearly-detail.html?category=${category.key}${latest ? `&fy=${fiscalYearOf(latest.key)}` : ""}`;
     const top = document.createElement("div");
     top.className = "latest-card-top";
@@ -87,10 +118,15 @@ function renderLatestCards() {
     const value = document.createElement("strong");
     value.className = "latest-value";
     value.textContent = latest ? categoryValue(latest, category.key) : "未入力";
+    const note = document.createElement("span");
+    note.className = "latest-note";
+    note.textContent = latest ? categoryNote(latest, category.key) : "";
     const date = document.createElement("span");
     date.className = "latest-date";
     date.textContent = latest ? `最新更新：${latest.label}` : "入力データなし";
-    card.append(top, value, date);
+    card.append(top, value);
+    if (note.textContent) card.append(note);
+    card.append(date);
     latestGrid.appendChild(card);
   });
 }
@@ -146,7 +182,7 @@ function renderMonthlyList() {
       label.textContent = category.label;
       const value = document.createElement("span");
       value.className = "process-value";
-      value.textContent = filled ? categoryValue(month, category.key) : "未入力";
+      value.textContent = filled ? monthlyCategoryValue(month, category.key) : "未入力";
       item.append(label, value);
       grid.appendChild(item);
     });
