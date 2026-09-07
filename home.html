@@ -9,7 +9,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="icon" type="image/png" sizes="32x32" href="assets/aoi-icon-32.png">
   <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-  <link rel="stylesheet" href="home.css?v=10">
+  <link rel="stylesheet" href="home.css?v=11">
   <script src="config.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="auth.js"></script>
@@ -35,7 +35,7 @@
       <nav class="side-nav" aria-label="メインメニュー">
         <a class="active" href="home.html"><span>⌂</span>ホーム</a>
         <a href="index.html"><span>▣</span>日次業務</a>
-        <a href="monthly.html"><span>▦</span>月次業務</a>
+        <a href="monthly.html"><span>▦</span>月次業務入力</a>
         <a href="yearly.html"><span>▤</span>年度実績</a>
         <a href="status.html"><span>◉</span>薬局ステータス</a>
         <a id="side-edit-link" href="edit.html"><span>✎</span>編集</a>
@@ -94,7 +94,7 @@
     </div>
 
     <nav class="bottom-nav" aria-label="メインナビゲーション">
-      <a class="nav-item active" href="home.html" aria-current="page"><span>⌂</span><small>ホーム</small></a><a class="nav-item" href="index.html"><span>▣</span><small>日次業務</small></a><a class="nav-item" href="monthly.html"><span>▦</span><small>月次業務</small></a><a class="nav-item" href="yearly.html"><span>▤</span><small>年度実績</small></a><a class="nav-item" href="status.html"><span>◉</span><small>ステータス</small></a><a id="nav-edit-link" class="nav-item" href="edit.html"><span>✎</span><small>編集</small></a>
+      <a class="nav-item active" href="home.html" aria-current="page"><span>⌂</span><small>ホーム</small></a><a class="nav-item" href="index.html"><span>▣</span><small>日次業務</small></a><a class="nav-item" href="monthly.html"><span>▦</span><small>月次業務入力</small></a><a class="nav-item" href="yearly.html"><span>▤</span><small>年度実績</small></a><a class="nav-item" href="status.html"><span>◉</span><small>ステータス</small></a><a id="nav-edit-link" class="nav-item" href="edit.html"><span>✎</span><small>編集</small></a>
     </nav>
     <div id="reminder-modal" class="reminder-modal" hidden><section class="reminder-dialog" role="dialog" aria-modal="true" aria-labelledby="reminder-title"><button id="reminder-close" class="reminder-close" type="button" aria-label="閉じる">×</button><p class="section-kicker">REMINDER</p><h2 id="reminder-title">未入力の業務があります</h2><p id="reminder-summary" class="reminder-summary"></p><div id="reminder-list" class="reminder-list"></div><button id="reminder-snooze" class="reminder-snooze" type="button">今日は表示しない</button></section></div>
     <div id="toast" class="toast" role="status" hidden></div>

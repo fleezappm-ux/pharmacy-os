@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#137a68">
-    <meta name="description" content="Pharmacy OS 月次業務">
-    <title>Pharmacy OS | 月次業務</title>
+    <meta name="description" content="Pharmacy OS 月次業務入力">
+    <title>Pharmacy OS | 月次業務入力</title>
     <link rel="stylesheet" href="monthly.css?v=5">
     <script src="config.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -38,8 +38,8 @@
         <div>
           <a class="back-to-list-link" href="yearly.html">← 一覧へ戻る</a>
           <p class="eyebrow">Pharmacy OS</p>
-          <h1>月次業務</h1>
-          <p>メルフィンのCSVを選んでNotionへ保存します。</p>
+          <h1>月次業務入力</h1>
+          <p>CSV形式のファイルを選んでNotionへ保存します。</p>
         </div>
         <button id="refresh-button" class="icon-button" type="button" aria-label="最新情報に更新">↻</button>
       </header>
@@ -78,7 +78,7 @@
             </div>
             <span id="generic-badge" class="status-chip">未選択</span>
           </div>
-          <p class="help-text">「メルッフィン.csv」形式。複数月が入っている場合は月ごとに保存します。</p>
+          <p class="help-text">CSV形式。複数月が入っている場合は月ごとに保存します。</p>
           <label class="file-picker">
             <span>CSVファイルを選択</span>
             <input id="generic-file" type="file" accept=".csv,text/csv">
@@ -137,7 +137,7 @@
       <nav class="bottom-nav" aria-label="メインナビゲーション">
         <a class="nav-item" href="home.html"><span>⌂</span><small>ホーム</small></a>
         <a class="nav-item" href="index.html"><span>▣</span><small>日次業務</small></a>
-        <a class="nav-item active" href="monthly.html" aria-current="page"><span>▦</span><small>月次業務</small></a>
+        <a class="nav-item active" href="monthly.html" aria-current="page"><span>▦</span><small>月次業務入力</small></a>
         <a class="nav-item" href="yearly.html"><span>▤</span><small>年度実績</small></a>
         <a class="nav-item" href="status.html"><span>◉</span><small>ステータス</small></a>
         <a id="nav-edit-link" class="nav-item" href="edit.html"><span>✎</span><small>編集</small></a>

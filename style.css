@@ -47,27 +47,26 @@ textarea {
 
 .page {
   min-height: 100vh;
-  padding: 20px 12px 110px;
+  padding: 0 0 110px;
 }
 
 .app-card {
-  width: min(100%, 540px);
+  width: min(100%, 620px);
   margin: 0 auto;
-  padding: 28px 18px 24px;
-  background: var(--color-surface);
-  border: 1px solid rgba(19, 122, 104, 0.08);
-  border-radius: var(--radius-large);
-  box-shadow: var(--shadow-card);
+  background: transparent;
 }
 
 .app-header {
-  margin-bottom: 26px;
+  margin: 0 0 18px;
+  padding: 30px 26px 32px;
+  color: #fff;
+  background: linear-gradient(135deg, #17394b, #137a68 68%, #4aa8e8);
 }
 
 .home-link {
   display: inline-block;
   margin-bottom: 18px;
-  color: var(--color-primary);
+  color: rgba(255, 255, 255, 0.92);
   font-size: 0.86rem;
   font-weight: 700;
   text-decoration: none;
@@ -96,26 +95,29 @@ h1 {
 
 .app-description {
   margin: 8px 0 0;
-  color: var(--color-muted);
+  color: rgba(255, 255, 255, 0.84);
   font-size: 0.95rem;
 }
 
 #daily-form {
   display: grid;
-  gap: 22px;
+  gap: 16px;
+  padding: 0 14px;
 }
 
 .form-section {
   display: grid;
   gap: 18px;
   margin: 0;
-  padding: 0;
-  border: 0;
+  padding: 22px 18px;
+  background: var(--color-surface);
+  border: 1px solid rgba(19, 122, 104, 0.07);
+  border-radius: 18px;
+  box-shadow: var(--shadow-card);
 }
 
 .form-section + .form-section {
   padding-top: 22px;
-  border-top: 1px solid #e2ebf0;
 }
 
 h2 {
@@ -274,11 +276,15 @@ button:disabled {
 
 @media (min-width: 560px) {
   .page {
-    padding: 28px 16px 110px;
+    padding: 0 0 110px;
   }
 
-  .app-card {
-    padding: 36px 34px 30px;
+  .app-header {
+    padding: 36px 34px;
+  }
+
+  .form-section {
+    padding: 28px 26px;
   }
 }
 
@@ -289,7 +295,7 @@ button:disabled {
   bottom: 0;
   display: grid;
   grid-template-columns: repeat(6, 1fr);
-  width: min(100%, 540px);
+  width: min(100%, 620px);
   transform: translateX(-50%);
   padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--color-border);
