@@ -108,6 +108,27 @@ function requireAuth(onReady) {
 }
 
 /**
+ * 編集専用ページを開く前に、指定された編集権限をGAS側の最新情報で確認します。
+ * 権限がない場合は編集トップへ戻し、編集データの読み込みや操作ボタンの利用を防ぎます。
+ */
+function requireEditPermission(permissionName, onReady) {
+  requireAuth(async () => {
+    try {
+      const result = await authFetch("whoAmI");
+      const permissions = result && result.permissions ? result.permissions : {};
+      if (!result.success || !permissions[permissionName]) {
+        location.replace("edit.html");
+        return;
+      }
+      onReady(result);
+    } catch (e) {
+      console.error("編集権限の確認に失敗しました。", e);
+      location.replace("edit.html");
+    }
+  });
+}
+
+/**
  * ログイン中の利用者の編集権限を確認し、下部ナビの「編集」リンクを
  * 権限が1つもない場合は非表示にします。失敗しても他の処理には影響しません。
  */

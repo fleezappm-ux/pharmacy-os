@@ -224,4 +224,4 @@ document.querySelectorAll("[data-close-modal]").forEach(x=>x.addEventListener("c
 document.querySelectorAll("[data-close-delete]").forEach(x=>x.addEventListener("click",()=>hideModal("delete-modal")));
 document.querySelectorAll(".edit-tab").forEach(t=>t.addEventListener("click",()=>{document.querySelectorAll(".edit-tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");document.querySelectorAll(".edit-section").forEach(s=>s.hidden=true);document.getElementById(t.dataset.target).hidden=false}));
 
-requireAuth(loadAll);
+requireEditPermission("canEditOther",loadAll);

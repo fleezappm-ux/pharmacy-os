@@ -125,4 +125,4 @@ async function loadOwnName(){
   }
 }
 
-requireAuth(()=>{loadDailyReports();loadOwnName()});
+requireEditPermission("canEditDaily",()=>{loadDailyReports();loadOwnName()});
