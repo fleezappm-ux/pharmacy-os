@@ -4,17 +4,17 @@
  */
 
 :root {
-  --color-primary: #176b55;
-  --color-primary-dark: #0f5946;
-  --color-background: #f3f7f5;
+  --color-primary: #137a68;
+  --color-primary-dark: #0a4f45;
+  --color-background: #f5f9fb;
   --color-surface: #ffffff;
-  --color-subtle: #f5f8f7;
-  --color-text: #17211e;
-  --color-muted: #65726e;
-  --color-border: #cbd7d2;
-  --color-success: #0d704d;
+  --color-subtle: #f7fbfd;
+  --color-text: #172b35;
+  --color-muted: #657982;
+  --color-border: #cedce3;
+  --color-success: #137a68;
   --color-error: #b42318;
-  --shadow-card: 0 12px 32px rgba(20, 51, 42, 0.1);
+  --shadow-card: 0 12px 32px rgba(25, 69, 82, 0.1);
   --radius-large: 20px;
   --radius-medium: 12px;
 }
@@ -55,7 +55,7 @@ textarea {
   margin: 0 auto;
   padding: 28px 18px 24px;
   background: var(--color-surface);
-  border: 1px solid rgba(23, 107, 85, 0.08);
+  border: 1px solid rgba(19, 122, 104, 0.08);
   border-radius: var(--radius-large);
   box-shadow: var(--shadow-card);
 }
@@ -74,7 +74,7 @@ textarea {
 }
 
 .home-link:focus-visible {
-  outline: 3px solid rgba(23, 107, 85, 0.2);
+  outline: 3px solid rgba(19, 122, 104, 0.2);
   outline-offset: 4px;
   border-radius: 4px;
 }
@@ -115,7 +115,7 @@ h1 {
 
 .form-section + .form-section {
   padding-top: 22px;
-  border-top: 1px solid #e3ebe8;
+  border-top: 1px solid #e2ebf0;
 }
 
 h2 {
@@ -160,7 +160,7 @@ input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(23, 107, 85, 0.15);
+  box-shadow: 0 0 0 3px rgba(19, 122, 104, 0.15);
 }
 
 input:user-invalid,
@@ -240,7 +240,7 @@ button:active {
 }
 
 button:focus-visible {
-  outline: 3px solid rgba(23, 107, 85, 0.25);
+  outline: 3px solid rgba(19, 122, 104, 0.25);
   outline-offset: 3px;
 }
 
@@ -294,7 +294,7 @@ button:disabled {
   padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
   border-top: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 -8px 24px rgba(23, 70, 57, 0.08);
+  box-shadow: 0 -8px 24px rgba(25, 69, 82, 0.08);
 }
 
 .nav-item {
@@ -303,7 +303,7 @@ button:disabled {
   gap: 3px;
   border: 0;
   background: transparent;
-  color: #75827d;
+  color: #75858c;
   text-decoration: none;
   font: inherit;
 }
