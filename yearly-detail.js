@@ -97,7 +97,7 @@ function primaryValue(month, key = activeCategory) {
     const top = [...month.concentration].sort((a, b) => (numberValue(b["全体割合"]) || 0) - (numberValue(a["全体割合"]) || 0))[0];
     return `${top?.["医療機関名"] || "名称未設定"} ${formatNumber(top?.["全体割合"], "%")}`;
   }
-  if (key === "insurance") return `総合計 ${formatNumber(insuranceTotals(month.insurance).cases, "件")}`;
+  if (key === "insurance") return `処方箋受付回数 ${formatNumber(insuranceTotals(month.insurance).prescriptions, "回")}`;
   const totals = homecareTotals(month.homecare);
   return `${formatNumber(totals.cases, "件")}・${formatNumber(totals.visits, "回")}`;
 }
