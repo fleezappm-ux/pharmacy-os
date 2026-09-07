@@ -32,6 +32,7 @@ async function init() {
       isAdmin = true;
       loadingMessage.hidden = true;
       adminContent.hidden = false;
+      document.getElementById("own-name-input").value = who.name || "";
       await Promise.all([loadUsers(), loadInvites()]);
     } catch (e) {
       loadingMessage.className = "loading-message error";
@@ -39,6 +40,24 @@ async function init() {
     }
   });
 }
+
+document.getElementById("own-name-save").addEventListener("click", async () => {
+  const name = document.getElementById("own-name-input").value.trim();
+  const resultEl = document.getElementById("own-name-result");
+  if (!name) {
+    resultEl.textContent = "表示名を入力してください。";
+    resultEl.style.color = "var(--red)";
+    return;
+  }
+  const result = await authFetch("updateOwnAdminProfile", { name });
+  if (!result.success) {
+    resultEl.textContent = result.message || "更新に失敗しました。";
+    resultEl.style.color = "var(--red)";
+    return;
+  }
+  resultEl.textContent = "保存しました。";
+  resultEl.style.color = "var(--green)";
+});
 
 /* ===== アカウント枠・利用者一覧 ===== */
 async function loadUsers() {
@@ -62,13 +81,13 @@ const ROLE_OPTIONS = [
   { value: "other", label: "その他" }
 ];
 
-// 役職を選んだ時に入れる編集権限の初期値です。
-// チェック後も管理者が個別にオン・オフでき、保存時は画面上の状態を優先します。
-const ROLE_DEFAULT_PERMISSIONS = {
+// 役職を選んだ時に自動でチェックする、権限の初期提案値です。
+// あくまで提案であり、保存前ならチェックボックスを自由に手動で変更できます。
+const ROLE_PERMISSION_SUGGESTIONS = {
   owner: { canEditDaily: true, canEditMonthly: true, canEditOther: true },
   managing_pharmacist: { canEditDaily: true, canEditMonthly: true, canEditOther: true },
   pharmacist: { canEditDaily: true, canEditMonthly: false, canEditOther: false },
-  clerk: { canEditDaily: false, canEditMonthly: false, canEditOther: false },
+  clerk: { canEditDaily: true, canEditMonthly: false, canEditOther: false },
   other: { canEditDaily: false, canEditMonthly: false, canEditOther: false }
 };
 
@@ -169,17 +188,7 @@ function renderUserList(users) {
       profileSaveBtn.className = "small secondary";
       profileSaveBtn.type = "button";
       profileSaveBtn.textContent = "プロフィールを保存";
-      profileSaveBtn.addEventListener("click", () => updateProfile(
-        u.email,
-        nameInput.value,
-        roleSelect.value,
-        storeInput.value,
-        {
-          canEditDaily: checkboxes.canEditDaily.checked,
-          canEditMonthly: checkboxes.canEditMonthly.checked,
-          canEditOther: checkboxes.canEditOther.checked
-        }
-      ));
+      profileSaveBtn.addEventListener("click", () => updateProfile(u.email, nameInput.value, roleSelect.value, storeInput.value));
 
       profileRow.append(nameInput, roleSelect, storeInput, profileSaveBtn);
       editArea.appendChild(profileRow);
@@ -211,12 +220,13 @@ function renderUserList(users) {
         permRow.appendChild(label);
       });
 
+      // 役職を変更した時、その役職でよくある権限の組み合わせを自動でチェックします。
+      // あくまで初期値の提案であり、保存前ならチェックボックスは自由に手動変更できます。
       roleSelect.addEventListener("change", () => {
-        const defaults = ROLE_DEFAULT_PERMISSIONS[roleSelect.value];
-        if (!defaults) return;
-        Object.keys(checkboxes).forEach((key) => {
-          checkboxes[key].checked = !!defaults[key];
-        });
+        const suggestion = ROLE_PERMISSION_SUGGESTIONS[roleSelect.value] || { canEditDaily: false, canEditMonthly: false, canEditOther: false };
+        checkboxes.canEditDaily.checked = suggestion.canEditDaily;
+        checkboxes.canEditMonthly.checked = suggestion.canEditMonthly;
+        checkboxes.canEditOther.checked = suggestion.canEditOther;
       });
 
       const permSaveBtn = document.createElement("button");
@@ -266,15 +276,9 @@ function renderUserList(users) {
   });
 }
 
-async function updateProfile(email, name, role, store, permissions) {
+async function updateProfile(email, name, role, store) {
   const result = await authFetch("adminUpdateUserProfile", { targetEmail: email, name, role, store });
   if (!result.success) { alert(result.message || "更新に失敗しました。"); return; }
-  const permissionResult = await authFetch("adminUpdateUserPermissions", { targetEmail: email, permissions });
-  if (!permissionResult.success) {
-    alert(permissionResult.message || "プロフィールは保存されましたが、権限の保存に失敗しました。");
-    await loadUsers();
-    return;
-  }
   await loadUsers();
 }
 
