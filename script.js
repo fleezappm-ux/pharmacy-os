@@ -101,6 +101,30 @@ function showStatus(message, type = "") {
   if (type) statusMessage.classList.add(`is-${type}`);
 }
 
+/** 過去日付の重複エラー時、はっきりした確認モーダルを表示します。 */
+function showDuplicateDateStatus(message, workDate) {
+  showStatus("");
+  const modal = document.getElementById("duplicate-modal");
+  const editButton = document.getElementById("duplicate-modal-edit");
+  const cancelButton = document.getElementById("duplicate-modal-cancel");
+
+  modal.hidden = false;
+  document.body.style.overflow = "hidden";
+
+  const closeModal = () => {
+    modal.hidden = true;
+    document.body.style.overflow = "";
+    editButton.removeEventListener("click", goToEdit);
+    cancelButton.removeEventListener("click", closeModal);
+  };
+  const goToEdit = () => {
+    window.location.href = `edit-daily.html?date=${encodeURIComponent(workDate)}`;
+  };
+
+  editButton.addEventListener("click", goToEdit);
+  cancelButton.addEventListener("click", closeModal);
+}
+
 function setSubmitting(isSubmitting) {
   submitButton.disabled = isSubmitting;
   submitButton.textContent = isSubmitting ? "送信中…" : "Notionへ保存";
@@ -192,6 +216,11 @@ async function sendDailyRecord(payload) {
   }
 
   if (!result.success) {
+    if (result.duplicateDate) {
+      const duplicateError = new Error(result.message || "この日の日次記録は既に入力されています。");
+      duplicateError.duplicateDate = true;
+      throw duplicateError;
+    }
     throw new Error(result.message || "Notionへの保存に失敗しました。");
   }
 
@@ -216,7 +245,11 @@ form.addEventListener("submit", async (event) => {
     showStatus(result.message || "保存しました。", "success");
   } catch (error) {
     console.error("Pharmacy OS send error:", error);
-    showStatus(`送信できませんでした：${error.message}`, "error");
+    if (error.duplicateDate) {
+      showDuplicateDateStatus(error.message, dateInput.value);
+    } else {
+      showStatus(`送信できませんでした：${error.message}`, "error");
+    }
   } finally {
     setSubmitting(false);
   }

@@ -44,6 +44,14 @@ function showAuthGate() {
   const gate = document.getElementById("auth-gate");
   if (gate) gate.hidden = false;
   document.body.style.overflow = "hidden";
+  applyLineWarningIfNeeded();
+}
+
+/** LINE内ブラウザで開かれている場合、ログイン画面に警告を表示します（表示は初回ログイン時、つまりログイン画面が実際に出る時だけです）。 */
+function applyLineWarningIfNeeded() {
+  const warning = document.getElementById("auth-line-warning");
+  if (!warning) return;
+  warning.hidden = !/Line/i.test(navigator.userAgent);
 }
 
 function hideAuthGate() {
@@ -83,6 +91,10 @@ function handleCredentialResponse(response) {
  * ログイン成功後にonReadyを呼びます。
  */
 function requireAuth(onReady) {
+  // URLに ?logout=1 が付いている場合、テストのために強制的にログアウトさせます。
+  if (new URLSearchParams(location.search).get("logout") === "1") {
+    clearAuth();
+  }
   if (isTokenValid(getIdToken())) {
     scheduleTokenRefresh();
     applyEditNavVisibility();

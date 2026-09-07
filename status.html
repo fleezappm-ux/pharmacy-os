@@ -12,7 +12,7 @@
     .auth-gate-title{margin:0 0 4px;font-size:.75rem;font-weight:800;letter-spacing:.1em;color:#137a68;text-transform:uppercase}
     .auth-gate-box h2{margin:0 0 10px;font-size:1.3rem;color:#172b35}
     .auth-gate-desc{margin:0 0 20px;color:#657982;font-size:.86rem;line-height:1.6}
-    #google-signin-button{display:flex;justify-content:center}
+    #google-signin-button{display:flex;justify-content:center}.auth-line-warning{margin:0 0 16px;padding:12px 14px;border-radius:12px;background:#fff6e5;border:1px solid #f0c464;color:#7a5300;font-size:.78rem;line-height:1.6;text-align:left}
   </style>
 </head>
 <body>
@@ -21,6 +21,9 @@
       <p class="auth-gate-title">PHARMACY OS</p>
       <h2>ログインしてください</h2>
       <p class="auth-gate-desc">許可されたGoogleアカウントでログインすると使えます。</p>
+      <div id="auth-line-warning" class="auth-line-warning" hidden>
+        LINE内のブラウザでは、Googleログインが正常に開かない場合があります。右上のメニューから「他のアプリで開く」「Chromeで開く」「ブラウザで開く」などを選んで、外部ブラウザで開き直してください。
+      </div>
       <div id="google-signin-button"></div>
     </div>
   </div>
@@ -155,7 +158,7 @@
   </nav>
   <script src="config.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="auth.js"></script>
+  <script src="auth.js?v=2"></script>
   <script src="status.js?v=3"></script>
 </body>
 </html>

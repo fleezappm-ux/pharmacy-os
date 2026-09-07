@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="home.css?v=11">
   <script src="config.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
-  <script src="auth.js"></script>
+  <script src="auth.js?v=2"></script>
   <script src="home.js?v=8" defer></script>
 </head>
 <body>
@@ -22,6 +22,9 @@
       <p class="auth-gate-title">AOI PHARMACY OS</p>
       <h2>ログインしてください</h2>
       <p class="auth-gate-desc">許可されたGoogleアカウントでログインすると使えます。</p>
+      <div id="auth-line-warning" class="auth-line-warning" hidden>
+        LINE内のブラウザでは、Googleログインが正常に開かない場合があります。右上のメニューから「他のアプリで開く」「Chromeで開く」「ブラウザで開く」などを選んで、外部ブラウザで開き直してください。
+      </div>
       <div id="google-signin-button"></div>
     </div>
   </div>

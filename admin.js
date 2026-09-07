@@ -32,6 +32,7 @@ async function init() {
       isAdmin = true;
       loadingMessage.hidden = true;
       adminContent.hidden = false;
+      document.getElementById("own-name-input").value = who.name || "";
       await Promise.all([loadUsers(), loadInvites()]);
     } catch (e) {
       loadingMessage.className = "loading-message error";
@@ -39,6 +40,24 @@ async function init() {
     }
   });
 }
+
+document.getElementById("own-name-save").addEventListener("click", async () => {
+  const name = document.getElementById("own-name-input").value.trim();
+  const resultEl = document.getElementById("own-name-result");
+  if (!name) {
+    resultEl.textContent = "表示名を入力してください。";
+    resultEl.style.color = "var(--red)";
+    return;
+  }
+  const result = await authFetch("updateOwnAdminProfile", { name });
+  if (!result.success) {
+    resultEl.textContent = result.message || "更新に失敗しました。";
+    resultEl.style.color = "var(--red)";
+    return;
+  }
+  resultEl.textContent = "保存しました。";
+  resultEl.style.color = "var(--green)";
+});
 
 /* ===== アカウント枠・利用者一覧 ===== */
 async function loadUsers() {

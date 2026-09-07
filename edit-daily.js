@@ -20,7 +20,16 @@ async function apiWrite(action,payload){const j=await authFetch(action,payload);
 let dailyReports=[];
 function normalizeDailyReport(raw){const date=pick(raw,["日付"],"");const dateStr=typeof date==="object"&&date!==null?(date.start||""):date;return{raw,id:pick(raw,["id"],""),date:dateStr,closed:Boolean(raw["休業日"]),hours:raw["開局時間"]||"",count:raw["処方箋枚数"],managerAbsence:raw["管理者不在時間"]||"",managerResponder:raw["管理者不在時対応者"]||"",pharmacistAbsence:raw["薬剤師不在時間"]||"",pharmacistResponder:raw["薬剤師不在時対応者"]||"",notes:raw["特記事項"]||"",handover:raw["申し送り"]||"",confirmedBy:raw["確認印"]||""}}
 
-async function loadDailyReports(){try{const result=await authFetch("dailyReports");if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");dailyReports=(result.reports||[]).map(normalizeDailyReport);renderDailyList()}catch(e){document.getElementById("daily-edit-list").innerHTML='<p class="empty-message">読み込みに失敗しました。</p>'}}
+async function loadDailyReports(){try{const result=await authFetch("dailyReports");if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");dailyReports=(result.reports||[]).map(normalizeDailyReport);renderDailyList();openFromDateParam()}catch(e){document.getElementById("daily-edit-list").innerHTML='<p class="empty-message">読み込みに失敗しました。</p>'}}
+
+/** URLに?date=YYYY-MM-DDが付いている場合、該当日の記録を自動で開きます（重複エラーからの誘導用）。 */
+function openFromDateParam(){
+  const params=new URLSearchParams(location.search);
+  const targetDate=params.get("date");
+  if(!targetDate)return;
+  const target=dailyReports.find(n=>n.date&&String(n.date).slice(0,10)===targetDate);
+  if(target)openDailyForm(target);
+}
 
 function renderDailyList(){const c=document.getElementById("daily-edit-list");c.textContent="";if(!dailyReports.length){c.innerHTML='<p class="empty-message">日次業務の記録はありません。</p>';return}dailyReports.forEach(n=>{const row=document.createElement("button");row.type="button";row.className="list-row";const main=document.createElement("div");main.className="list-main";const title=document.createElement("span");title.className="list-title";title.textContent=formatDate(n.date);main.appendChild(title);const detail=document.createElement("span");detail.className="list-detail";detail.textContent=n.closed?"休業日":`開局時間：${text(n.hours)} ／ 処方箋枚数：${text(n.count)}`;main.appendChild(detail);const badge=document.createElement("span");badge.className=`badge ${n.closed?"none":"green"}`;badge.textContent=n.closed?"休業日":"営業日";row.append(main,badge);row.addEventListener("click",()=>openDailyForm(n));c.appendChild(row)})}
 
