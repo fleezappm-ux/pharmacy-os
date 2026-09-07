@@ -44,6 +44,14 @@ function showAuthGate() {
   const gate = document.getElementById("auth-gate");
   if (gate) gate.hidden = false;
   document.body.style.overflow = "hidden";
+  applyLineWarningIfNeeded();
+}
+
+/** LINE内ブラウザで開かれている場合、ログイン画面に警告を表示します（表示は初回ログイン時、つまりログイン画面が実際に出る時だけです）。 */
+function applyLineWarningIfNeeded() {
+  const warning = document.getElementById("auth-line-warning");
+  if (!warning) return;
+  warning.hidden = !/Line/i.test(navigator.userAgent);
 }
 
 function hideAuthGate() {
@@ -100,19 +108,14 @@ function requireAuth(onReady) {
  * 権限が1つもない場合は非表示にします。失敗しても他の処理には影響しません。
  */
 async function applyEditNavVisibility() {
-  const navLinks = [
-    document.getElementById("nav-edit-link"),
-    document.getElementById("side-edit-link")
-  ].filter(Boolean);
-  if (!navLinks.length) return;
+  const navLink = document.getElementById("nav-edit-link");
+  if (!navLink) return;
   try {
     const result = await authFetch("whoAmI");
     if (!result.success) return;
     const permissions = result.permissions || {};
     const hasAnyEditPermission = permissions.canEditDaily || permissions.canEditMonthly || permissions.canEditOther;
-    navLinks.forEach((navLink) => {
-      navLink.style.display = hasAnyEditPermission ? "" : "none";
-    });
+    navLink.style.display = hasAnyEditPermission ? "" : "none";
   } catch (e) {
     // 取得に失敗した場合は、リンクの表示状態を変更せずそのままにします。
   }
