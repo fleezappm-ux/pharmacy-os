@@ -34,6 +34,8 @@ const monthlyHeading = document.querySelector("#monthly-heading");
 const concentrationLabel = document.querySelector("#concentration-label");
 const concentrationList = document.querySelector("#concentration-list");
 const homeStatus = document.querySelector("#home-status");
+const notificationPanel = document.querySelector("#notification-panel");
+const notificationList = document.querySelector("#notification-list");
 const refreshButton = document.querySelector("#refresh-button");
 const mobileRefreshButton = document.querySelector("#mobile-refresh-button");
 const toast = document.querySelector("#toast");
@@ -117,6 +119,45 @@ function renderHandovers(handovers) {
     item.append(date, text);
     handoverList.append(item);
   });
+}
+
+function renderNotifications(notifications) {
+  if (!notifications.length) {
+    notificationPanel.hidden = true;
+    notificationList.replaceChildren();
+    return;
+  }
+
+  notificationPanel.hidden = false;
+  notificationList.replaceChildren();
+
+  notifications.forEach((notice) => {
+    const item = document.createElement("article");
+    item.className = "handover-item";
+
+    const date = document.createElement("p");
+    date.className = "handover-date";
+    date.textContent = notice.通知タイミング種別 || "";
+
+    const text = document.createElement("p");
+    text.className = "handover-text";
+    text.textContent = `${notice.予定名}（${formatShortDate(notice.実施日)}）`;
+
+    item.append(date, text);
+    notificationList.append(item);
+  });
+}
+
+async function loadCalendarNotifications() {
+  try {
+    const result = await authFetch("getTodayNotifications");
+    if (!result.success) throw new Error(result.message || "取得に失敗しました。");
+    renderNotifications(result.notifications || []);
+  } catch (error) {
+    console.error("Notification error:", error);
+    // 通知の取得に失敗しても、他のホーム画面表示には影響させません（パネルを隠すだけにします）。
+    notificationPanel.hidden = true;
+  }
 }
 
 async function loadHomeData() {
@@ -252,7 +293,7 @@ async function loadReminderStatus() {
 }
 
 async function refreshHome() {
-  await Promise.all([loadHomeData(), loadReminderStatus()]);
+  await Promise.all([loadHomeData(), loadReminderStatus(), loadCalendarNotifications()]);
 }
 
 reminderClose.addEventListener("click", closeReminder);

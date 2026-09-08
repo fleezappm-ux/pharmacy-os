@@ -13,7 +13,7 @@
   <script src="config.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="auth.js?v=2"></script>
-  <script src="home.js?v=8" defer></script>
+  <script src="home.js?v=9" defer></script>
 </head>
 <body>
   <div id="auth-gate" class="auth-gate" hidden>
@@ -71,6 +71,10 @@
             <section class="panel calendar-panel" aria-labelledby="week-heading">
               <div class="section-heading"><div><p class="section-kicker">CALENDAR</p><h2 id="week-heading">今週の営業カレンダー</h2></div><a class="text-button" href="calendar.html">全体を見る <span>›</span></a></div>
               <div id="week-calendar" class="week-calendar" aria-label="1週間カレンダー"></div>
+            </section>
+            <section id="notification-panel" class="panel" aria-labelledby="notification-heading" hidden>
+              <div class="section-heading"><div><p class="section-kicker">NOTIFICATIONS</p><h2 id="notification-heading">本日の通知</h2></div></div>
+              <div id="notification-list" class="handover-list" aria-live="polite"></div>
             </section>
             <section class="panel" aria-labelledby="handover-heading">
               <div class="section-heading"><div><p class="section-kicker">HANDOVER</p><h2 id="handover-heading">最新の申し送り</h2></div><a class="text-button" href="index.html#handover">入力する <span>›</span></a></div>
