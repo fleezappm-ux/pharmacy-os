@@ -50,10 +50,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /** 店舗設定の一包化サポートON/OFFを確認してから、患者一覧を読み込みます。 */
 async function loadStoreSettingsAndPatients() {
-  let isAdmin = false;
+  let canManageOneppoToggle = false;
   try {
     const who = await authFetch("whoAmI");
-    isAdmin = !!(who.success && who.role === "system_admin");
+    canManageOneppoToggle = !!(who.success && (who.role === "system_admin" || who.role === "managing_pharmacist"));
   } catch (e) {
     console.error(e);
   }
@@ -65,8 +65,8 @@ async function loadStoreSettingsAndPatients() {
     document.getElementById("oneppo-main-content").hidden = !enabled;
     document.getElementById("oneppo-disabled-message").hidden = enabled;
     document.getElementById("oneppo-disabled-message").classList.remove("error");
-    document.getElementById("oneppo-toggle-admin").hidden = !(isAdmin && !enabled);
-    document.getElementById("oneppo-toggle-off-button").hidden = !(isAdmin && enabled);
+    document.getElementById("oneppo-toggle-admin").hidden = !(canManageOneppoToggle && !enabled);
+    document.getElementById("oneppo-toggle-off-button").hidden = !(canManageOneppoToggle && enabled);
     if (!enabled) {
       oneppoLoading.hidden = true;
       return;
