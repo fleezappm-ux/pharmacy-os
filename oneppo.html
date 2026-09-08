@@ -37,10 +37,14 @@
       <h1>一包化管理</h1>
       <p>一包化サポート対象の患者を管理します。</p>
       <button id="reload-button" class="reload-button" type="button" aria-label="再読み込み">↻</button>
+      <button id="oneppo-toggle-off-button" class="back-link" type="button" style="right:26px;left:auto;top:26px;background:none;border:none;cursor:pointer;position:absolute" hidden>サポートをOFFにする</button>
     </header>
 
     <p id="oneppo-loading" class="loading-message" aria-live="polite">読み込んでいます…</p>
     <p id="oneppo-disabled-message" class="empty-message" hidden>この店舗では、一包化サポート機能が現在OFFになっています。有効にする場合は管理者にご確認ください。</p>
+    <div id="oneppo-toggle-admin" hidden style="margin:10px 0;">
+      <button id="oneppo-toggle-button" class="action-button primary" type="button">一包化サポートをONにする</button>
+    </div>
 
     <div id="oneppo-main-content" hidden>
 

@@ -13,6 +13,10 @@ document.addEventListener("DOMContentLoaded", () => {
   requireAuth(() => loadStoreSettingsAndPatients());
 
   document.getElementById("reload-button").addEventListener("click", loadPatients);
+  document.getElementById("oneppo-toggle-button").addEventListener("click", () => handleToggleOneppo(true));
+  document.getElementById("oneppo-toggle-off-button").addEventListener("click", () => {
+    if (confirm("一包化サポートをOFFにします。よろしいですか？")) handleToggleOneppo(false);
+  });
   document.getElementById("search-input").addEventListener("input", (e) => {
     searchText = e.target.value.trim();
     renderList();
@@ -46,19 +50,50 @@ document.addEventListener("DOMContentLoaded", () => {
 
 /** 店舗設定の一包化サポートON/OFFを確認してから、患者一覧を読み込みます。 */
 async function loadStoreSettingsAndPatients() {
+  let isAdmin = false;
+  try {
+    const who = await authFetch("whoAmI");
+    isAdmin = !!(who.success && who.role === "system_admin");
+  } catch (e) {
+    console.error(e);
+  }
+
   try {
     const result = await authFetch("getStoreSettings");
-    const enabled = !!(result.success && result.oneppoEnabled);
+    if (!result.success) throw new Error(result.message || "取得に失敗しました。");
+    const enabled = !!result.oneppoEnabled;
     document.getElementById("oneppo-main-content").hidden = !enabled;
     document.getElementById("oneppo-disabled-message").hidden = enabled;
+    document.getElementById("oneppo-disabled-message").classList.remove("error");
+    document.getElementById("oneppo-toggle-admin").hidden = !(isAdmin && !enabled);
+    document.getElementById("oneppo-toggle-off-button").hidden = !(isAdmin && enabled);
     if (!enabled) {
       oneppoLoading.hidden = true;
       return;
     }
   } catch (e) {
     console.error(e);
+    // ★店舗設定の取得に失敗しても、画面が何も表示されないままにはせず、エラーであることを伝えます。
+    oneppoLoading.hidden = true;
+    const msg = document.getElementById("oneppo-disabled-message");
+    msg.hidden = false;
+    msg.classList.add("error");
+    msg.textContent = "店舗設定の確認に失敗しました。しばらくしてから再読み込みしてください。";
+    document.getElementById("oneppo-main-content").hidden = true;
+    return;
   }
   await loadPatients();
+}
+
+async function handleToggleOneppo(enabled) {
+  try {
+    const result = await authFetch("setOneppoEnabled", { enabled });
+    if (!result.success) { alert(result.message || "切り替えに失敗しました。"); return; }
+    await loadStoreSettingsAndPatients();
+  } catch (e) {
+    console.error(e);
+    alert("通信エラーが発生しました。");
+  }
 }
 
 async function loadPatients() {

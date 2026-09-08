@@ -38,6 +38,7 @@ body{margin:0;background:var(--pale);color:var(--text);font-family:-apple-system
 .action-button.warn{background:var(--red-bg);color:var(--red);border-color:#eec5c2}
 
 .empty-message{margin:14px 0;padding:14px;border-radius:14px;background:#f3f6f5;color:var(--muted);font-size:.86rem;text-align:center}
+.empty-message.error{background:var(--red-bg);color:var(--red)}
 
 .modal{position:fixed;z-index:50;inset:0;display:grid;place-items:center;padding:18px}
 .modal[hidden]{display:none}
