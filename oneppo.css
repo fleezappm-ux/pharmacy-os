@@ -51,6 +51,9 @@ body{margin:0;background:var(--pale);color:var(--text);font-family:-apple-system
 .field label{font-size:.82rem;font-weight:700;color:var(--muted)}
 .field input,.field select,.field textarea{padding:11px 12px;border:1px solid var(--line);border-radius:10px;font:inherit;background:#fff;color:var(--text)}
 .field-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.field-divider{height:1px;background:var(--line);margin:18px 0 14px}
+.field-heading{margin:0 0 10px;font-size:.9rem;font-weight:800;color:var(--text)}
+.hint{margin:-6px 0 14px;color:var(--muted);font-size:.76rem;line-height:1.5}
 .checkbox-row{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:14px}
 .checkbox-field{display:flex;align-items:center;gap:6px;font-size:.82rem;font-weight:700}
 .checkbox-field input{width:17px;height:17px}

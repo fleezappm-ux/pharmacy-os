@@ -10,7 +10,7 @@ const patientList = document.getElementById("patient-list");
 const oneppoLoading = document.getElementById("oneppo-loading");
 
 document.addEventListener("DOMContentLoaded", () => {
-  requireAuth(() => loadPatients());
+  requireAuth(() => loadStoreSettingsAndPatients());
 
   document.getElementById("reload-button").addEventListener("click", loadPatients);
   document.getElementById("search-input").addEventListener("input", (e) => {
@@ -43,6 +43,23 @@ document.addEventListener("DOMContentLoaded", () => {
     el.addEventListener("click", (e) => { e.currentTarget.closest(".modal").hidden = true; });
   });
 });
+
+/** 店舗設定の一包化サポートON/OFFを確認してから、患者一覧を読み込みます。 */
+async function loadStoreSettingsAndPatients() {
+  try {
+    const result = await authFetch("getStoreSettings");
+    const enabled = !!(result.success && result.oneppoEnabled);
+    document.getElementById("oneppo-main-content").hidden = !enabled;
+    document.getElementById("oneppo-disabled-message").hidden = enabled;
+    if (!enabled) {
+      oneppoLoading.hidden = true;
+      return;
+    }
+  } catch (e) {
+    console.error(e);
+  }
+  await loadPatients();
+}
 
 async function loadPatients() {
   oneppoLoading.hidden = false;
@@ -266,6 +283,10 @@ function openDoneModal(patient) {
   document.getElementById("done-actual-date").value = todayStr();
   document.getElementById("done-prescription-date").value = "";
   document.getElementById("done-actual-days").value = patient["今回の処方日数"] || "";
+  document.getElementById("done-print-start").value = "";
+  document.getElementById("done-print-end").value = "";
+  document.getElementById("done-manual-next").value = "";
+  document.getElementById("done-manual-priority").checked = false;
   document.getElementById("done-modal").hidden = false;
 }
 
@@ -274,8 +295,13 @@ async function handleConfirmDone() {
   const actualDate = document.getElementById("done-actual-date").value;
   const prescriptionDate = document.getElementById("done-prescription-date").value;
   const actualDays = document.getElementById("done-actual-days").value;
+  const printStartOverride = document.getElementById("done-print-start").value;
+  const printEndOverride = document.getElementById("done-print-end").value;
+  const manualNextDate = document.getElementById("done-manual-next").value;
+  const manualPriority = document.getElementById("done-manual-priority").checked;
   if (!actualDate) { statusEl.textContent = "対応日を入力してください。"; return; }
   if (!actualDays) { statusEl.textContent = "処方日数を入力してください。"; return; }
+  if (manualPriority && !manualNextDate) { statusEl.textContent = "優先する場合は、次回来局予定日を入力してください。"; return; }
 
   statusEl.textContent = "記録しています…";
   try {
@@ -283,7 +309,11 @@ async function handleConfirmDone() {
       id: currentPatientId,
       actualDate,
       prescriptionDate: prescriptionDate || undefined,
-      actualDays: Number(actualDays)
+      actualDays: Number(actualDays),
+      printStartOverride: printStartOverride || undefined,
+      printEndOverride: printEndOverride || undefined,
+      manualNextDate: manualNextDate || undefined,
+      manualPriority
     });
     if (!result.success) { statusEl.textContent = result.message || "記録に失敗しました。"; return; }
     document.getElementById("done-modal").hidden = true;
@@ -318,6 +348,7 @@ async function handleConfirmChanged() {
   const statusEl = document.getElementById("changed-form-status");
   const reason = document.getElementById("changed-reason").value;
   const reasonFree = document.getElementById("changed-reason-free").value.trim();
+  if (reason === "その他" && !reasonFree) { statusEl.textContent = "「その他」を選んだ場合は、補足を入力してください。"; return; }
 
   statusEl.textContent = "記録しています…";
   try {

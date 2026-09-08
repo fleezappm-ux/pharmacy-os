@@ -35,7 +35,7 @@
       <p class="eyebrow">PHARMACY OS</p>
       <h1>カレンダー</h1>
       <p>勉強会・当番医・当番薬局などの予定を管理します。</p>
-      <a class="oneppo-link" href="oneppo.html">一包化管理 ›</a>
+      <a id="oneppo-link" class="oneppo-link" href="oneppo.html">一包化管理 ›</a>
       <button id="reload-button" class="reload-button" type="button" aria-label="再読み込み">↻</button>
     </header>
 
@@ -46,7 +46,7 @@
       <button class="filter-chip" data-filter="勉強会">勉強会</button>
       <button class="filter-chip" data-filter="duty">当番医・当番薬局</button>
       <button class="filter-chip" data-filter="その他">その他</button>
-      <button class="filter-chip" data-filter="oneppo">一包化</button>
+      <button class="filter-chip" id="oneppo-filter-chip" data-filter="oneppo">一包化</button>
     </nav>
 
     <section class="card">
@@ -140,10 +140,47 @@
       </div>
       <p class="hint">繰り返し終了日を空欄にすると、無期限で繰り返します。</p>
 
+      <div id="notification-section" hidden>
+        <div class="field-divider"></div>
+        <p class="field-heading">通知設定</p>
+        <div id="notification-list-in-modal"></div>
+        <div class="field-row">
+          <div class="field">
+            <label for="notify-timing">タイミング</label>
+            <select id="notify-timing">
+              <option value="当日">当日</option>
+              <option value="1日前">1日前</option>
+              <option value="3日前">3日前</option>
+              <option value="1週間前">1週間前</option>
+              <option value="任意日数前">任意日数前</option>
+            </select>
+          </div>
+          <div class="field" id="notify-custom-days-field" hidden>
+            <label for="notify-custom-days">日数</label>
+            <input id="notify-custom-days" type="number" min="0" step="1">
+          </div>
+        </div>
+        <div class="field">
+          <label for="notify-target-type">通知対象</label>
+          <select id="notify-target-type">
+            <option value="全員">全員</option>
+            <option value="指定参加者">指定参加者</option>
+          </select>
+        </div>
+        <div class="field" id="notify-target-emails-field" hidden>
+          <label for="notify-target-emails">対象者のメールアドレス（カンマ区切り）</label>
+          <input id="notify-target-emails" type="text" placeholder="a@example.com, b@example.com">
+        </div>
+        <button id="add-notification-button" class="ghost-button" type="button">この通知を追加する</button>
+        <p id="notification-form-status" class="form-status" aria-live="polite"></p>
+      </div>
+      <p id="notification-hint" class="hint" hidden>通知は、予定を保存した後に設定できます。</p>
+
       <button id="save-event-button" class="primary-button" type="button">保存する</button>
       <button id="delete-event-button" class="danger-button" type="button" hidden>この予定を削除</button>
       <p id="event-form-status" class="form-status" aria-live="polite"></p>
     </section>
+
   </div>
 
   <div id="scope-modal" class="modal" hidden>

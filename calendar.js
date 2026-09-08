@@ -10,6 +10,7 @@ let oneppoOccurrences = []; // 一包化の次回予定日を、擬似的な予�
 let activeFilter = "all";
 let selectedDateStr = null;
 let editingEvent = null; // 編集中の元イベント（保存/削除時に使用）
+let oneppoEnabled = false; // 店舗設定DBの「一包化サポートON/OFF」
 
 const monthLabel = document.getElementById("month-label");
 const monthGrid = document.getElementById("month-grid");
@@ -32,6 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
   viewMonth = today.getMonth() + 1;
 
   requireAuth(() => {
+    loadStoreSettings();
     loadMonth();
   });
 
@@ -71,7 +73,30 @@ document.addEventListener("DOMContentLoaded", () => {
   document.getElementById("event-type").addEventListener("change", updateTypeFieldsVisibility);
   document.getElementById("save-event-button").addEventListener("click", handleSaveEvent);
   document.getElementById("delete-event-button").addEventListener("click", handleDeleteEvent);
+
+  document.getElementById("notify-timing").addEventListener("change", (e) => {
+    document.getElementById("notify-custom-days-field").hidden = e.target.value !== "任意日数前";
+  });
+  document.getElementById("notify-target-type").addEventListener("change", (e) => {
+    document.getElementById("notify-target-emails-field").hidden = e.target.value !== "指定参加者";
+  });
+  document.getElementById("add-notification-button").addEventListener("click", handleAddNotification);
 });
+
+/** 店舗設定DBの一包化サポートON/OFFを取得し、OFFなら一包化関連のUIを隠します。 */
+async function loadStoreSettings() {
+  try {
+    const result = await authFetch("getStoreSettings");
+    oneppoEnabled = !!(result.success && result.oneppoEnabled);
+  } catch (e) {
+    console.error(e);
+    oneppoEnabled = false;
+  }
+  const link = document.getElementById("oneppo-link");
+  const chip = document.getElementById("oneppo-filter-chip");
+  if (link) link.hidden = !oneppoEnabled;
+  if (chip) chip.hidden = !oneppoEnabled;
+}
 
 function changeMonth(diff) {
   viewMonth += diff;
@@ -299,17 +324,118 @@ function openEventModal(event, defaultDate) {
   document.getElementById("event-people").value = (event && event["参加者・関係者"]) || "";
   document.getElementById("event-note").value = (event && event.備考) || "";
   document.getElementById("event-has-prep").checked = !!(event && event.準備期間あり);
-  document.getElementById("event-prep-start").value = 0;
-  document.getElementById("event-prep-end").value = 0;
-  document.getElementById("event-repeat").value = "なし";
-  document.getElementById("event-repeat-end").value = "";
+  document.getElementById("event-prep-start").value = (event && event.準備開始相対日数 != null) ? Math.abs(event.準備開始相対日数) : 0;
+  document.getElementById("event-prep-end").value = (event && event.準備終了相対日数 != null) ? Math.abs(event.準備終了相対日数) : 0;
+  document.getElementById("event-repeat").value = (event && event.繰り返し種別) || "なし";
+  document.getElementById("event-repeat-end").value = (event && event.繰り返し終了日) || "";
 
   updateTypeFieldsVisibility();
   updateTimeFieldsVisibility();
   updatePrepFieldsVisibility();
   updateRepeatFieldsVisibility();
 
+  // 通知設定は、既存の予定（ruleIdが確定している）でのみ設定できます。新規作成中はまだ対象がないため案内だけ表示します。
+  const notificationSection = document.getElementById("notification-section");
+  const notificationHint = document.getElementById("notification-hint");
+  if (event && event.ruleId) {
+    notificationSection.hidden = false;
+    notificationHint.hidden = true;
+    document.getElementById("notification-form-status").textContent = "";
+    loadNotificationsForEvent(event.ruleId);
+  } else {
+    notificationSection.hidden = true;
+    notificationHint.hidden = false;
+  }
+
   modal.hidden = false;
+}
+
+/** 予定に紐づく通知設定を読み込んで一覧表示します。 */
+async function loadNotificationsForEvent(ruleId) {
+  const listEl = document.getElementById("notification-list-in-modal");
+  listEl.textContent = "読み込み中…";
+  try {
+    const result = await authFetch("getCalendarNotificationsForEvent", { ruleId });
+    if (!result.success) { listEl.textContent = ""; return; }
+    renderNotificationList(result.notifications || []);
+  } catch (e) {
+    console.error(e);
+    listEl.textContent = "";
+  }
+}
+
+function renderNotificationList(notifications) {
+  const listEl = document.getElementById("notification-list-in-modal");
+  listEl.innerHTML = "";
+  if (!notifications.length) {
+    const p = document.createElement("p");
+    p.className = "hint";
+    p.style.margin = "0 0 10px";
+    p.textContent = "この予定にはまだ通知が設定されていません。";
+    listEl.appendChild(p);
+    return;
+  }
+  notifications.forEach((n) => {
+    const row = document.createElement("div");
+    row.className = "notify-row";
+    const text = document.createElement("span");
+    text.className = "notify-row-text";
+    const timingText = n["通知タイミング種別"] === "任意日数前" ? `${n["任意日数"]}日前` : n["通知タイミング種別"];
+    const targetText = n["通知対象種別"] === "指定参加者" ? "（指定参加者）" : "（全員）";
+    text.textContent = `${timingText} ${targetText}`;
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.className = "notify-row-remove";
+    removeBtn.textContent = "削除";
+    removeBtn.addEventListener("click", () => handleRemoveNotification(n.id, editingEvent && editingEvent.ruleId));
+    row.appendChild(text);
+    row.appendChild(removeBtn);
+    listEl.appendChild(row);
+  });
+}
+
+async function handleAddNotification() {
+  const statusEl = document.getElementById("notification-form-status");
+  if (!editingEvent || !editingEvent.ruleId) { statusEl.textContent = "先に予定を保存してください。"; return; }
+
+  const timingType = document.getElementById("notify-timing").value;
+  const customDays = document.getElementById("notify-custom-days").value;
+  const targetType = document.getElementById("notify-target-type").value;
+  const targetEmails = document.getElementById("notify-target-emails").value.trim();
+
+  if (targetType === "指定参加者" && !targetEmails) { statusEl.textContent = "対象者のメールアドレスを入力してください。"; return; }
+
+  statusEl.textContent = "追加しています…";
+  try {
+    const result = await authFetch("saveCalendarNotification", {
+      ruleId: editingEvent.ruleId,
+      eventTitle: document.getElementById("event-title").value.trim(),
+      timingType,
+      customDays: timingType === "任意日数前" ? Number(customDays) : undefined,
+      targetType,
+      targetEmails: targetType === "指定参加者" ? targetEmails : ""
+    });
+    if (!result.success) { statusEl.textContent = result.message || "追加に失敗しました。"; return; }
+    statusEl.textContent = "";
+    document.getElementById("notify-custom-days").value = "";
+    document.getElementById("notify-target-emails").value = "";
+    await loadNotificationsForEvent(editingEvent.ruleId);
+  } catch (e) {
+    console.error(e);
+    statusEl.textContent = "通信エラーが発生しました。";
+  }
+}
+
+async function handleRemoveNotification(id, ruleId) {
+  if (!confirm("この通知設定を削除します。よろしいですか？")) return;
+  try {
+    const result = await authFetch("deleteCalendarNotification", { id });
+    if (!result.success) { alert(result.message || "削除に失敗しました。"); return; }
+    if (ruleId) await loadNotificationsForEvent(ruleId);
+  } catch (e) {
+    console.error(e);
+    alert("通信エラーが発生しました。");
+  }
 }
 
 /** 準備開始・終了の相対日数から、単発予定用の絶対日付も一緒に計算します。 */

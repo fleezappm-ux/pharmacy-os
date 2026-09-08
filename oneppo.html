@@ -40,6 +40,9 @@
     </header>
 
     <p id="oneppo-loading" class="loading-message" aria-live="polite">読み込んでいます…</p>
+    <p id="oneppo-disabled-message" class="empty-message" hidden>この店舗では、一包化サポート機能が現在OFFになっています。有効にする場合は管理者にご確認ください。</p>
+
+    <div id="oneppo-main-content" hidden>
 
     <div class="search-tools">
       <input id="search-input" type="text" placeholder="氏名・表示名で検索">
@@ -60,6 +63,7 @@
     <button id="add-patient-button" class="add-patient-button" type="button">＋ 患者を追加</button>
 
     <div id="patient-list"></div>
+    </div>
   </main>
 
   <div id="patient-modal" class="modal" hidden>
@@ -116,6 +120,20 @@
       <div class="field"><label for="done-actual-date">対応日</label><input id="done-actual-date" type="date"></div>
       <div class="field"><label for="done-prescription-date">処方日（対応日と同じ場合は空欄）</label><input id="done-prescription-date" type="date"></div>
       <div class="field"><label for="done-actual-days">処方日数</label><input id="done-actual-days" type="number" min="1" step="1"></div>
+
+      <div class="field-divider"></div>
+      <p class="field-heading">印字期間（自動計算後に手動で直す場合のみ入力）</p>
+      <div class="field-row">
+        <div class="field"><label for="done-print-start">印字開始日</label><input id="done-print-start" type="date"></div>
+        <div class="field"><label for="done-print-end">印字終了日</label><input id="done-print-end" type="date"></div>
+      </div>
+
+      <div class="field-divider"></div>
+      <p class="field-heading">次回来局予定日（手動で指定する場合のみ）</p>
+      <div class="field"><label for="done-manual-next">次回来局予定日</label><input id="done-manual-next" type="date"></div>
+      <label class="checkbox-field" style="margin-bottom:14px"><input id="done-manual-priority" type="checkbox"> この日付を優先する</label>
+      <p class="hint">何も入力しなければ、自動計算した次回予定日がそのまま使われます（以前の手動指定は解除されます）。</p>
+
       <button id="confirm-done-button" class="primary-button" type="button">「済」として記録する</button>
       <p id="done-form-status" class="form-status" aria-live="polite"></p>
     </section>
