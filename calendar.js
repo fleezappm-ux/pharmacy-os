@@ -11,6 +11,7 @@ let activeFilter = "all";
 let selectedDateStr = null;
 let editingEvent = null; // 編集中の元イベント（保存/削除時に使用）
 let oneppoEnabled = false; // 店舗設定DBの「一包化サポートON/OFF」
+let canManageOneppoToggle = false;
 
 const monthLabel = document.getElementById("month-label");
 const monthGrid = document.getElementById("month-grid");
@@ -61,6 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("add-event-fab").addEventListener("click", () => openEventModal(null, selectedDateStr || todayStr()));
+  document.getElementById("oneppo-toggle-button").addEventListener("click", handleToggleOneppo);
   document.querySelectorAll("[data-close-modal]").forEach((el) => {
     el.addEventListener("click", (e) => {
       e.currentTarget.closest(".modal").hidden = true;
@@ -86,16 +88,60 @@ document.addEventListener("DOMContentLoaded", () => {
 /** 店舗設定DBの一包化サポートON/OFFを取得し、OFFなら一包化関連のUIを隠します。 */
 async function loadStoreSettings() {
   try {
-    const result = await authFetch("getStoreSettings");
-    oneppoEnabled = !!(result.success && result.oneppoEnabled);
+    const [result, who] = await Promise.all([
+      authFetch("getStoreSettings"),
+      authFetch("whoAmI")
+    ]);
+    if (!result.success) throw new Error(result.message || "店舗設定の取得に失敗しました。");
+    oneppoEnabled = !!result.oneppoEnabled;
+    canManageOneppoToggle = !!(who.success && (who.role === "system_admin" || who.role === "managing_pharmacist"));
   } catch (e) {
     console.error(e);
     oneppoEnabled = false;
+    canManageOneppoToggle = false;
   }
+  renderOneppoControl();
+}
+
+function renderOneppoControl() {
+  const control = document.getElementById("oneppo-control");
   const link = document.getElementById("oneppo-link");
   const chip = document.getElementById("oneppo-filter-chip");
-  if (link) link.hidden = !oneppoEnabled;
+  const status = document.getElementById("oneppo-status");
+  const toggle = document.getElementById("oneppo-toggle-button");
+
+  control.hidden = !(oneppoEnabled || canManageOneppoToggle);
+  link.hidden = !oneppoEnabled;
   if (chip) chip.hidden = !oneppoEnabled;
+  status.textContent = oneppoEnabled ? "ON" : "OFF";
+  status.className = `oneppo-status ${oneppoEnabled ? "on" : "off"}`;
+  toggle.hidden = !canManageOneppoToggle;
+  toggle.textContent = oneppoEnabled ? "OFFにする" : "ONにする";
+  toggle.className = `oneppo-toggle-button${oneppoEnabled ? " turn-off" : ""}`;
+}
+
+async function handleToggleOneppo() {
+  const nextEnabled = !oneppoEnabled;
+  if (!nextEnabled && !confirm("一包化サポートをOFFにします。よろしいですか？")) return;
+  const button = document.getElementById("oneppo-toggle-button");
+  button.disabled = true;
+  try {
+    const result = await authFetch("setOneppoEnabled", { enabled: nextEnabled });
+    if (!result.success) throw new Error(result.message || "切り替えに失敗しました。");
+    oneppoEnabled = nextEnabled;
+    oneppoOccurrences = [];
+    if (!oneppoEnabled && activeFilter === "oneppo") {
+      activeFilter = "all";
+      document.querySelectorAll(".filter-chip").forEach((c) => c.classList.toggle("active", c.dataset.filter === "all"));
+      renderGrid();
+    }
+    renderOneppoControl();
+  } catch (e) {
+    console.error(e);
+    alert(e.message || "通信エラーが発生しました。");
+  } finally {
+    button.disabled = false;
+  }
 }
 
 function changeMonth(diff) {
@@ -555,4 +601,3 @@ async function handleDeleteEvent() {
     statusEl.textContent = "通信エラーが発生しました。";
   }
 }
-

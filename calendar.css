@@ -2,30 +2,43 @@
 *{box-sizing:border-box}
 body{margin:0;background:var(--pale);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans JP",sans-serif}
 .page-shell{width:min(100%,900px);margin:0 auto;padding:0 18px 120px}
-.page-header{position:relative;margin:0 -18px 18px;padding:30px 26px;background:var(--dark);color:#fff;border-radius:0 0 28px 28px}
-.page-header h1{margin:6px 0;font-size:2rem}
-.page-header p{margin:0}
+.page-header{position:relative;margin:0 -18px 14px;padding:20px 68px 20px 22px;background:var(--dark);color:#fff}
+.page-header h1{margin:4px 0;font-size:1.7rem}
+.page-header p{margin:0;font-size:.88rem;line-height:1.5}
 .eyebrow{margin:0;font-size:.78rem;font-weight:800;letter-spacing:.16em}
-.reload-button{position:absolute;right:24px;top:56px;width:58px;height:58px;border:1px solid rgba(255,255,255,.2);border-radius:18px;background:rgba(255,255,255,.08);color:#fff;font-size:1.7rem;cursor:pointer}
-.oneppo-link{position:absolute;left:26px;top:118px;padding:9px 14px;border:1px solid rgba(255,255,255,.3);border-radius:12px;background:rgba(255,255,255,.1);color:#fff;font-size:.8rem;font-weight:800;text-decoration:none}
+.reload-button{position:absolute;right:18px;top:50%;transform:translateY(-50%);width:44px;height:44px;border:1px solid rgba(255,255,255,.25);border-radius:10px;background:rgba(255,255,255,.08);color:#fff;font-size:1.35rem;cursor:pointer}
 .loading-message{min-height:1.5em;margin:12px 0;text-align:center;color:var(--muted);font-weight:700}
 .loading-message.error{color:var(--red)}
 
-.filter-row{display:flex;gap:6px;overflow-x:auto;margin:16px 0 14px;padding-bottom:2px}
+.filter-row{display:flex;gap:6px;overflow-x:auto;margin:12px 0 10px;padding-bottom:2px}
 .filter-chip{flex:none;padding:8px 14px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--muted);font:inherit;font-size:.78rem;font-weight:800;white-space:nowrap;cursor:pointer}
 .filter-chip.active{background:#eaf8f5;color:var(--green);border-color:#bfe3da}
 
-.card{margin:0 0 20px;padding:20px;border-radius:22px;background:#fff;box-shadow:0 12px 30px rgba(25,69,82,.08)}
+.oneppo-control{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 10px;padding:10px 12px;border:1px solid #cfe3df;border-radius:12px;background:#f5fbf9;font-size:.8rem}
+.oneppo-control[hidden]{display:none}
+.oneppo-control>div:first-child{display:flex;align-items:center;gap:8px}
+.oneppo-status{padding:3px 8px;border-radius:999px;background:#e5ecea;color:var(--muted);font-weight:800}
+.oneppo-status.on{background:#dff4ed;color:var(--green)}
+.oneppo-status.off{background:#f0f1f1;color:#66757b}
+.oneppo-control-actions{display:flex;align-items:center;gap:7px}
+.oneppo-open-link,.oneppo-toggle-button{padding:7px 9px;border-radius:8px;font:inherit;font-weight:800;text-decoration:none;white-space:nowrap}
+.oneppo-open-link{border:1px solid #b9d9d2;background:#fff;color:var(--green)}
+.oneppo-toggle-button{border:0;background:var(--green);color:#fff;cursor:pointer}
+.oneppo-toggle-button.turn-off{border:1px solid #c9d6d3;background:#fff;color:var(--muted)}
+
+.add-event-button{width:100%;margin:0 0 10px;padding:11px 14px;border:0;border-radius:11px;background:var(--green);color:#fff;font:inherit;font-size:.9rem;font-weight:800;cursor:pointer;box-shadow:0 5px 14px rgba(19,122,104,.18)}
+
+.card{margin:0 0 14px;padding:14px;border-radius:16px;background:#fff;box-shadow:0 8px 22px rgba(25,69,82,.07)}
 
 .month-nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .month-nav h2{margin:0;font-size:1.2rem}
 .month-nav-buttons{display:flex;gap:8px}
-.month-nav button{width:38px;height:38px;border:1px solid var(--line);border-radius:10px;background:#fff;font-size:1.05rem;cursor:pointer}
+.month-nav button{min-width:38px;width:auto;height:38px;padding:0 11px;border:1px solid var(--line);border-radius:9px;background:#fff;font-size:1.05rem;cursor:pointer;white-space:nowrap}
 
 .weekday-row,.month-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
 .weekday-row{margin-bottom:6px}
 .weekday-row span{text-align:center;color:var(--muted);font-size:.7rem;font-weight:800}
-.day-cell{min-height:78px;padding:6px 4px;border:1px solid var(--line);border-radius:11px;background:#fff;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;font:inherit;color:inherit}
+.day-cell{min-height:66px;padding:5px 4px;border:1px solid var(--line);border-radius:9px;background:#fff;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:2px;font:inherit;color:inherit}
 .day-cell.outside{background:#f7f9fa;color:#b7c1c4}
 .day-cell.today{border-color:var(--green);box-shadow:0 0 0 2px rgba(19,122,104,.15) inset}
 .day-cell.selected{background:#eaf8f5;border-color:#bfe3da}
@@ -50,8 +63,6 @@ body{margin:0;background:var(--pale);color:var(--text);font-family:-apple-system
 .event-title{font-weight:800}
 .event-sub{color:var(--muted);font-size:.8rem;margin-top:2px}
 .empty-message{margin:0;padding:14px;border-radius:14px;background:#f3f6f5;color:var(--muted);font-size:.86rem}
-
-.fab-add{position:fixed;right:20px;bottom:96px;z-index:15;width:56px;height:56px;border-radius:50%;background:var(--green);color:#fff;font-size:1.9rem;line-height:1;display:grid;place-items:center;box-shadow:0 10px 24px rgba(19,122,104,.35);border:0;cursor:pointer}
 
 .modal{position:fixed;z-index:50;inset:0;display:grid;place-items:center;padding:18px}
 .modal[hidden]{display:none}
@@ -91,4 +102,13 @@ body{margin:0;background:var(--pale);color:var(--text);font-family:-apple-system
 .nav-item small{font-size:.6rem}
 .nav-item.active{color:var(--green);font-weight:800}
 
-@media(max-width:420px){.day-cell{min-height:64px}.evt-chip{font-size:.54rem}}
+@media(max-width:420px){
+  .page-header{padding:17px 62px 17px 18px}
+  .page-header h1{font-size:1.55rem}
+  .page-header p{font-size:.8rem}
+  .oneppo-control{align-items:flex-start;flex-direction:column}
+  .oneppo-control-actions{width:100%}
+  .oneppo-open-link,.oneppo-toggle-button{flex:1;text-align:center}
+  .day-cell{min-height:58px}
+  .evt-chip{font-size:.52rem}
+}

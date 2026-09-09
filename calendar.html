@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#137a68">
   <title>カレンダー | Pharmacy OS</title>
-  <link rel="stylesheet" href="calendar.css?v=1">
+  <link rel="stylesheet" href="calendar.css?v=2">
   <style>
     .auth-gate{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(17,42,51,.55);backdrop-filter:blur(2px)}
     .auth-gate[hidden]{display:none}
@@ -35,7 +35,6 @@
       <p class="eyebrow">PHARMACY OS</p>
       <h1>カレンダー</h1>
       <p>勉強会・当番医・当番薬局などの予定を管理します。</p>
-      <a id="oneppo-link" class="oneppo-link" href="oneppo.html">一包化管理 ›</a>
       <button id="reload-button" class="reload-button" type="button" aria-label="再読み込み">↻</button>
     </header>
 
@@ -48,6 +47,19 @@
       <button class="filter-chip" data-filter="その他">その他</button>
       <button class="filter-chip" id="oneppo-filter-chip" data-filter="oneppo">一包化</button>
     </nav>
+
+    <section id="oneppo-control" class="oneppo-control" hidden aria-label="一包化サポート設定">
+      <div>
+        <strong>一包化サポート</strong>
+        <span id="oneppo-status" class="oneppo-status">確認中</span>
+      </div>
+      <div class="oneppo-control-actions">
+        <a id="oneppo-link" class="oneppo-open-link" href="oneppo.html" hidden>管理画面を開く</a>
+        <button id="oneppo-toggle-button" class="oneppo-toggle-button" type="button" hidden></button>
+      </div>
+    </section>
+
+    <button id="add-event-fab" class="add-event-button" type="button">＋ 予定を追加する</button>
 
     <section class="card">
       <div class="month-nav">
@@ -69,8 +81,6 @@
       <div id="day-detail-list"></div>
     </section>
   </main>
-
-  <button id="add-event-fab" class="fab-add" type="button" aria-label="予定を追加">＋</button>
 
   <div id="event-modal" class="modal" hidden>
     <div class="modal-backdrop" data-close-modal></div>
@@ -210,6 +220,6 @@
   <script src="config.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="auth.js?v=2"></script>
-  <script src="calendar.js?v=1"></script>
+  <script src="calendar.js?v=2"></script>
 </body>
 </html>
