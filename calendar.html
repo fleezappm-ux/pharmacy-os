@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#137a68">
   <title>カレンダー | Pharmacy OS</title>
-  <link rel="stylesheet" href="calendar.css?v=3">
+  <link rel="stylesheet" href="calendar.css?v=4">
   <style>
     .auth-gate{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(17,42,51,.55);backdrop-filter:blur(2px)}
     .auth-gate[hidden]{display:none}
@@ -79,7 +79,9 @@
     </section>
   </main>
 
-  <button id="add-event-fab" class="fab-add" type="button" aria-label="予定を追加">＋</button>
+  <button id="add-event-fab" class="fab-add" type="button" aria-label="予定を追加">
+    <span class="fab-add-icon" aria-hidden="true">＋</span><span class="fab-add-label">予定追加</span>
+  </button>
 
   <div id="event-modal" class="modal" hidden>
     <div class="modal-backdrop" data-close-modal></div>

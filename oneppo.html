@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#137a68">
   <title>一包化管理 | Pharmacy OS</title>
-  <link rel="stylesheet" href="oneppo.css?v=1">
+  <link rel="stylesheet" href="oneppo.css?v=2">
   <style>
     .auth-gate{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(17,42,51,.55);backdrop-filter:blur(2px)}
     .auth-gate[hidden]{display:none}
@@ -31,13 +31,15 @@
   </div>
 
   <main class="page-shell">
-    <header class="page-header">
-      <a class="back-link" href="calendar.html">← カレンダーへ戻る</a>
-      <p class="eyebrow">PHARMACY OS</p>
-      <h1>一包化管理</h1>
-      <p>一包化サポート対象の患者を管理します。</p>
+    <header class="page-header oneppo-appbar">
+      <a class="back-link" href="calendar.html" aria-label="カレンダーへ戻る"><span aria-hidden="true">‹</span> カレンダー</a>
+      <div class="oneppo-title">
+        <p class="eyebrow">PHARMACY OS</p>
+        <h1>一包化管理</h1>
+        <p>一包化サポート対象の患者を管理します。</p>
+      </div>
       <button id="reload-button" class="reload-button" type="button" aria-label="再読み込み">↻</button>
-      <button id="oneppo-toggle-off-button" class="back-link" type="button" style="right:26px;left:auto;top:26px;background:none;border:none;cursor:pointer;position:absolute" hidden>サポートをOFFにする</button>
+      <button id="oneppo-toggle-off-button" class="oneppo-off-button" type="button" hidden>サポートをOFFにする</button>
     </header>
 
     <p id="oneppo-loading" class="loading-message" aria-live="polite">読み込んでいます…</p>

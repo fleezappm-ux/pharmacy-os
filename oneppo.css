@@ -6,8 +6,17 @@ body{margin:0;background:var(--pale);color:var(--text);font-family:-apple-system
 .page-header h1{margin:6px 0;font-size:2rem}
 .page-header p{margin:0}
 .eyebrow{margin:0;font-size:.78rem;font-weight:800;letter-spacing:.16em}
-.back-link{position:absolute;left:26px;top:26px;color:rgba(255,255,255,.85);font-size:.82rem;font-weight:800;text-decoration:none}
+.oneppo-appbar{display:grid;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;gap:14px;padding:15px 18px;background:var(--green);border-radius:0;box-shadow:0 2px 8px rgba(20,55,65,.18)}
+.oneppo-title{min-width:0}
+.oneppo-title h1{margin:1px 0;font-size:1.25rem}
+.oneppo-title>p:last-child{font-size:.75rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.oneppo-title .eyebrow{font-size:.6rem}
+.back-link{position:static;display:flex;align-items:center;gap:4px;min-height:42px;padding:0 8px 0 2px;color:#fff;font-size:.8rem;font-weight:800;text-decoration:none;white-space:nowrap}
+.back-link span{font-size:2rem;font-weight:400;line-height:1}
 .reload-button{position:absolute;right:24px;top:56px;width:58px;height:58px;border:1px solid rgba(255,255,255,.2);border-radius:18px;background:rgba(255,255,255,.08);color:#fff;font-size:1.7rem;cursor:pointer}
+.oneppo-appbar .reload-button{position:static;transform:none;width:42px;height:42px;border-radius:50%;font-size:1.25rem}
+.oneppo-off-button{grid-column:2/4;justify-self:end;margin-top:-7px;padding:4px 0;border:0;background:transparent;color:rgba(255,255,255,.86);font:inherit;font-size:.68rem;font-weight:700;cursor:pointer}
+.oneppo-off-button[hidden]{display:none}
 .loading-message{min-height:1.5em;margin:12px 0;text-align:center;color:var(--muted);font-weight:700}
 .loading-message.error{color:var(--red)}
 
@@ -67,3 +76,12 @@ body{margin:0;background:var(--pale);color:var(--text);font-family:-apple-system
 .nav-item span{font-size:1.4rem;line-height:1}
 .nav-item small{font-size:.6rem}
 .nav-item.active{color:var(--green);font-weight:800}
+
+@media(max-width:520px){
+  .oneppo-appbar{grid-template-columns:auto minmax(0,1fr) 42px;gap:7px;padding:11px 12px}
+  .back-link{padding-right:3px;font-size:.72rem}
+  .back-link span{font-size:1.7rem}
+  .oneppo-title h1{font-size:1.08rem}
+  .oneppo-title>p:last-child{display:none}
+  .oneppo-off-button{grid-column:2/4;margin-top:-5px}
+}
