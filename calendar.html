@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#137a68">
   <title>カレンダー | Pharmacy OS</title>
-  <link rel="stylesheet" href="calendar.css?v=2">
+  <link rel="stylesheet" href="calendar.css?v=3">
   <style>
     .auth-gate{position:fixed;inset:0;z-index:999;display:flex;align-items:center;justify-content:center;background:rgba(17,42,51,.55);backdrop-filter:blur(2px)}
     .auth-gate[hidden]{display:none}
@@ -31,16 +31,22 @@
   </div>
 
   <main class="page-shell">
-    <header class="page-header">
-      <p class="eyebrow">PHARMACY OS</p>
-      <h1>カレンダー</h1>
-      <p>勉強会・当番医・当番薬局などの予定を管理します。</p>
-      <button id="reload-button" class="reload-button" type="button" aria-label="再読み込み">↻</button>
+    <header class="calendar-appbar">
+      <a class="home-button" href="home.html" aria-label="ホームへ戻る">‹</a>
+      <h1 id="appbar-title">2026年9月</h1>
+      <button id="today-button" class="appbar-today" type="button">今日</button>
+      <button id="reload-button" class="appbar-reload" type="button" aria-label="再読み込み">↻</button>
     </header>
 
     <p id="calendar-loading" class="loading-message" aria-live="polite">読み込んでいます…</p>
 
-    <nav class="filter-row" aria-label="予定の種類で絞り込み">
+    <div class="calendar-toolbar">
+      <button id="prev-month-button" type="button" aria-label="前の期間">‹</button>
+      <strong id="month-label">−</strong>
+      <button id="next-month-button" type="button" aria-label="次の期間">›</button>
+    </div>
+
+    <nav class="filter-row compact-filters" aria-label="予定の種類で絞り込み">
       <button class="filter-chip active" data-filter="all">すべて</button>
       <button class="filter-chip" data-filter="勉強会">勉強会</button>
       <button class="filter-chip" data-filter="duty">当番医・当番薬局</button>
@@ -48,39 +54,32 @@
       <button class="filter-chip" id="oneppo-filter-chip" data-filter="oneppo">一包化</button>
     </nav>
 
-    <section id="oneppo-control" class="oneppo-control" hidden aria-label="一包化サポート設定">
-      <div>
-        <strong>一包化サポート</strong>
-        <span id="oneppo-status" class="oneppo-status">確認中</span>
-      </div>
+    <section id="oneppo-control" class="oneppo-control compact-oneppo" hidden aria-label="一包化サポート設定">
+      <span>一包化 <b id="oneppo-status" class="oneppo-status">確認中</b></span>
       <div class="oneppo-control-actions">
-        <a id="oneppo-link" class="oneppo-open-link" href="oneppo.html" hidden>管理画面を開く</a>
+        <a id="oneppo-link" class="oneppo-open-link" href="oneppo.html" hidden>開く</a>
         <button id="oneppo-toggle-button" class="oneppo-toggle-button" type="button" hidden></button>
       </div>
     </section>
 
-    <button id="add-event-fab" class="add-event-button" type="button">＋ 予定を追加する</button>
-
-    <section class="card">
-      <div class="month-nav">
-        <h2 id="month-label">−</h2>
-        <div class="month-nav-buttons">
-          <button id="prev-month-button" type="button" aria-label="前の月">‹</button>
-          <button id="today-button" type="button">今日</button>
-          <button id="next-month-button" type="button" aria-label="次の月">›</button>
-        </div>
-      </div>
+    <section id="month-view" class="calendar-surface">
       <div class="weekday-row">
         <span>日</span><span>月</span><span>火</span><span>水</span><span>木</span><span>金</span><span>土</span>
       </div>
       <div id="month-grid" class="month-grid"></div>
     </section>
 
-    <section id="day-detail" class="card day-detail" hidden>
+    <section id="week-view" class="calendar-surface alternate-view" hidden></section>
+    <section id="single-day-view" class="calendar-surface alternate-view" hidden></section>
+    <section id="list-view" class="calendar-surface alternate-view" hidden></section>
+
+    <section id="day-detail" class="day-detail" hidden>
       <h3 id="day-detail-heading">−</h3>
       <div id="day-detail-list"></div>
     </section>
   </main>
+
+  <button id="add-event-fab" class="fab-add" type="button" aria-label="予定を追加">＋</button>
 
   <div id="event-modal" class="modal" hidden>
     <div class="modal-backdrop" data-close-modal></div>
@@ -208,18 +207,17 @@
     </section>
   </div>
 
-  <nav class="bottom-nav" aria-label="メインメニュー">
-    <a class="nav-item" href="home.html"><span>⌂</span><small>ホーム</small></a>
-    <a class="nav-item" href="index.html"><span>▣</span><small>日次業務</small></a>
-    <a class="nav-item" href="monthly.html"><span>▦</span><small>月次業務</small></a>
-    <a class="nav-item" href="yearly.html"><span>▤</span><small>年度実績</small></a>
-    <a class="nav-item" href="status.html"><span>◉</span><small>ステータス</small></a>
-    <a id="nav-edit-link" class="nav-item" href="edit.html"><span>✎</span><small>編集</small></a>
+  <nav class="bottom-nav calendar-bottom-nav" aria-label="カレンダー表示">
+    <button class="nav-item active" type="button" data-view="month"><span>▦</span><small>月</small></button>
+    <button class="nav-item" type="button" data-view="week"><span>Ⅲ</span><small>週</small></button>
+    <button class="nav-item" type="button" data-view="day"><span>□</span><small>日</small></button>
+    <button class="nav-item" type="button" data-view="list"><span>☷</span><small>一覧</small></button>
+    <a id="bottom-oneppo-link" class="nav-item" href="oneppo.html" hidden><span>●</span><small>一包化</small></a>
   </nav>
 
   <script src="config.js"></script>
   <script src="https://accounts.google.com/gsi/client" async defer></script>
   <script src="auth.js?v=2"></script>
-  <script src="calendar.js?v=2"></script>
+  <script src="calendar.js?v=3"></script>
 </body>
 </html>

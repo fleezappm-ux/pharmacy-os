@@ -12,6 +12,7 @@ let selectedDateStr = null;
 let editingEvent = null; // 編集中の元イベント（保存/削除時に使用）
 let oneppoEnabled = false; // 店舗設定DBの「一包化サポートON/OFF」
 let canManageOneppoToggle = false;
+let currentView = "month";
 
 const monthLabel = document.getElementById("month-label");
 const monthGrid = document.getElementById("month-grid");
@@ -39,13 +40,18 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   document.getElementById("reload-button").addEventListener("click", loadMonth);
-  document.getElementById("prev-month-button").addEventListener("click", () => changeMonth(-1));
-  document.getElementById("next-month-button").addEventListener("click", () => changeMonth(1));
+  document.getElementById("prev-month-button").addEventListener("click", () => changePeriod(-1));
+  document.getElementById("next-month-button").addEventListener("click", () => changePeriod(1));
   document.getElementById("today-button").addEventListener("click", () => {
     const t = new Date();
     viewYear = t.getFullYear();
     viewMonth = t.getMonth() + 1;
+    selectedDateStr = todayStr();
     loadMonth();
+  });
+
+  document.querySelectorAll("[data-view]").forEach((button) => {
+    button.addEventListener("click", () => switchView(button.dataset.view));
   });
 
   document.querySelectorAll(".filter-chip").forEach((chip) => {
@@ -54,9 +60,9 @@ document.addEventListener("DOMContentLoaded", () => {
       chip.classList.add("active");
       activeFilter = chip.dataset.filter;
       if (activeFilter === "oneppo" && !oneppoOccurrences.length) {
-        loadOneppoOccurrences().then(renderGrid);
+        loadOneppoOccurrences().then(renderCurrentView);
       } else {
-        renderGrid();
+        renderCurrentView();
       }
     });
   });
@@ -94,7 +100,7 @@ async function loadStoreSettings() {
     ]);
     if (!result.success) throw new Error(result.message || "店舗設定の取得に失敗しました。");
     oneppoEnabled = !!result.oneppoEnabled;
-    canManageOneppoToggle = !!(who.success && (who.role === "system_admin" || who.role === "managing_pharmacist"));
+    canManageOneppoToggle = !!(who.success && (who.role === "system_admin" || who.role === "admin" || who.role === "managing_pharmacist"));
   } catch (e) {
     console.error(e);
     oneppoEnabled = false;
@@ -109,10 +115,12 @@ function renderOneppoControl() {
   const chip = document.getElementById("oneppo-filter-chip");
   const status = document.getElementById("oneppo-status");
   const toggle = document.getElementById("oneppo-toggle-button");
+  const bottomLink = document.getElementById("bottom-oneppo-link");
 
   control.hidden = !(oneppoEnabled || canManageOneppoToggle);
   link.hidden = !oneppoEnabled;
   if (chip) chip.hidden = !oneppoEnabled;
+  if (bottomLink) bottomLink.hidden = !oneppoEnabled;
   status.textContent = oneppoEnabled ? "ON" : "OFF";
   status.className = `oneppo-status ${oneppoEnabled ? "on" : "off"}`;
   toggle.hidden = !canManageOneppoToggle;
@@ -133,7 +141,7 @@ async function handleToggleOneppo() {
     if (!oneppoEnabled && activeFilter === "oneppo") {
       activeFilter = "all";
       document.querySelectorAll(".filter-chip").forEach((c) => c.classList.toggle("active", c.dataset.filter === "all"));
-      renderGrid();
+      renderCurrentView();
     }
     renderOneppoControl();
   } catch (e) {
@@ -149,6 +157,31 @@ function changeMonth(diff) {
   if (viewMonth < 1) { viewMonth = 12; viewYear -= 1; }
   if (viewMonth > 12) { viewMonth = 1; viewYear += 1; }
   loadMonth();
+}
+
+function changePeriod(diff) {
+  if ((currentView === "week" || currentView === "day") && selectedDateStr) {
+    const [y, m, d] = selectedDateStr.split("-").map(Number);
+    const date = new Date(y, m - 1, d);
+    date.setDate(date.getDate() + diff * (currentView === "week" ? 7 : 1));
+    selectedDateStr = dateStr(date.getFullYear(), date.getMonth() + 1, date.getDate());
+    if (viewYear !== date.getFullYear() || viewMonth !== date.getMonth() + 1) {
+      viewYear = date.getFullYear();
+      viewMonth = date.getMonth() + 1;
+      loadMonth();
+      return;
+    }
+    renderCurrentView();
+    return;
+  }
+  changeMonth(diff);
+}
+
+function switchView(view) {
+  currentView = view;
+  if (!selectedDateStr) selectedDateStr = todayStr();
+  document.querySelectorAll("[data-view]").forEach((button) => button.classList.toggle("active", button.dataset.view === view));
+  renderCurrentView();
 }
 
 /** カレンダーグリッドは月をまたいで前後の空白日も表示するため、その範囲を計算します。 */
@@ -170,8 +203,9 @@ async function loadMonth() {
   calendarLoading.classList.remove("error");
   calendarLoading.textContent = "読み込んでいます…";
   monthLabel.textContent = formatJapaneseMonth(viewYear, viewMonth);
+  document.getElementById("appbar-title").textContent = formatJapaneseMonth(viewYear, viewMonth);
   dayDetail.hidden = true;
-  selectedDateStr = null;
+  if (!selectedDateStr) selectedDateStr = todayStr();
 
   try {
     const range = getGridRange(viewYear, viewMonth);
@@ -180,7 +214,7 @@ async function loadMonth() {
     monthEvents = result.events || [];
     if (activeFilter === "oneppo") await loadOneppoOccurrences();
     calendarLoading.hidden = true;
-    renderGrid();
+    renderCurrentView();
   } catch (e) {
     console.error(e);
     calendarLoading.hidden = false;
@@ -225,6 +259,25 @@ function passesFilter(event) {
   if (activeFilter === "duty") return event.予定種別 === "当番医" || event.予定種別 === "当番薬局";
   if (activeFilter === "oneppo") return !!event.isOneppo;
   return event.予定種別 === activeFilter;
+}
+
+function visibleEvents() {
+  const source = activeFilter === "oneppo" ? oneppoOccurrences : monthEvents;
+  return source.filter(passesFilter).slice().sort((a, b) => {
+    const left = `${a.実施日 || ""} ${a.開始時刻 || ""}`;
+    const right = `${b.実施日 || ""} ${b.開始時刻 || ""}`;
+    return left.localeCompare(right);
+  });
+}
+
+function renderCurrentView() {
+  const ids = { month: "month-view", week: "week-view", day: "single-day-view", list: "list-view" };
+  Object.entries(ids).forEach(([view, id]) => { document.getElementById(id).hidden = view !== currentView; });
+  dayDetail.hidden = true;
+  if (currentView === "month") renderGrid();
+  else if (currentView === "week") renderWeekView();
+  else if (currentView === "day") renderDayView();
+  else renderListView();
 }
 
 function renderGrid() {
@@ -278,6 +331,100 @@ function renderGrid() {
 
     cursor.setDate(cursor.getDate() + 1);
   }
+}
+
+function eventsForDate(day) {
+  return visibleEvents().filter((event) => event.実施日 === day);
+}
+
+function startOfWeek(dateValue) {
+  const [y, m, d] = dateValue.split("-").map(Number);
+  const date = new Date(y, m - 1, d);
+  date.setDate(date.getDate() - date.getDay());
+  return date;
+}
+
+function appendAgenda(container, events, emptyText) {
+  container.innerHTML = "";
+  if (!events.length) {
+    const empty = document.createElement("p");
+    empty.className = "empty-message";
+    empty.textContent = emptyText;
+    container.appendChild(empty);
+    return;
+  }
+  events.forEach((ev) => {
+    const row = document.createElement("button");
+    row.type = "button";
+    row.className = "event-row";
+    const dot = document.createElement("span");
+    dot.className = `dot ${typeClassFor(ev)}`;
+    const main = document.createElement("div");
+    main.className = "event-main";
+    const title = document.createElement("p");
+    title.className = "event-title";
+    title.textContent = ev.予定名;
+    const sub = document.createElement("p");
+    sub.className = "event-sub";
+    sub.textContent = ev.isOneppo ? "一包化サポート" : buildEventSubText(ev);
+    main.append(title, sub);
+    row.append(dot, main);
+    row.addEventListener("click", () => ev.isOneppo ? location.assign("oneppo.html") : openEventModal(ev, ev.実施日));
+    container.appendChild(row);
+  });
+}
+
+function renderWeekView() {
+  const root = document.getElementById("week-view");
+  root.innerHTML = "";
+  const base = selectedDateStr || todayStr();
+  const cursor = startOfWeek(base);
+  const strip = document.createElement("div");
+  strip.className = "week-strip";
+  const agenda = document.createElement("div");
+  agenda.className = "agenda-events";
+  for (let i = 0; i < 7; i++) {
+    const day = dateStr(cursor.getFullYear(), cursor.getMonth() + 1, cursor.getDate());
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = `week-day${day === todayStr() ? " today" : ""}${day === base ? " selected" : ""}`;
+    button.innerHTML = `<small>${WEEKDAY_JP[cursor.getDay()]}</small><b>${cursor.getDate()}</b>`;
+    button.addEventListener("click", () => { selectedDateStr = day; renderWeekView(); });
+    strip.appendChild(button);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  const [y, m, d] = base.split("-").map(Number);
+  const heading = document.createElement("h2");
+  heading.className = "view-heading";
+  heading.textContent = `${m}月${d}日（${WEEKDAY_JP[new Date(y, m - 1, d).getDay()]}）`;
+  appendAgenda(agenda, eventsForDate(base), "この日の予定はありません。");
+  root.append(strip, heading, agenda);
+}
+
+function renderDayView() {
+  const root = document.getElementById("single-day-view");
+  const day = selectedDateStr || todayStr();
+  const [y, m, d] = day.split("-").map(Number);
+  root.innerHTML = `<h2 class="view-heading">${y}年${m}月${d}日（${WEEKDAY_JP[new Date(y, m - 1, d).getDay()]}）</h2><div class="agenda-events"></div>`;
+  appendAgenda(root.querySelector(".agenda-events"), eventsForDate(day), "この日の予定はありません。");
+}
+
+function renderListView() {
+  const root = document.getElementById("list-view");
+  root.innerHTML = '<h2 class="view-heading">今月の予定一覧</h2><div class="agenda-events"></div>';
+  const list = root.querySelector(".agenda-events");
+  const events = visibleEvents().filter((event) => {
+    const prefix = `${viewYear}-${pad2(viewMonth)}-`;
+    return String(event.実施日 || "").startsWith(prefix);
+  });
+  appendAgenda(list, events, "この月の予定はありません。");
+  list.querySelectorAll(".event-row").forEach((row, index) => {
+    const ev = events[index];
+    const date = document.createElement("time");
+    date.className = "agenda-date";
+    date.textContent = String(ev.実施日 || "").slice(5).replace("-", "/");
+    row.prepend(date);
+  });
 }
 
 function selectDate(dateStrValue, dayEvents) {

@@ -53,7 +53,7 @@ async function loadStoreSettingsAndPatients() {
   let canManageOneppoToggle = false;
   try {
     const who = await authFetch("whoAmI");
-    canManageOneppoToggle = !!(who.success && (who.role === "system_admin" || who.role === "managing_pharmacist"));
+    canManageOneppoToggle = !!(who.success && (who.role === "system_admin" || who.role === "admin" || who.role === "managing_pharmacist"));
   } catch (e) {
     console.error(e);
   }
