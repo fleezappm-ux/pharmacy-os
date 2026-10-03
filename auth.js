@@ -238,7 +238,9 @@ function fetchWhoAmIShared() {
   whoAmISharedAt = Date.now();
   const promise = authFetch("whoAmI");
   whoAmIShared = promise;
-  promise.catch(() => { if (whoAmIShared === promise) whoAmIShared = null; });
+  // 失敗した結果（エラー・success:false）は使い回さず、次回あらためて取得します。
+  promise.then((result) => { if (!result || !result.success) { if (whoAmIShared === promise) whoAmIShared = null; } },
+    () => { if (whoAmIShared === promise) whoAmIShared = null; });
   return promise;
 }
 
