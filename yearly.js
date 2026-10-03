@@ -199,17 +199,27 @@ function applyOverview(result) {
   renderMonthlyList();
 }
 
-async function loadOverview() {
+// 一覧画面は、サーバーの「月計表」（月ごとの代表値だけ）を読みます。元のデータは変更しません。
+// forceRefresh が true のとき（更新ボタン）は、月計表をNotionから作り直してもらいます。
+async function loadOverview(forceRefresh) {
   loading.className = "loading-message";
   loading.textContent = "データを読み込んでいます…";
   let shownFromCache = false;
   try {
-    // 前回の結果があれば先に表示し、そのあと最新に差し替えます。
-    const result = await authFetchWithCache("yearlyPerformance", undefined, (cached) => {
-      applyOverview(cached);
-      shownFromCache = true;
+    let result;
+    if (forceRefresh === true) {
       loading.textContent = "最新の内容に更新しています…";
-    });
+      shownFromCache = monthsData.length > 0;
+      result = await authFetch("yearlySummary", { refresh: true });
+      if (result && result.success) writeViewCache("yearlySummary", undefined, result);
+    } else {
+      // 前回の結果があれば先に表示し、そのあと最新に差し替えます。
+      result = await authFetchWithCache("yearlySummary", undefined, (cached) => {
+        applyOverview(cached);
+        shownFromCache = true;
+        loading.textContent = "最新の内容に更新しています…";
+      });
+    }
     if (!result.success) throw new Error(result.message || "読み込みに失敗しました。");
     applyOverview(result);
     loading.textContent = "";
@@ -226,5 +236,5 @@ async function loadOverview() {
 }
 
 yearSelect.addEventListener("change", () => { selectedFiscalYear = yearSelect.value; updateYearRange(); renderMonthlyList(); });
-document.getElementById("reload-button").addEventListener("click", loadOverview);
+document.getElementById("reload-button").addEventListener("click", () => loadOverview(true));
 requireAuth(loadOverview);
