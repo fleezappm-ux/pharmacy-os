@@ -148,9 +148,9 @@ function renderNotifications(notifications) {
   });
 }
 
-async function loadCalendarNotifications() {
+async function loadCalendarNotifications(forceRefresh) {
   try {
-    const result = await authFetch("getTodayNotifications");
+    const result = await authFetch("getTodayNotifications", forceRefresh === true ? { refresh: true } : undefined);
     if (!result.success) throw new Error(result.message || "取得に失敗しました。");
     renderNotifications(result.notifications || []);
   } catch (error) {
@@ -301,9 +301,9 @@ function renderReminderStatus(data) {
   reminderModal.hidden = false;
 }
 
-async function loadReminderStatus() {
+async function loadReminderStatus(forceRefresh) {
   try {
-    const data = await authFetch("reminders");
+    const data = await authFetch("reminders", forceRefresh === true ? { refresh: true } : undefined);
     if (!data.success) throw new Error(data.message || "未入力確認に失敗しました。");
     renderReminderStatus(data);
   } catch (error) {
@@ -312,7 +312,7 @@ async function loadReminderStatus() {
 }
 
 async function refreshHome(forceRefresh) {
-  await Promise.all([loadHomeData(forceRefresh === true), loadReminderStatus(), loadCalendarNotifications()]);
+  await Promise.all([loadHomeData(forceRefresh === true), loadReminderStatus(forceRefresh === true), loadCalendarNotifications(forceRefresh === true)]);
 }
 
 reminderClose.addEventListener("click", closeReminder);
