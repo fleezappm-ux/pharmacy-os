@@ -296,6 +296,7 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
 });
 
 async function loadYearlyCategories(){
+  loadingMessage.className="loading-message";loadingMessage.textContent="データを読み込んでいます…";
   try{
     const result=await authFetch("yearlyPerformance");
     if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");
@@ -309,6 +310,8 @@ async function loadYearlyCategories(){
     ["generic-edit-list","concentration-edit-list","insurance-edit-list","homecare-edit-list","survey-edit-list"].forEach(id=>{
       document.getElementById(id).innerHTML='<p class="empty-message">読み込みに失敗しました。</p>';
     });
+  }finally{
+    if(loadingMessage.textContent==="データを読み込んでいます…")loadingMessage.textContent="";
   }
 }
 

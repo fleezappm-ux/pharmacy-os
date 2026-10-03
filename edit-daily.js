@@ -20,7 +20,7 @@ async function apiWrite(action,payload){const j=await authFetch(action,payload);
 let dailyReports=[];
 function normalizeDailyReport(raw){const date=pick(raw,["日付"],"");const dateStr=typeof date==="object"&&date!==null?(date.start||""):date;return{raw,id:pick(raw,["id"],""),date:dateStr,closed:Boolean(raw["休業日"]),hours:raw["開局時間"]||"",count:raw["処方箋枚数"],managerAbsence:raw["管理者不在時間"]||"",managerResponder:raw["管理者不在時対応者"]||"",pharmacistAbsence:raw["薬剤師不在時間"]||"",pharmacistResponder:raw["薬剤師不在時対応者"]||"",notes:raw["特記事項"]||"",handover:raw["申し送り"]||"",confirmedBy:raw["確認印"]||""}}
 
-async function loadDailyReports(){try{const result=await authFetch("dailyReports");if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");dailyReports=(result.reports||[]).map(normalizeDailyReport);renderDailyList();openFromDateParam()}catch(e){document.getElementById("daily-edit-list").innerHTML='<p class="empty-message">読み込みに失敗しました。</p>'}}
+async function loadDailyReports(){try{const result=await authFetch("dailyReports");if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");dailyReports=(result.reports||[]).map(normalizeDailyReport);renderDailyList();openFromDateParam()}catch(e){document.getElementById("daily-edit-list").innerHTML='<p class="empty-message">読み込みに失敗しました。</p>'}finally{if(loadingMessage.textContent==="データを読み込んでいます…")loadingMessage.textContent=""}}
 
 /** URLに?date=YYYY-MM-DDが付いている場合、該当日の記録を自動で開きます（重複エラーからの誘導用）。 */
 function openFromDateParam(){
