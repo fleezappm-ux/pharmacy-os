@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
 async function loadStoreSettingsAndPatients() {
   let canManageOneppoToggle = false;
   try {
-    const who = await authFetch("whoAmI");
+    const who = await fetchWhoAmIShared();
     canManageOneppoToggle = !!(who.success && (who.role === "system_admin" || who.role === "admin" || who.role === "managing_pharmacist"));
   } catch (e) {
     console.error(e);

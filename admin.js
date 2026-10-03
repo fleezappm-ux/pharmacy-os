@@ -22,7 +22,7 @@ function formatDateTime(value) {
 async function init() {
   requireAuth(async () => {
     try {
-      const who = await authFetch("whoAmI");
+      const who = await fetchWhoAmIShared();
       if (!who.success) throw new Error(who.message || "確認に失敗しました。");
       if (who.role !== "system_admin" && who.role !== "admin") {
         loadingMessage.hidden = true;

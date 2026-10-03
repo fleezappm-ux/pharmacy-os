@@ -96,7 +96,7 @@ async function loadStoreSettings() {
   try {
     const [result, who] = await Promise.all([
       authFetch("getStoreSettings"),
-      authFetch("whoAmI")
+      fetchWhoAmIShared()
     ]);
     if (!result.success) throw new Error(result.message || "店舗設定の取得に失敗しました。");
     oneppoEnabled = !!result.oneppoEnabled;

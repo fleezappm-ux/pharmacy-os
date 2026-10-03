@@ -256,6 +256,8 @@ form.addEventListener("submit", async (event) => {
 });
 
 requireAuth(() => {
+  // 薬剤師名簿は、本人確認（whoAmI）の結果を待たずに先に取りに行きます（管理者の場合だけ使います）。
+  pharmacistNamesPromise = authFetch("pharmacistNames").catch(() => null);
   dateInput.value = getLocalDateString();
   dateInput.addEventListener("change", () => {
     openingTypeTouched = false;
@@ -280,11 +282,13 @@ requireAuth(() => {
   loadOwnName();
 });
 
+let pharmacistNamesPromise = null;
+
 async function loadOwnName() {
   const confirmedByInput = document.querySelector("#confirmed-by");
   const confirmedBySelect = document.querySelector("#confirmed-by-select");
   try {
-    const result = await authFetch("whoAmI");
+    const result = await fetchWhoAmIShared();
     const isSystemAdmin = result.success && (result.role === "system_admin" || result.role === "admin");
     if (isSystemAdmin) {
       confirmedByInput.hidden = true;
@@ -303,8 +307,8 @@ async function loadOwnName() {
 
 async function loadPharmacistNamesForAdmin(selectEl) {
   try {
-    const result = await authFetch("pharmacistNames");
-    if (!result.success) return;
+    const result = await (pharmacistNamesPromise || authFetch("pharmacistNames"));
+    if (!result || !result.success) return;
     (result.names || []).forEach((name) => {
       const option = document.createElement("option");
       option.value = name;

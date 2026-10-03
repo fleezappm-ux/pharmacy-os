@@ -101,7 +101,7 @@ document.querySelectorAll("[data-close-delete]").forEach(x=>x.addEventListener("
 
 async function loadOwnName(){
   try{
-    const result=await authFetch("whoAmI");
+    const result=await fetchWhoAmIShared();
     isSystemAdminUser=result.success&&(result.role==="system_admin"||result.role==="admin");
     if(isSystemAdminUser){
       document.getElementById("daily-edit-confirmed").hidden=true;

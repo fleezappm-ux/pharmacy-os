@@ -114,7 +114,7 @@ function requireAuth(onReady) {
 function requireEditPermission(permissionName, onReady) {
   requireAuth(async () => {
     try {
-      const result = await authFetch("whoAmI");
+      const result = await fetchWhoAmIShared();
       const permissions = result && result.permissions ? result.permissions : {};
       if (!result.success || !permissions[permissionName]) {
         location.replace("edit.html");
@@ -139,7 +139,7 @@ async function applyEditNavVisibility() {
   ].filter(Boolean);
   if (!navLinks.length) return;
   try {
-    const result = await authFetch("whoAmI");
+    const result = await fetchWhoAmIShared();
     if (!result.success) return;
     const permissions = result.permissions || {};
     const hasAnyEditPermission = permissions.canEditDaily || permissions.canEditMonthly || permissions.canEditOther;
@@ -226,6 +226,22 @@ function attemptSilentRefresh() {
  * ログイン画面を出し、ログイン成功後に同じリクエストを自動的にやり直します。
  * これにより、保存中にトークンが切れても入力内容を失いません。
  */
+/**
+ * whoAmI（本人の権限確認）を、同じ画面の読み込み中に何度も呼ばないための共有呼び出しです。
+ * 10秒以内の再呼び出しは、同じ結果（または実行中の通信）を使い回します。
+ * 10秒を過ぎると、あらためてサーバーに最新を聞きます（権限変更の反映を遅らせないため）。
+ */
+let whoAmIShared = null;
+let whoAmISharedAt = 0;
+function fetchWhoAmIShared() {
+  if (whoAmIShared && Date.now() - whoAmISharedAt < 10000) return whoAmIShared;
+  whoAmISharedAt = Date.now();
+  const promise = authFetch("whoAmI");
+  whoAmIShared = promise;
+  promise.catch(() => { if (whoAmIShared === promise) whoAmIShared = null; });
+  return promise;
+}
+
 async function authFetch(action, extraBody) {
   const response = await fetch(PHARMACY_CONFIG.GAS_URL, {
     method: "POST",
