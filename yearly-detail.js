@@ -25,6 +25,8 @@ const els = {
 };
 
 let monthsData = [];
+let availableYears = [];
+let loadSeq = 0;
 let selectedFiscalYear = "";
 const initialParams = new URLSearchParams(location.search);
 const requestedCategory = initialParams.get("category");
@@ -102,11 +104,18 @@ function primaryValue(month, key = activeCategory) {
   return `${formatNumber(totals.cases, "件")}・${formatNumber(totals.visits, "回")}`;
 }
 
+// 表示する年度を決めます。選択中の年度があればそれ、なければURL指定、当年度、先頭の順です。
+function pickFiscalYear(years) {
+  const selected = Number(selectedFiscalYear);
+  if (selectedFiscalYear && years.includes(selected)) return selected;
+  if (years.includes(requestedFiscalYear)) return requestedFiscalYear;
+  if (years.includes(currentFiscalYear())) return currentFiscalYear();
+  return years[0];
+}
+
 function renderYearOptions() {
-  const years = [...new Set(monthsData.map((month) => fiscalYearOf(month.key)))].sort((a, b) => b - a);
-  const preferred = years.includes(requestedFiscalYear)
-    ? requestedFiscalYear
-    : (years.includes(currentFiscalYear()) ? currentFiscalYear() : years[0]);
+  const years = availableYears;
+  const preferred = pickFiscalYear(years);
   selectedFiscalYear = String(preferred || "");
   els.yearSelect.textContent = "";
   years.forEach((year) => {
@@ -130,9 +139,12 @@ function renderTabs() {
     button.textContent = category.label;
     button.setAttribute("aria-pressed", String(category.key === activeCategory));
     button.addEventListener("click", () => {
+      if (activeCategory === category.key) return;
       activeCategory = category.key;
+      monthsData = [];
+      els.monthList.textContent = "";
       renderTabs();
-      renderView();
+      loadYearlyData();
     });
     els.tabs.appendChild(button);
   });
@@ -315,19 +327,62 @@ function renderView() {
   });
 }
 
-async function loadYearlyData() {
+// 選んだカテゴリ・年度の分だけをサーバーから取得します（全カテゴリ・全期間は取得しません）。
+// 前回の結果があれば先に表示し、そのあと最新に差し替えます。
+async function loadYearlyData(forceRefresh) {
+  const seq = ++loadSeq;
+  const category = activeCategory;
+  const fiscalYear = Number(selectedFiscalYear) || (requestedFiscalYear || currentFiscalYear());
+  const params = { category, fy: fiscalYear };
   els.loading.className = "loading-message";
   els.loading.textContent = "データを読み込んでいます…";
-  try {
-    const result = await authFetch("yearlyPerformance");
-    if (!result.success) throw new Error(result.message || "読み込みに失敗しました。");
+  let shownFromCache = false;
+
+  const apply = (result) => {
+    if (seq !== loadSeq) return;
     monthsData = result.months || [];
+    availableYears = result.years || [];
+    if (!monthsData.length && availableYears.length && !availableYears.includes(fiscalYear)) {
+      // 指定された年度が取得範囲にない場合は、従来どおり当年度などに切り替えます。
+      selectedFiscalYear = "";
+    } else {
+      selectedFiscalYear = String(fiscalYear);
+    }
     renderYearOptions();
     renderTabs();
+    if (availableYears.length && Number(selectedFiscalYear) !== fiscalYear) {
+      loadYearlyData();
+      return;
+    }
     renderView();
-    els.loading.textContent = "";
+  };
+
+  try {
+    let result;
+    if (forceRefresh === true) {
+      els.loading.textContent = "最新の内容に更新しています…";
+      shownFromCache = monthsData.length > 0;
+      result = await authFetch("yearlyDetail", params);
+      if (result && result.success) writeViewCache("yearlyDetail", params, result);
+    } else {
+      result = await authFetchWithCache("yearlyDetail", params, (cached) => {
+        apply(cached);
+        shownFromCache = true;
+        if (seq === loadSeq) els.loading.textContent = "最新の内容に更新しています…";
+      });
+    }
+    if (seq !== loadSeq) return;
+    if (!result.success) throw new Error(result.message || "読み込みに失敗しました。");
+    apply(result);
+    if (seq === loadSeq) els.loading.textContent = "";
   } catch (error) {
+    if (seq !== loadSeq) return;
     console.error(error);
+    if (shownFromCache) {
+      els.loading.className = "loading-message";
+      els.loading.textContent = "最新の内容を取得できませんでした。前回の内容を表示しています。";
+      return;
+    }
     els.loading.className = "loading-message error";
     els.loading.textContent = "現在、データを読み込めません。時間をおいて更新してください。";
   }
@@ -335,7 +390,9 @@ async function loadYearlyData() {
 
 els.yearSelect.addEventListener("change", () => {
   selectedFiscalYear = els.yearSelect.value;
-  renderView();
+  monthsData = [];
+  els.monthList.textContent = "";
+  loadYearlyData();
 });
-document.getElementById("reload-button").addEventListener("click", loadYearlyData);
-requireAuth(loadYearlyData);
+document.getElementById("reload-button").addEventListener("click", () => loadYearlyData(true));
+requireAuth(() => loadYearlyData());
