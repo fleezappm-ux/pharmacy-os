@@ -135,7 +135,8 @@ function renderYearOptions() {
   const years = [...new Set(monthsData.map((month) => fiscalYearOf(month.key)))].sort((a, b) => b - a);
   const params = new URLSearchParams(location.search);
   const requested = Number(params.get("fy"));
-  const preferred = years.includes(requested) ? requested : (years.includes(currentFiscalYear()) ? currentFiscalYear() : years[0]);
+  const kept = years.includes(Number(selectedFiscalYear)) ? Number(selectedFiscalYear) : null;
+  const preferred = kept !== null ? kept : (years.includes(requested) ? requested : (years.includes(currentFiscalYear()) ? currentFiscalYear() : years[0]));
   selectedFiscalYear = String(preferred || "");
   yearSelect.textContent = "";
   years.forEach((year) => yearSelect.add(new Option(`${year}年度`, String(year), false, String(year) === selectedFiscalYear)));
@@ -191,19 +192,34 @@ function renderMonthlyList() {
   });
 }
 
+function applyOverview(result) {
+  monthsData = result.months || [];
+  renderLatestCards();
+  renderYearOptions();
+  renderMonthlyList();
+}
+
 async function loadOverview() {
   loading.className = "loading-message";
   loading.textContent = "データを読み込んでいます…";
+  let shownFromCache = false;
   try {
-    const result = await authFetch("yearlyPerformance");
+    // 前回の結果があれば先に表示し、そのあと最新に差し替えます。
+    const result = await authFetchWithCache("yearlyPerformance", undefined, (cached) => {
+      applyOverview(cached);
+      shownFromCache = true;
+      loading.textContent = "最新の内容に更新しています…";
+    });
     if (!result.success) throw new Error(result.message || "読み込みに失敗しました。");
-    monthsData = result.months || [];
-    renderLatestCards();
-    renderYearOptions();
-    renderMonthlyList();
+    applyOverview(result);
     loading.textContent = "";
   } catch (error) {
     console.error(error);
+    if (shownFromCache) {
+      loading.className = "loading-message";
+      loading.textContent = "最新の内容を取得できませんでした。前回の内容を表示しています。";
+      return;
+    }
     loading.className = "loading-message error";
     loading.textContent = "現在、データを読み込めません。時間をおいて更新してください。";
   }

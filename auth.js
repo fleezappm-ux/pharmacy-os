@@ -252,6 +252,55 @@ async function authFetch(action, extraBody) {
 }
 
 /**
+ * 「見るだけの画面」用の読み込みです。
+ * 同じタブで前回取得できた結果があれば、すぐ onCached に渡して先に表示させ、
+ * そのあと最新を取得して返します（成功したら次回用に保存します）。
+ * 保存先はログイン情報と同じ sessionStorage（このタブを閉じると消えます）で、
+ * 利用者のメールアドレスごとに分け、60分より古いものは使いません。
+ * 保存・削除など書き込みの操作では使いません。
+ */
+const VIEW_CACHE_PREFIX = "pharmacyOsViewCache:";
+const VIEW_CACHE_MAX_AGE_MS = 60 * 60 * 1000;
+
+function viewCacheKey(action, extraBody) {
+  return VIEW_CACHE_PREFIX + getAuthEmail() + ":" + action + ":" + JSON.stringify(extraBody || {});
+}
+
+function readViewCache(action, extraBody) {
+  try {
+    const raw = sessionStorage.getItem(viewCacheKey(action, extraBody));
+    if (!raw) return null;
+    const saved = JSON.parse(raw);
+    if (!saved || !saved.result || Date.now() - saved.savedAt > VIEW_CACHE_MAX_AGE_MS) return null;
+    return saved.result;
+  } catch (e) {
+    return null;
+  }
+}
+
+function writeViewCache(action, extraBody, result) {
+  try {
+    sessionStorage.setItem(viewCacheKey(action, extraBody), JSON.stringify({ savedAt: Date.now(), result }));
+  } catch (e) {
+    // 容量オーバーなどで保存できなくても、画面の動作には影響させません。
+  }
+}
+
+async function authFetchWithCache(action, extraBody, onCached) {
+  const cached = getAuthEmail() ? readViewCache(action, extraBody) : null;
+  if (cached && cached.success && typeof onCached === "function") {
+    try {
+      onCached(cached);
+    } catch (e) {
+      console.error(e);
+    }
+  }
+  const result = await authFetch(action, extraBody);
+  if (result && result.success && getAuthEmail()) writeViewCache(action, extraBody, result);
+  return result;
+}
+
+/**
  * GASからの応答が認証エラー(authError:true)だった場合、ログイン状態をクリアして
  * ログイン画面を出し直します。処理した場合はtrueを返します。
  * （authFetchを使わない一部の呼び出し箇所との互換のために残しています。）

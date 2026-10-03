@@ -160,35 +160,47 @@ async function loadCalendarNotifications() {
   }
 }
 
+function renderHomeData(data) {
+  averageLabel.textContent = "1日平均処方箋枚数";
+  averageValue.textContent = data.previousMonthAverage ?? "―";
+  averageNote.textContent = data.previousMonthAverageSource === "survey"
+    ? `${data.previousMonthLabel}・処方箋調べより`
+    : data.previousMonthRecordedDays
+    ? `${data.previousMonthLabel}・${data.previousMonthRecordedDays}日分から算出`
+    : `${data.previousMonthLabel}・記録なし`;
+  const summaryMonthLabel = data.previousMonthLabel || "前月";
+  const hasGeneric = data.genericRate !== null && data.genericRate !== undefined;
+  monthlyHeading.textContent = `${data.currentMonthLabel || "今月"}の状況`;
+  genericRateValue.textContent = hasGeneric ? data.genericRate : "未入力";
+  genericRateUnit.hidden = !hasGeneric;
+  genericRateLabel.textContent = "後発品使用率";
+  genericRateNote.textContent = `${summaryMonthLabel}の実績`;
+  renderConcentration(data.concentrationTop4 || [], summaryMonthLabel);
+  renderHandovers(data.handovers || []);
+}
+
 async function loadHomeData() {
   refreshButton.disabled = true;
   refreshButton.textContent = "…";
   homeStatus.textContent = "";
+  let shownFromCache = false;
 
   try {
-    const data = await authFetch("home");
+    // 前回の結果があれば先に表示し、そのあと最新に差し替えます。
+    const data = await authFetchWithCache("home", undefined, (cached) => {
+      renderHomeData(cached);
+      shownFromCache = true;
+    });
     if (!data.success) throw new Error(data.message || "取得に失敗しました。");
-
-    averageLabel.textContent = "1日平均処方箋枚数";
-    averageValue.textContent = data.previousMonthAverage ?? "―";
-    averageNote.textContent = data.previousMonthAverageSource === "survey"
-      ? `${data.previousMonthLabel}・処方箋調べより`
-      : data.previousMonthRecordedDays
-      ? `${data.previousMonthLabel}・${data.previousMonthRecordedDays}日分から算出`
-      : `${data.previousMonthLabel}・記録なし`;
-    const summaryMonthLabel = data.previousMonthLabel || "前月";
-    const hasGeneric = data.genericRate !== null && data.genericRate !== undefined;
-    monthlyHeading.textContent = `${data.currentMonthLabel || "今月"}の状況`;
-    genericRateValue.textContent = hasGeneric ? data.genericRate : "未入力";
-    genericRateUnit.hidden = !hasGeneric;
-    genericRateLabel.textContent = "後発品使用率";
-    genericRateNote.textContent = `${summaryMonthLabel}の実績`;
-    renderConcentration(data.concentrationTop4 || [], summaryMonthLabel);
-    renderHandovers(data.handovers || []);
+    renderHomeData(data);
   } catch (error) {
     console.error("Home data error:", error);
-    homeStatus.textContent = `最新情報を取得できませんでした：${error.message}`;
-    renderHandovers([]);
+    if (shownFromCache) {
+      homeStatus.textContent = "最新情報を取得できませんでした。前回の内容を表示しています。";
+    } else {
+      homeStatus.textContent = `最新情報を取得できませんでした：${error.message}`;
+      renderHandovers([]);
+    }
   } finally {
     refreshButton.disabled = false;
     refreshButton.textContent = "↻";
