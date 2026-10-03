@@ -179,7 +179,7 @@ function renderHomeData(data) {
   renderHandovers(data.handovers || []);
 }
 
-async function loadHomeData() {
+async function loadHomeData(forceRefresh) {
   refreshButton.disabled = true;
   refreshButton.textContent = "…";
   homeStatus.textContent = "";
@@ -187,10 +187,17 @@ async function loadHomeData() {
 
   try {
     // 前回の結果があれば先に表示し、そのあと最新に差し替えます。
-    const data = await authFetchWithCache("home", undefined, (cached) => {
-      renderHomeData(cached);
-      shownFromCache = true;
-    });
+    let data;
+    if (forceRefresh === true) {
+      // 更新ボタンのときは、サーバーの控えを使わず最新を取得します。
+      data = await authFetch("home", { refresh: true });
+      if (data && data.success) writeViewCache("home", undefined, data);
+    } else {
+      data = await authFetchWithCache("home", undefined, (cached) => {
+        renderHomeData(cached);
+        shownFromCache = true;
+      });
+    }
     if (!data.success) throw new Error(data.message || "取得に失敗しました。");
     renderHomeData(data);
   } catch (error) {
@@ -304,8 +311,8 @@ async function loadReminderStatus() {
   }
 }
 
-async function refreshHome() {
-  await Promise.all([loadHomeData(), loadReminderStatus(), loadCalendarNotifications()]);
+async function refreshHome(forceRefresh) {
+  await Promise.all([loadHomeData(forceRefresh === true), loadReminderStatus(), loadCalendarNotifications()]);
 }
 
 reminderClose.addEventListener("click", closeReminder);
@@ -322,6 +329,6 @@ document.addEventListener("keydown", (event) => {
 
 todayLabel.textContent = formatJapaneseDate(new Date());
 renderWeekCalendar();
-refreshButton.addEventListener("click", refreshHome);
-if (mobileRefreshButton) mobileRefreshButton.addEventListener("click", refreshHome);
-requireAuth(refreshHome);
+refreshButton.addEventListener("click", () => refreshHome(true));
+if (mobileRefreshButton) mobileRefreshButton.addEventListener("click", () => refreshHome(true));
+requireAuth(() => refreshHome());
