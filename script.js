@@ -255,6 +255,7 @@ form.addEventListener("submit", async (event) => {
   }
 });
 
+let pharmacistNamesPromise = null;
 requireAuth(() => {
   // 薬剤師名簿は、本人確認（whoAmI）の結果を待たずに先に取りに行きます（管理者の場合だけ使います）。
   pharmacistNamesPromise = authFetch("pharmacistNames").catch(() => null);
@@ -281,8 +282,6 @@ requireAuth(() => {
 
   loadOwnName();
 });
-
-let pharmacistNamesPromise = null;
 
 async function loadOwnName() {
   const confirmedByInput = document.querySelector("#confirmed-by");
