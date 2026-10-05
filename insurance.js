@@ -83,6 +83,10 @@ function renderRows() {
 function initializeMonthSelectors() {
   const today = new Date();
   const currentYear = today.getFullYear();
+  // 入力するのは、たいてい先月分なので、初期値は先月にします。
+  const defaultMonthDate = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+  const defaultYear = defaultMonthDate.getFullYear();
+  const defaultMonth = defaultMonthDate.getMonth() + 1;
 
   for (
     let year = currentYear - 10;
@@ -93,7 +97,7 @@ function initializeMonthSelectors() {
       `${year}年`,
       String(year),
       false,
-      year === currentYear
+      year === defaultYear
     );
 
     yearSelect.add(option);
@@ -104,7 +108,7 @@ function initializeMonthSelectors() {
       `${month}月`,
       String(month),
       false,
-      month === today.getMonth() + 1
+      month === defaultMonth
     );
 
     monthSelect.add(option);

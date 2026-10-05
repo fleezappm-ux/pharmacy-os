@@ -259,7 +259,9 @@ let pharmacistNamesPromise = null;
 requireAuth(() => {
   // 薬剤師名簿は、本人確認（whoAmI）の結果を待たずに先に取りに行きます（管理者の場合だけ使います）。
   pharmacistNamesPromise = authFetch("pharmacistNames").catch(() => null);
-  dateInput.value = getLocalDateString();
+  // ホームのリマインドから開いたときは、その日付を最初から入れておきます（形式が正しい場合だけ）。
+  const dateParam = new URLSearchParams(location.search).get("date");
+  dateInput.value = /^\d{4}-\d{2}-\d{2}$/.test(dateParam || "") ? dateParam : getLocalDateString();
   dateInput.addEventListener("change", () => {
     openingTypeTouched = false;
     openingType.value = "normal";

@@ -275,7 +275,9 @@ function renderReminderStatus(data) {
 
   const missing = [];
   (data.dailyMissingDates || []).forEach((dateStr) => {
-    missing.push({ label: `${dateStr} の日次業務`, href: "index.html" });
+    const [y, m, d] = String(dateStr).split("-").map(Number);
+    const weekday = "日月火水木金土"[new Date(y, m - 1, d).getDay()];
+    missing.push({ label: `${y}年${m}月${d}日(${weekday}) の日次業務`, href: `index.html?date=${encodeURIComponent(dateStr)}` });
   });
   (data.monthlyMissing || []).forEach((item) => {
     missing.push({

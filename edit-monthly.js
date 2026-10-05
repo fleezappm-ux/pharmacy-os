@@ -5,7 +5,7 @@ const loadingMessage=document.getElementById("edit-loading");
 let deleteContext=null; let monthsData=[]; let subrowContext=null;
 const text=(v,f="―")=>v===null||v===undefined||v===""?f:String(v);
 const pick=(obj,keys,f="")=>{for(const k of keys){if(obj&&obj[k]!==undefined&&obj[k]!==null&&obj[k]!=="")return obj[k]}return f};
-function formatDate(v){if(!v)return"—";if(typeof v==="object"&&v!==null)v=v.start||"";if(!v)return"—";const s=String(v).slice(0,10);return/^\d{4}-\d{2}-\d{2}$/.test(s)?s.replaceAll("-","/"):s}
+function formatDate(v){if(!v)return"—";if(typeof v==="object"&&v!==null)v=v.start||"";if(!v)return"—";const s=String(v).slice(0,10);return/^\d{4}-\d{2}-\d{2}$/.test(s)?`${Number(s.slice(0,4))}年${Number(s.slice(5,7))}月${Number(s.slice(8,10))}日`:s}
 
 const MODAL_IDS=["generic-modal","subrow-modal","survey-modal","delete-modal"];
 function showModal(id){document.getElementById(id).hidden=false;document.body.style.overflow="hidden"}
@@ -68,7 +68,7 @@ document.getElementById("generic-form").addEventListener("submit",async e=>{
     await apiWrite("saveGenericRateRow",payload);
     hideModal("generic-modal");
     loadingMessage.textContent="";
-    await loadYearlyCategories();
+    await loadYearlyCategories(true);
   }catch(err){
     hideModal("generic-modal");
     loadingMessage.className="loading-message error";
@@ -174,7 +174,7 @@ document.getElementById("subrow-form").addEventListener("submit",async e=>{
     loadingMessage.textContent="保存しています…";
     await apiWrite("saveMonthlyCategoryRow",payload);
     loadingMessage.textContent="";
-    await loadYearlyCategories();
+    await loadYearlyCategories(true);
     const refreshedMonth=findMonth(month.key);
     subrowContext={category,month:refreshedMonth};
     resetSubrowForm();
@@ -247,7 +247,7 @@ document.getElementById("survey-form").addEventListener("submit",async e=>{
     await apiWrite("saveStatusSurveyRow",payload);
     hideModal("survey-modal");
     loadingMessage.textContent="";
-    await loadYearlyCategories();
+    await loadYearlyCategories(true);
   }catch(err){
     hideModal("survey-modal");
     loadingMessage.className="loading-message error";
@@ -277,7 +277,7 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
     hideModal("delete-modal");
     loadingMessage.textContent="";
     if(type==="subrow"){
-      await loadYearlyCategories();
+      await loadYearlyCategories(true);
       const{category,month}=subrowContext;
       const refreshedMonth=findMonth(month.key);
       subrowContext={category,month:refreshedMonth};
@@ -285,7 +285,7 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
       renderSubrowList();
     }else{
       hideModal(DELETE_MODALS[type]);
-      await loadYearlyCategories();
+      await loadYearlyCategories(true);
     }
   }catch(err){
     hideModal("delete-modal");
@@ -295,10 +295,10 @@ document.getElementById("confirm-delete").addEventListener("click",async()=>{
   }
 });
 
-async function loadYearlyCategories(){
+async function loadYearlyCategories(forceRefresh){
   loadingMessage.className="loading-message";loadingMessage.textContent="データを読み込んでいます…";
   try{
-    const result=await authFetch("yearlyPerformance");
+    const result=await authFetch("yearlyPerformance",forceRefresh===true?{refresh:true}:undefined);
     if(!result.success)throw new Error(result.message||"読み込みに失敗しました。");
     monthsData=result.months||[];
     renderGenericList();
@@ -315,9 +315,9 @@ async function loadYearlyCategories(){
   }
 }
 
-document.getElementById("reload-button").addEventListener("click",loadYearlyCategories);
+document.getElementById("reload-button").addEventListener("click",()=>loadYearlyCategories(true));
 document.querySelectorAll("[data-close-modal]").forEach(x=>x.addEventListener("click",hideAllEditModals));
 document.querySelectorAll("[data-close-delete]").forEach(x=>x.addEventListener("click",()=>hideModal("delete-modal")));
 document.querySelectorAll(".edit-tab").forEach(t=>t.addEventListener("click",()=>{document.querySelectorAll(".edit-tab").forEach(x=>x.classList.remove("active"));t.classList.add("active");document.querySelectorAll(".edit-section").forEach(s=>s.hidden=true);document.getElementById(t.dataset.target).hidden=false}));
 
-requireEditPermission("canEditMonthly",loadYearlyCategories);
+requireEditPermission("canEditMonthly",()=>loadYearlyCategories());

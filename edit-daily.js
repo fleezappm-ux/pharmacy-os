@@ -7,7 +7,7 @@ let ownName="";
 let isSystemAdminUser=false;
 const text=(v,f="―")=>v===null||v===undefined||v===""?f:String(v);
 const pick=(obj,keys,f="")=>{for(const k of keys){if(obj&&obj[k]!==undefined&&obj[k]!==null&&obj[k]!=="")return obj[k]}return f};
-function formatDate(v){if(!v)return"—";if(typeof v==="object"&&v!==null)v=v.start||"";if(!v)return"—";const s=String(v).slice(0,10);return/^\d{4}-\d{2}-\d{2}$/.test(s)?s.replaceAll("-","/"):s}
+function formatDate(v){if(!v)return"—";if(typeof v==="object"&&v!==null)v=v.start||"";if(!v)return"—";const s=String(v).slice(0,10);return/^\d{4}-\d{2}-\d{2}$/.test(s)?`${Number(s.slice(0,4))}年${Number(s.slice(5,7))}月${Number(s.slice(8,10))}日`:s}
 
 const MODAL_IDS=["daily-modal","delete-modal"];
 function showModal(id){document.getElementById(id).hidden=false;document.body.style.overflow="hidden"}

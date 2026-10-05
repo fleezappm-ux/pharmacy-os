@@ -169,8 +169,10 @@ requireAuth(loadMonthlyData);
   const saveButton = document.querySelector("#survey-save-button");
   const resultEl = document.querySelector("#survey-result");
 
+  // 入力するのは、たいてい先月分なので、初期値は先月にします。
   const now = new Date();
-  monthPicker.value = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const defaultMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+  monthPicker.value = `${defaultMonth.getFullYear()}-${String(defaultMonth.getMonth() + 1).padStart(2, "0")}`;
 
   function updateTotalPreview() {
     const v = (id) => Number(document.getElementById(id).value) || 0;

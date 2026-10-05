@@ -362,7 +362,7 @@ async function loadYearlyData(forceRefresh) {
     if (forceRefresh === true) {
       els.loading.textContent = "最新の内容に更新しています…";
       shownFromCache = monthsData.length > 0;
-      result = await authFetch("yearlyDetail", params);
+      result = await authFetch("yearlyDetail", { ...params, refresh: true });
       if (result && result.success) writeViewCache("yearlyDetail", params, result);
     } else {
       result = await authFetchWithCache("yearlyDetail", params, (cached) => {
